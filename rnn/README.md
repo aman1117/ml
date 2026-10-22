@@ -3,6 +3,9 @@
 A hands-on guide to vanilla RNNs: the intuition, the math, a from-scratch NumPy
 implementation, and the same model in PyTorch.
 
+> **Prerequisite:** [`../mlp/`](../mlp/). An RNN is an MLP layer reused at every
+> timestep, so learn backprop and gradient descent there first.
+
 ## Files
 
 | File | What it teaches |
