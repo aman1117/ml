@@ -6,7 +6,7 @@ Personal learning repo for implementing classic deep learning models from scratc
 
 - [ ] Multi-Layer Perceptron (MLP)
 - [ ] Convolutional Neural Network (CNN)
-- [ ] Recurrent Neural Network (RNN)
+- [ ] Recurrent Neural Network (RNN): [`rnn/`](rnn/)
 - [ ] LSTM / GRU
 - [ ] Transformer
 
