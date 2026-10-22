@@ -13,8 +13,14 @@ Run:
 """
 import argparse
 import os
+import warnings
 
 import numpy as np
+
+# NumPy 2.0 + Apple Accelerate raises spurious "divide by zero / overflow /
+# invalid value encountered in matmul" warnings even when results are correct.
+# Only silence those; real numerical warnings (exp, log, ...) still show.
+warnings.filterwarnings("ignore", message=".*encountered in matmul", category=RuntimeWarning)
 
 
 def softmax(y):

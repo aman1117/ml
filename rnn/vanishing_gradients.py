@@ -16,7 +16,12 @@ distance T-k grows.
 Run:
     python rnn/vanishing_gradients.py
 """
+import warnings
+
 import numpy as np
+
+# Spurious matmul warnings from NumPy 2.0 + Apple Accelerate (see rnn_numpy.py).
+warnings.filterwarnings("ignore", message=".*encountered in matmul", category=RuntimeWarning)
 
 
 def jacobian_norms(radius, activation="tanh", H=64, T=60, seed=0):

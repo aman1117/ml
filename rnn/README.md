@@ -27,9 +27,9 @@ implementation, and the same model in PyTorch.
 6. Do the exercises at the end.
 
 Run the scripts from the repo root with the venv active (see the root `README.md`).
-On some Macs, NumPy (with Apple Accelerate) prints harmless
-`RuntimeWarning: divide by zero encountered in matmul` messages. The results are
-correct. Silence them with `python -W ignore::RuntimeWarning ...`.
+On Macs, NumPy 2.0 with Apple Accelerate emits spurious
+`RuntimeWarning: ... encountered in matmul` messages even when results are correct.
+The scripts filter out just those warnings.
 
 ---
 
