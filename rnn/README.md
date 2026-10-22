@@ -27,7 +27,8 @@ implementation, and the same model in PyTorch.
    in the style of `input.txt`.
 4. Read section 5, then run `python rnn/vanishing_gradients.py`.
 5. Run `python rnn/rnn_pytorch.py` and compare it with the NumPy version.
-6. Do the exercises at the end.
+6. Read section 8 (how this leads to ChatGPT) and answer the interview questions in section 9.
+7. Do the exercises at the end.
 
 Run the scripts from the repo root with the venv active (see the root `README.md`).
 On Macs, NumPy 2.0 with Apple Accelerate emits spurious
@@ -212,7 +213,51 @@ This is a product of `t - k` matrices. Roughly:
 - RNNs are inherently **sequential** (step t needs step t-1), which makes them slow
   on GPUs. This is a big reason Transformers replaced them.
 
-## 8. Exercises
+## 8. From char-RNN to ChatGPT (why this matters for an AI engineer)
+
+Your char-RNN does **the same job as GPT**: *autoregressive next-token prediction*.
+Read some text, predict a probability for every possible next token, sample one,
+append it, repeat. `generate.py` is a tiny version of what happens when ChatGPT replies.
+
+| | This folder | GPT-style LLM |
+|---|---|---|
+| Token | 1 character (vocab 44) | sub-word piece from **BPE tokenization** (vocab ~100k–200k) |
+| How the past is remembered | one hidden vector `h_t`, updated step by step | **attention**: every token can look directly at every earlier token |
+| Training | parallel only across batch | parallel across the whole sequence (fast on GPUs) |
+| Long-range memory | fades after ~10–20 steps | thousands to millions of tokens of context |
+| Size / data | ~19k params, 4 KB text | billions of params, trillions of tokens |
+| Becomes an assistant by | — | **instruction fine-tuning + RLHF** on top of pre-training |
+
+The concepts you learn here carry over directly:
+- **Cross-entropy on the next token** is exactly the LLM pre-training loss.
+- **Perplexity** = `exp(mean loss per token)` is the standard way to report language-model quality.
+  Uniform guessing over V tokens gives perplexity V. Lower is better.
+- **Sampling:** temperature (here), plus top-k and top-p (nucleus) sampling in real LLMs.
+- **Teacher forcing**, **truncated context**, and **gradient clipping** are all still used.
+- The **vanishing-gradient problem** is the reason LSTMs, and then attention, were invented.
+
+**RNNs are making a comeback:** modern "linear RNN" / state-space models (e.g. Mamba,
+RWKV) keep the RNN's cheap, constant-memory-per-token generation but are designed
+to train in parallel like Transformers. Understanding the vanilla RNN makes those papers readable.
+
+## 9. Interview check
+
+Answer each one out loud in under a minute:
+
+1. Write the RNN forward equations with shapes. Which weights are shared across time, and why?
+2. What is backpropagation through time? Why is the gradient for `W_hh` a **sum** over timesteps?
+3. Why do vanilla RNNs suffer from vanishing/exploding gradients? (Use `∂h_t/∂h_k`.)
+4. How does gradient clipping work, and which of the two problems does it fix?
+5. How does an LSTM fix vanishing gradients? What does each gate do?
+6. LSTM vs GRU: what are the differences?
+7. What is truncated BPTT, and why do we `detach()` the hidden state in PyTorch?
+8. What is teacher forcing? What is "exposure bias"?
+9. What does temperature do when sampling? What about top-k and top-p?
+10. What is perplexity? A model has a loss of 1.0 nat per token: what's its perplexity?
+11. Why did Transformers replace RNNs? Name one advantage RNNs still have.
+12. How is a character-level RNN language model related to GPT?
+
+## 10. Exercises
 
 1. Derive the BPTT equations in section 3 on paper. Then break one line in
    `backward()` and confirm that `gradient_check.py` catches it.
@@ -223,8 +268,11 @@ This is a product of `t - k` matrices. Roughly:
 6. Turn it into a **many-to-one** classifier (e.g. predict whether a binary string has an even number of 1s).
 7. Add a second layer (stacked RNN) to the NumPy model.
 8. Implement an LSTM cell in NumPy and reuse the gradient checker.
+9. Hold out the last 10% of the text as validation data and report the validation **perplexity** during training.
+10. Add **top-k sampling** to `generate.py` (only sample from the k most likely characters).
+11. Train on a 1 MB+ text (e.g. a book from Project Gutenberg) and compare the samples with `input.txt`.
 
-## 9. Resources
+## 11. Resources
 
 - Andrej Karpathy, *The Unreasonable Effectiveness of Recurrent Neural Networks* (blog), and `min-char-rnn.py` (gist), on which `rnn_numpy.py` is modeled.
 - Christopher Olah, *Understanding LSTM Networks* (blog).
