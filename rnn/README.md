@@ -7,7 +7,8 @@ implementation, and the same model in PyTorch.
 
 | File | What it teaches |
 |------|-----------------|
-| `rnn_numpy.py` | Full RNN in NumPy: forward pass, backprop through time (BPTT), Adagrad, sampling. Trains a character-level language model. |
+| `rnn_numpy.py` | Full RNN in NumPy: forward pass, backprop through time (BPTT), Adagrad, sampling. Trains a character-level language model and saves it to `model.npz`. |
+| `generate.py` | Loads the trained model. You type the start of some text and it continues it. |
 | `gradient_check.py` | Verifies the hand-written BPTT gradients against numerical gradients. |
 | `vanishing_gradients.py` | Shows numerically why gradients vanish or explode over long sequences. |
 | `rnn_pytorch.py` | Same model in PyTorch, plus a check that `nn.RNN` computes exactly the equations below. |
@@ -18,6 +19,9 @@ implementation, and the same model in PyTorch.
 1. Read sections 1–4 of this file.
 2. Read `rnn_numpy.py` top to bottom, then run `python rnn/gradient_check.py`.
 3. Train: `python rnn/rnn_numpy.py`. Watch the samples improve.
+   Then talk to it: `python rnn/generate.py` and type a prompt like `The keeper`.
+   It's a text *continuer*, not a chatbot: it only predicts the next character
+   in the style of `input.txt`.
 4. Read section 5, then run `python rnn/vanishing_gradients.py`.
 5. Run `python rnn/rnn_pytorch.py` and compare it with the NumPy version.
 6. Do the exercises at the end.

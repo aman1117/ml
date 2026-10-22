@@ -141,6 +141,20 @@ def train(text, hidden_size=100, seq_len=25, lr=0.1, iters=10000, clip=5.0,
     return model, stoi, itos
 
 
+def save_model(path, model, chars):
+    """Save the weights and the vocabulary (needed to map chars <-> indices)."""
+    np.savez(path, chars=np.array(chars), **model.params)
+
+
+def load_model(path):
+    d = np.load(path)
+    chars = [str(c) for c in d["chars"]]
+    model = RNN(len(chars), d["W_hh"].shape[0])
+    for k in model.params:
+        model.params[k] = d[k]
+    return model, chars
+
+
 def main():
     here = os.path.dirname(os.path.abspath(__file__))
     ap = argparse.ArgumentParser(description=__doc__,
@@ -153,6 +167,8 @@ def main():
     ap.add_argument("--sample-every", type=int, default=1000)
     ap.add_argument("--temperature", type=float, default=0.8,
                     help="temperature for the final sample")
+    ap.add_argument("--save", default=os.path.join(here, "model.npz"),
+                    help="where to save the trained model (used by generate.py)")
     args = ap.parse_args()
 
     with open(args.file, encoding="utf-8") as f:
@@ -165,6 +181,9 @@ def main():
     ixs = model.sample(h, stoi[text[0]], 400, temperature=args.temperature)
     print(f"\n===== final sample (temperature {args.temperature}) =====")
     print(text[0] + "".join(itos[i] for i in ixs))
+
+    save_model(args.save, model, [itos[i] for i in range(len(itos))])
+    print(f"\nSaved model to {args.save}. Try: python rnn/generate.py")
 
 
 if __name__ == "__main__":

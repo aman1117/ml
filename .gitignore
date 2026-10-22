@@ -226,6 +226,7 @@ checkpoints/
 *.pt
 *.pth
 *.ckpt
+*.npz
 runs/
 wandb/
 .DS_Store
