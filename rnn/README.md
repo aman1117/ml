@@ -16,19 +16,28 @@ implementation, and the same model in PyTorch.
 | `vanishing_gradients.py` | Shows numerically why gradients vanish or explode over long sequences. |
 | `rnn_pytorch.py` | Same model in PyTorch, plus a check that `nn.RNN` computes exactly the equations below. |
 | `input.txt` | Small training text. Replace it with any text you like. |
+| `rnn_step_visual.py` | Step-by-step terminal walkthrough: watch the trained RNN read a prompt one character at a time (input, memory, the two contributions, `tanh`, top-5 next-char guesses). |
+| `make_figures.py` | Trains the model and draws every picture in this README into `images/`. All numbers in the pictures are computed, not made up. |
+| `images/` | The figures (PNG) shown below. |
 
 ### Suggested order
 
-1. Read sections 1–4 of this file.
-2. Read `rnn_numpy.py` top to bottom, then run `python rnn/gradient_check.py`.
-3. Train: `python rnn/rnn_numpy.py`. Watch the samples improve.
+1. Read sections 1–2 of this file (look closely at the pictures).
+2. Run `python rnn/rnn_step_visual.py` and press Enter to step through the RNN
+   reading `keep` one character at a time. Then try
+   `python rnn/rnn_step_visual.py --prompt "said the keep"`.
+3. Read sections 3–4.
+4. Read `rnn_numpy.py` top to bottom, then run `python rnn/gradient_check.py`.
+5. Train: `python rnn/rnn_numpy.py`. Watch the samples improve.
    Then talk to it: `python rnn/generate.py` and type a prompt like `The keeper`.
    It's a text *continuer*, not a chatbot: it only predicts the next character
    in the style of `input.txt`.
-4. Read section 5, then run `python rnn/vanishing_gradients.py`.
-5. Run `python rnn/rnn_pytorch.py` and compare it with the NumPy version.
-6. Read section 8 (how this leads to ChatGPT) and answer the interview questions in section 9.
-7. Do the exercises at the end.
+6. Read section 5, then run `python rnn/vanishing_gradients.py`.
+7. Run `python rnn/rnn_pytorch.py` and compare it with the NumPy version.
+8. Read section 8 (how this leads to ChatGPT) and answer the interview questions in section 9.
+9. Do the exercises at the end.
+
+To redraw the pictures: `python rnn/make_figures.py` (about 15 s).
 
 Run the scripts from the repo root with the venv active (see the root `README.md`).
 On Macs, NumPy 2.0 with Apple Accelerate emits spurious
@@ -60,6 +69,13 @@ h_t = tanh(W_xh · x_t + W_hh · h_{t-1} + b_h)     # new hidden state
 y_t = W_hy · h_t + b_y                            # output logits
 p_t = softmax(y_t)                                # probabilities over the vocabulary
 ```
+
+![One RNN time step](images/rnn_cell.png)
+
+**What to look at:** the new memory `h_t` is built from two arrows, what the cell just
+read (`W_xh·x_t`, blue) and what it remembered (`W_hh·h_{t-1}`, orange). `h_t` then goes
+up to make a prediction *and* right to become the next step's memory. The inset shows
+the real trained model: after reading "said the k" it gives 95% to `'e'`.
 
 Shapes (column vectors, as in `rnn_numpy.py`), with `V` = input/vocab size and `H` = hidden size:
 
@@ -96,6 +112,24 @@ h_{-1} → [ h_0 ] ──→ [ h_1 ] ──→ [ h_2 ] ──→ ...
 Sequence length = depth. This view explains both how training works (backprop
 through the unrolled graph) and why it's hard (very deep networks → vanishing gradients).
 
+![The RNN unrolled over "keepe"](images/unrolled.png)
+
+**What to look at:** the boxes with the same colour are the *same* matrix, reused at every
+step; only `h` changes. Each step has its own target (the next character) and its own
+loss, and the chunk's loss is their sum. The note at the bottom shows that the memory
+matters: with an empty `h_{-1}` the same model is far less sure that `'e'` follows "ke".
+
+To see the same thing with real numbers in your terminal, run
+`python rnn/rnn_step_visual.py`.
+
+### Looking inside: what the memory `h_t` looks like
+
+![Hidden state heatmap](images/hidden_state.png)
+
+**What to look at:** each column is the full memory right after one character. Some
+units learn readable jobs on their own, like the highlighted "just saw a space" unit.
+Most values sit near ±1, so `tanh` is saturated (its slope is ≈ 0 there), which matters for section 5.
+
 ## 3. Training: loss and Backpropagation Through Time (BPTT)
 
 For a character language model, the target at step `t` is the next character.
@@ -126,6 +160,13 @@ The key line is `dh_t = W_hyᵀ·dy_t + dh_next`. The hidden state affects the l
 **now** (through the output) **and in the future** (through `h_{t+1}`), so both paths
 contribute to the gradient.
 
+![Gradient of the last step's loss flowing back through time](images/bptt.png)
+
+**What to look at:** this is the `dh_next = W_hhᵀ · da_t` line run backwards from the
+*last* prediction only, on a real 25-character chunk. Each bar is how much learning
+signal reaches that earlier step. It fades as it goes back (log scale!), so early
+characters barely get credit for the last prediction. Section 5 explains why.
+
 ### Truncated BPTT
 
 Backpropagating through a whole book is impossible, so we split the text into chunks
@@ -141,6 +182,15 @@ In NumPy this happens naturally. In PyTorch you call `h = h.detach()` between ch
 Gradients can occasionally explode (section 5). Clipping, either element-wise
 (`np.clip`) or by global norm (`clip_grad_norm_`), is a standard, cheap fix.
 
+### Watching it learn
+
+![Training loss and samples](images/training_progress.png)
+
+**What to look at:** the loss starts at random guessing, `ln(44) ≈ 3.78` per character,
+and falls to about 1. The samples underneath go from random symbols, to "the the the",
+to word-like text. This is what `python rnn/rnn_numpy.py` prints, drawn as a picture.
+(The plot shows loss *per character*; `rnn_numpy.py` prints the sum over 25 characters.)
+
 ## 4. Inference: sampling text
 
 To generate text: feed a seed character, get `p_t`, **sample** the next character
@@ -149,6 +199,12 @@ from `p_t`, feed it back as the next input, and repeat.
 **Temperature** controls randomness: `p = softmax(y / T)`.
 - `T < 1`: more confident and repetitive.
 - `T > 1`: more random and creative, with more errors.
+
+![Next-character probabilities at three temperatures](images/next_char_probs.png)
+
+**What to look at:** the model is fairly sure `'r'` follows "The keepe" (56% at `T = 1`).
+`T = 0.5` makes it almost certain (93%), while `T = 2` flattens the bars so unlikely
+characters get picked much more often. The logits are the same; only the division by `T` changes.
 
 During training we use **teacher forcing**: the true previous character is the
 input, not the model's own prediction.
@@ -170,7 +226,14 @@ This is a product of `t - k` matrices. Roughly:
   which cause unstable training and NaNs.
 - Saturated tanh units (`|h| ≈ 1` → slope ≈ 0) make vanishing even worse.
 
-`vanishing_gradients.py` shows this numerically.
+`vanishing_gradients.py` shows this numerically:
+
+![Gradient norm vs distance for different W_hh radii](images/vanishing_gradients.png)
+
+**What to look at:** on a log scale, `radius^d` is a straight line. Below radius 1 the
+lines dive (vanishing), and above 1 the linear ones shoot up (exploding). With `tanh`
+(right) saturation drags even radius 1.5 back down. The BPTT picture in section 3 is the
+same effect inside our real trained model.
 
 **Fixes:**
 | Problem | Fix |

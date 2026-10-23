@@ -9,22 +9,25 @@ descent, and overfitting**. Learn these well and the other models become
 
 | File | What it teaches |
 |------|-----------------|
-| `backprop_by_hand.py` | A tiny network computed with plain numbers. Every chain-rule step is printed. **Start here.** |
+| `layer_visual.py` | **Visual, step by step in your terminal:** how one layer of neurons turns into `X @ W + b` (talent-show analogy: examples = contestants, neurons = judges). Press Enter for each step. |
+| `backprop_by_hand.py` | A tiny network computed with plain numbers. Every chain-rule step is printed. |
 | `mlp_numpy.py` | A full MLP from scratch: any number of layers, ReLU/tanh/sigmoid, softmax + cross-entropy, backprop, mini-batch SGD, L2 regularization. Learns to separate 3 spirals and draws the result in the terminal. |
 | `predict.py` | Type in a point and the trained model tells you its class and how confident it is. |
 | `gradient_check.py` | Verifies the backprop code against numerical gradients for every activation. |
 | `overfitting.py` | Shows overfitting, then fixes it with L2 regularization and more data (~45 s). |
 | `mlp_pytorch.py` | Checks that PyTorch autograd gives the same gradients as our code, then trains the same model the PyTorch way. |
+| `make_figures.py` → `images/` | Generates every picture in this README from real computations (`python mlp/make_figures.py`, ~20 s). |
 
 ### Suggested order
 
-1. Read sections 1–5, then run `python mlp/backprop_by_hand.py` and follow every line.
-2. Read section 6, then read `MLP.forward` and `MLP.backward` in `mlp_numpy.py`.
-3. Run `python mlp/gradient_check.py`.
-4. Read section 7 and train: `python mlp/mlp_numpy.py`. Then `python mlp/predict.py`.
-5. Read section 9 and run `python mlp/overfitting.py`.
-6. Run `python mlp/mlp_pytorch.py`.
-7. Answer the interview questions (section 12) out loud, then do the exercises.
+1. Read section 1 (look at the pictures), then run `python mlp/layer_visual.py`.
+2. Read sections 2–5, then run `python mlp/backprop_by_hand.py` and follow every line.
+3. Read section 6, then read `MLP.forward` and `MLP.backward` in `mlp_numpy.py`.
+4. Run `python mlp/gradient_check.py`.
+5. Read section 7 and train: `python mlp/mlp_numpy.py`. Then `python mlp/predict.py`.
+6. Read section 9 and run `python mlp/overfitting.py`.
+7. Run `python mlp/mlp_pytorch.py`.
+8. Answer the interview questions (section 12) out loud, then do the exercises.
 
 Run everything from the repo root with the venv active (`source .venv/bin/activate`).
 
@@ -44,6 +47,9 @@ a = f(z)                                 (activation: a non-linear "squash")
 - **The bias** shifts the threshold: how easily the neuron "fires".
 - **Learning** means finding good values for all the weights and biases.
 
+![One neuron](images/neuron.png)
+*What to look at: each input is multiplied by its weight, everything is summed with the bias (z = 4), and ReLU turns z into the output.*
+
 A whole **layer** of neurons is a matrix multiplication. With a batch of `N`
 examples as rows:
 
@@ -54,6 +60,12 @@ A = f(Z)
 
 Each **column** of `W` holds one neuron's weights. Always track the shapes:
 most bugs are shape bugs.
+
+![A layer is a matrix multiplication](images/layer_matmul.png)
+*What to look at: **rows of X = examples** (contestants), **columns of W = neurons** (judges, each with their
+own opinion of each skill). Every cell of Z is one example's row · one neuron's column + that neuron's bias.
+The green cell is the same calculation as the single neuron above. Run `python mlp/layer_visual.py`
+to watch the table get filled in one cell at a time.*
 
 ## 2. Why multiple layers, and why non-linearity?
 
@@ -73,6 +85,10 @@ simple bends stacked together can make any shape (the **universal approximation
 theorem**: one hidden layer with enough neurons can approximate any
 continuous function). Deeper networks usually get there with far fewer neurons.
 
+![Why non-linearity](images/why_nonlinearity.png)
+*What to look at: the left two models only draw straight boundaries (53%). Adding a hidden layer **without**
+an activation changes nothing. With ReLU the boundaries curve to follow the spirals (97%).*
+
 Try it: `python mlp/mlp_numpy.py --hidden` (no hidden layer = linear model) gets
 about 50% accuracy, and the picture shows straight boundaries.
 
@@ -89,6 +105,10 @@ about 50% accuracy, and the picture shows straight boundaries.
 that neuron, so the weights before it barely learn. This is the same problem
 that hurts RNNs (see `rnn/README.md`, section 5).
 
+![Activation functions](images/activations.png)
+*What to look at: the bottom row (the slope) is what backprop multiplies by. Red zones = slope ≈ 0 = no learning
+signal. Sigmoid's best slope is only 0.25, while ReLU passes the gradient through unchanged (slope 1) for z > 0.*
+
 ## 4. Forward pass
 
 "Forward pass" just means running the network on an input to get the output:
@@ -101,6 +121,10 @@ Z2 = A1 @ W2 + b2                         # output logits (no activation)
 
 We **save** (cache) `A0, Z1, A1, ...` because the backward pass needs them.
 That's why training uses more memory than inference.
+
+![Forward and backward pass](images/network.png)
+*What to look at: every grey line is one weight. Forward (blue) turns inputs into class scores, layer by layer.
+Backward (red) starts from the error at the end and walks back through the same layers to find each weight's gradient.*
 
 ## 5. Loss: how wrong are we?
 
@@ -148,6 +172,11 @@ backward:  dL/dŷ  = ŷ - y
 
 Notice the pattern: **gradient arriving from above × local derivative**.
 
+![Backprop on a computational graph](images/backprop_graph.png)
+*What to look at: read the black numbers left → right (forward), then the red numbers right → left (backward).
+Every red number is the red number to its right × one local slope. The sign tells gradient descent which way
+to move: ∂L/∂w2 is positive, so w2 goes down; the others are negative, so they go up.*
+
 The same pattern in matrix form, for one layer `Z = A_prev @ W + b`, `A = f(Z)`
 (this is `MLP.backward`):
 
@@ -177,6 +206,11 @@ w = w - learning_rate * dL/dw
 ```
 
 Repeat thousands of times and the loss rolls downhill.
+
+![Gradient descent and the learning rate](images/gradient_descent.png)
+*What to look at: the rings are a loss "map" for two weights (center ★ = lowest loss). Each red dot is one
+update step. Too small a learning rate creeps along, a good one arrives, and too big a one overshoots
+further every step and explodes. This is why the loss becomes NaN when lr is too high.*
 
 - **Learning rate (lr):** the step size. Too small: slow. Too big: the loss bounces or explodes (NaN).
   It's the single most important hyperparameter. Try 0.01, 0.1, 1.0.
@@ -238,6 +272,11 @@ data. So we split the data:
 Train loss goes to ~0 while val loss climbs: the model becomes **over-confident**
 on new points. (Val *accuracy* can still creep up while val *loss* gets worse.
 Loss also measures confidence, which is why we watch it.)
+
+![Overfitting](images/overfitting.png)
+*What to look at: left, the gap opening between the blue (training) and orange (validation) curves after
+epoch 281 is overfitting. Middle vs right: the same network without and with L2 regularization. Regularization
+gives up a little training accuracy (100% → 98%) but nearly halves validation loss (0.90 → 0.47).*
 
 **Fixes, roughly in order of how much they help:**
 1. **More data.** In Part 3 of `overfitting.py`, best val loss goes from 0.67 to 0.26.
