@@ -30,8 +30,35 @@ Each model lives in its own folder (e.g. `rnn/`, `cnn/`, `transformer/`) with:
 
 ## Setup
 
+Run these commands from the repository root. Python 3.11 is a tested option.
+
+### Windows (PowerShell)
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+```
+
+Use the environment's Python directly; activation is not required:
+
+```powershell
+.\.venv\Scripts\python.exe mlp\gradient_check.py
+.\.venv\Scripts\python.exe rnn\gradient_check.py
+.\.venv\Scripts\python.exe mlp\mlp_numpy.py
+```
+
+To open Jupyter:
+
+```powershell
+.\.venv\Scripts\python.exe -m jupyter notebook
+```
+
+### macOS / Linux
+
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
+python mlp/gradient_check.py
+python rnn/gradient_check.py
 ```

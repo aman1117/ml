@@ -336,7 +336,11 @@ def fig_backprop_graph():
     d_z1 = d_h * (1 - h ** 2)
     grads = {"w1": d_z1 * x1, "w2": d_z1 * x2, "b1": d_z1, "w3": d_yhat * h, "b2": d_yhat}
 
-    fig, ax = plt.subplots(figsize=(14, 7.4))
+    fig, (ax, backward_ax, update_ax) = plt.subplots(
+        3, 1, figsize=(18, 21), gridspec_kw={"height_ratios": [8, 7, 5]}
+    )
+    fig.suptitle("Backpropagation by hand: follow the values, then the gradients",
+                 fontsize=22, fontweight="bold", y=0.985)
     blank(ax, (-1.4, 15.2), (-5.0, 5.0))
 
     def gnode(xy, top, val, g=None, fc="white", w=2.1):
@@ -366,11 +370,136 @@ def fig_backprop_graph():
     ax.text(14.0, -0.3, f"target y = {y:g}", ha="center", va="top", fontsize=10)
 
     ax.text(7.0, -4.55,
-            "Black = forward values (left → right).   Red = gradients, computed right → left with the chain rule:\n"
-            "each node's red number = (red number of the node it feeds into) × (local slope).  "
-            f"e.g. ∂L/∂z1 = ∂L/∂h × (1 − h²) = {d_h:.4f} × {1 - h ** 2:.4f} = {d_z1:.4f}",
-            ha="center", va="center", fontsize=11, bbox=dict(fc="#f4f4f4", ec="#bbbbbb"))
-    ax.set_title("Backpropagation on the tiny network from backprop_by_hand.py", pad=8)
+            "Black: forward calculations.  Red: dL/d(value), the sensitivity of the loss to that value.\n"
+            "Blue boxes: fixed inputs.  Yellow boxes: learnable parameters.  White boxes: calculated values.",
+            ha="center", va="center", fontsize=12,
+            bbox=dict(fc="#f4f4f4", ec="#bbbbbb"))
+    ax.set_title("1. FORWARD: compute left to right, using the current weights and biases",
+                 pad=12, color="#1565c0")
+
+    backward_ax.set_xlim(0, 1)
+    backward_ax.set_ylim(0, 1)
+    backward_ax.axis("off")
+    backward_ax.set_title(
+        "2. BACKWARD: start at the loss on the RIGHT, then follow the red arrows LEFT",
+        pad=18, color="#c62828"
+    )
+    cards = [
+        ("D. Reach the input weights",
+         "z1 = w1*x1 + w2*x2 + b1\n\n"
+         "Local derivatives:\n"
+         f"dz1/dw1 = x1 = {x1:g}\n"
+         f"dz1/dw2 = x2 = {x2:g}\n"
+         "dz1/db1 = 1\n\n"
+         "Incoming gradient: dL/dz1\n"
+         f"= {d_z1:.6f}\n\n"
+         f"dL/dw1 = dL/dz1 * {x1:g}\n"
+         f"       = {grads['w1']:.6f}\n"
+         f"dL/dw2 = dL/dz1 * ({x2:g})\n"
+         f"       = {grads['w2']:.6f}\n"
+         f"dL/db1 = {grads['b1']:.6f}"),
+        ("C. Pass through tanh",
+         "h = tanh(z1)\n\n"
+         "Local derivative:\n"
+         "dh/dz1 = 1 - h*h\n"
+         f"       = {1 - h ** 2:.6f}\n\n"
+         "Incoming gradient: dL/dh\n"
+         f"= {d_h:.6f}\n\n"
+         "dL/dz1 = dL/dh * dh/dz1\n"
+         f"       = {d_h:.6f}\n"
+         f"         * {1 - h ** 2:.6f}\n"
+         f"       = {d_z1:.6f}\n\n"
+         "Pass this to w1, w2, b1."),
+        ("B. Split at the output",
+         "yhat = w3*h + b2\n\n"
+         "Local derivatives:\n"
+         f"dyhat/dw3 = h = {h:.6f}\n"
+         "dyhat/db2 = 1\n"
+         f"dyhat/dh  = w3 = {w3:g}\n\n"
+         "Incoming gradient: dL/dyhat\n"
+         f"= {d_yhat:.6f}\n\n"
+         "dL/dw3 = dL/dyhat * h\n"
+         f"       = {grads['w3']:.6f}\n"
+         f"dL/db2 = {grads['b2']:.6f}\n"
+         "dL/dh  = dL/dyhat * w3\n"
+         f"       = {d_h:.6f}"),
+        ("A. Start at the loss",
+         "L = 0.5 * (yhat - y)**2\n\n"
+         "Start with dL/dL = 1.\n\n"
+         "Local derivative:\n"
+         "dL/dyhat = yhat - y\n"
+         f"         = {yhat:.6f}\n"
+         f"           - {y:g}\n"
+         f"         = {d_yhat:.6f}\n\n"
+         "Negative: raising yhat\n"
+         "slightly lowers the loss.\n\n"
+         "Send this gradient to\n"
+         "the output calculation."),
+    ]
+    centers = [0.1325, 0.3775, 0.6225, 0.8675]
+    for center, (title, text) in zip(centers, cards):
+        backward_ax.add_patch(FancyBboxPatch(
+            (center - 0.1125, 0.07), 0.225, 0.79,
+            boxstyle="round,pad=0.008", fc="#fff8f8", ec="#c62828", lw=1.5
+        ))
+        backward_ax.text(center, 0.91, title, ha="center", va="center",
+                         fontsize=13, fontweight="bold", color="#c62828")
+        backward_ax.text(center - 0.101, 0.83, text, ha="left", va="top",
+                         fontsize=11.5, family="monospace", linespacing=1.6)
+    for left, right in zip(centers[:-1], centers[1:]):
+        arrow(backward_ax, (right - 0.055, 0.98), (left + 0.055, 0.98),
+              color="#c62828", lw=2.5, ms=18)
+    backward_ax.text(
+        0.5, 0,
+        "CHAIN RULE: gradient arriving from the loss  x  local derivative  =  gradient passed to an earlier value",
+        ha="center", va="center", fontsize=12, fontweight="bold"
+    )
+
+    lr = 0.5
+    initial = {"w1": w1, "w2": w2, "b1": b1, "w3": w3, "b2": b2}
+    updated = {name: value - lr * grads[name] for name, value in initial.items()}
+    new_z1 = updated["w1"] * x1 + updated["w2"] * x2 + updated["b1"]
+    new_yhat = updated["w3"] * math.tanh(new_z1) + updated["b2"]
+    new_loss = 0.5 * (new_yhat - y) ** 2
+    update_ax.axis("off")
+    update_ax.set_title(
+        f"3. OPTIMIZER: only now update parameters, using learning rate {lr:g}",
+        pad=12, color="#267326"
+    )
+    rows = [
+        [name, f"{value:.6f}", f"{grads[name]:+.6f}",
+         f"{updated[name]:.6f}", "increase" if grads[name] < 0 else "decrease"]
+        for name, value in initial.items()
+    ]
+    table = update_ax.table(
+        cellText=rows,
+        colLabels=["Parameter", "Old value", "dL/d(parameter)", "New value", "Direction"],
+        cellLoc="center", bbox=[0.06, 0.37, 0.88, 0.52]
+    )
+    table.auto_set_font_size(False)
+    table.set_fontsize(12)
+    for (row, _), cell in table.get_celld().items():
+        cell.set_edgecolor("#cccccc")
+        cell.set_facecolor("#e7f7e7" if row == 0 else "#fafafa")
+        if row == 0:
+            cell.set_text_props(fontweight="bold")
+    update_ax.text(
+        0.5, 0.96, "new parameter = old parameter - learning rate * gradient",
+        ha="center", va="center", fontsize=13, family="monospace"
+    )
+    update_ax.text(
+        0.5, 0.27,
+        "Do NOT update h or z1 directly: they are computed values, not learnable parameters.\n"
+        "Their gradients carry the chain rule backward to the weights and biases that produced them.",
+        ha="center", va="center", fontsize=13
+    )
+    update_ax.text(
+        0.5, 0.11,
+        f"Next forward pass: prediction {yhat:.6f} -> {new_yhat:.6f} (target {y:g})\n"
+        f"Loss {L:.7f} -> {new_loss:.7f}: smaller is better.",
+        ha="center", va="center", fontsize=13, color="#267326", fontweight="bold"
+    )
+    fig.subplots_adjust(top=0.945, bottom=0.025, left=0.025, right=0.975, hspace=0.22)
     save(fig, "backprop_graph.png")
 
 

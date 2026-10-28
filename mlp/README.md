@@ -173,9 +173,12 @@ backward:  dL/dŷ  = ŷ - y
 Notice the pattern: **gradient arriving from above × local derivative**.
 
 ![Backprop on a computational graph](images/backprop_graph.png)
-*What to look at: read the black numbers left → right (forward), then the red numbers right → left (backward).
-Every red number is the red number to its right × one local slope. The sign tells gradient descent which way
-to move: ∂L/∂w2 is positive, so w2 goes down; the others are negative, so they go up.*
+*What to look at: the top graph shows forward values and gradients. Follow the backward cards
+from A on the right to D on the left: each step multiplies the incoming gradient by a local derivative.
+At the output, gradients branch to w3, b2, and h; the gradient for h continues through tanh
+to w1, w2, and b1. We do not update h or z1 directly: their gradients help compute parameter gradients.
+The bottom table shows the optimizer's updates and the next forward pass.
+All gradients use the old parameters, before any updates.*
 
 The same pattern in matrix form, for one layer `Z = A_prev @ W + b`, `A = f(Z)`
 (this is `MLP.backward`):
