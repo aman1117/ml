@@ -252,7 +252,7 @@ same effect inside our real trained model.
 **Variants**
 - **Stacked / deep RNN**: the `h_t` of layer 1 is the input `x_t` of layer 2.
 - **Bidirectional RNN**: one RNN reads left→right, another right→left, and their states are concatenated. Useful when the full sequence is available (not for generation).
-- **LSTM** (preview, the next folder):
+- **LSTM** (preview, the next folder: [`../lstm/`](../lstm/)):
   ```
   f, i, o = σ(...), σ(...), σ(...)        # forget, input, output gates
   g       = tanh(...)                     # candidate memory
