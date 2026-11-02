@@ -15,7 +15,7 @@ Work through these in order. Everything builds on the MLP. CNN and RNN are two
 separate branches (weight sharing across space vs. across time), so you can study
 them in either order. From RNN onwards, each module builds directly on the previous one.
 
-- [ ] Multi-Layer Perceptron (MLP): [`mlp/`](mlp/)
+- [x] Multi-Layer Perceptron (MLP): [`mlp/`](mlp/)
 - [ ] Convolutional Neural Network (CNN): [`cnn/`](cnn/)
 - [ ] Recurrent Neural Network (RNN): [`rnn/`](rnn/)
 - [ ] LSTM / GRU: [`lstm/`](lstm/)
