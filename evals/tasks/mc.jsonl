@@ -1,0 +1,42 @@
+{"id": "m00", "split": "train", "para": 0, "context": "The old lighthouse keeper woke before the", "choices": [" girl", " sun", " moon", " storm"], "answer": 1}
+{"id": "m01", "split": "train", "para": 0, "context": "re the sun every morning. He climbed the hundred", "choices": [" boats", " rocks", " steps", " stairs"], "answer": 3}
+{"id": "m02", "split": "train", "para": 0, "context": "mbed the hundred stairs, cleaned the great glass", "choices": [" lamp", " door", " lens", " window"], "answer": 2}
+{"id": "m03", "split": "train", "para": 0, "context": "s little book. The wind was cold and the sea was", "choices": [" grey", " calm", " loud", " blue"], "answer": 0}
+{"id": "m04", "split": "train", "para": 0, "context": "was grey. The gulls were loud and the boats were", "choices": [" slow", " far away in the storm", " fast", " lost"], "answer": 0}
+{"id": "m05", "split": "train", "para": 1, "context": "e path from the village. She carried a basket of", "choices": [" apples", " stones", " fish", " bread and a jar of honey"], "answer": 3}
+{"id": "m06", "split": "train", "para": 2, "context": "ood morning,\" said the girl. \"My mother sent you", "choices": [" fish.\"", " a letter.\"", " away.\"", " bread and honey.\""], "answer": 3}
+{"id": "m07", "split": "train", "para": 3, "context": " thank your mother. Will you come in and see the", "choices": [" light?\"", " lamp?\"", " sea?\"", " boats?\""], "answer": 0}
+{"id": "m08", "split": "train", "para": 4, "context": "m up the stairs. One step, two steps, ten steps,", "choices": [" no steps.", " fifty steps, one hundred steps.", " three steps.", " eleven steps."], "answer": 1}
+{"id": "m09", "split": "train", "para": 4, "context": "right and round, and the great lens shone like a", "choices": [" crystal in the sun", " star", " moon", " fish"], "answer": 0}
+{"id": "m10", "split": "train", "para": 6, "context": "it work?\" asked the girl.\n\n\"At night I light the", "choices": [" way,\"", " fire,\"", " candle,\"", " lamp,\""], "answer": 3}
+{"id": "m11", "split": "train", "para": 6, "context": "er. \"The lens takes the small light and makes it", "choices": [" small", " weak", " strong", " grey"], "answer": 2}
+{"id": "m12", "split": "train", "para": 6, "context": "it. When they see the light, they know where the", "choices": [" boats", " girl is", " village", " rocks are"], "answer": 3}
+{"id": "m13", "split": "train", "para": 7, "context": "he rocks are, and they stay away.\"\n\n\"Do you ever", "choices": [" sleep?\"", " laugh?\"", " climb?\"", " eat?\""], "answer": 0}
+{"id": "m14", "split": "train", "para": 8, "context": " sleep?\" asked the girl.\n\n\"I sleep in the day, a", "choices": [" bit,\"", " while,\"", " lot,\"", " little,\""], "answer": 3}
+{"id": "m15", "split": "train", "para": 9, "context": " must never go out.\"\n\nThe girl looked out of the", "choices": [" window", " book", " door and saw the sea", " lamp"], "answer": 0}
+{"id": "m16", "split": "train", "para": 9, "context": "fishing boat far away, and a cloud shaped like a", "choices": [" whale", " house", " ship", " bird"], "answer": 0}
+{"id": "m17", "split": "train", "para": 10, "context": "nd a cloud shaped like a whale.\n\n\"I want to be a", "choices": [" girl,\"", " keeper when I grow up,\"", " fish,\"", " ship,\""], "answer": 1}
+{"id": "m18", "split": "train", "para": 11, "context": "climb the stairs, to clean the lens, to read the", "choices": [" book", " sea", " light", " wind"], "answer": 3}
+{"id": "m19", "split": "train", "para": 12, "context": "path. She brought bread, or honey, or apples, or", "choices": [" fish", " milk", " stones", " bread"], "answer": 0}
+{"id": "m20", "split": "train", "para": 12, "context": "ned the names of the winds and the shapes of the", "choices": [" rocks", " clouds", " waves", " boats"], "answer": 1}
+{"id": "m21", "split": "train", "para": 14, "context": "rain beat on the windows. The waves were tall as", "choices": [" ships", " men", " houses", " trees"], "answer": 2}
+{"id": "m22", "split": "train", "para": 14, "context": "d.\n\nOne winter night a great storm came from the", "choices": [" south", " north", " sea", " village"], "answer": 1}
+{"id": "m23", "split": "train", "para": 14, "context": " the rocks. The keeper was old and his legs were", "choices": [" strong", " long", " tired", " cold"], "answer": 2}
+{"id": "m24", "split": "train", "para": 15, "context": "ndow in the village. She put on her coat and her", "choices": [" gloves", " boots", " scarf", " hat"], "answer": 1}
+{"id": "m25", "split": "train", "para": 15, "context": "s. At the top the lamp was low and the light was", "choices": [" bright", " weak", " strong", " out"], "answer": 1}
+{"id": "m26", "split": "train", "para": 16, "context": " was weak.\n\nShe cleaned the lens. She filled the", "choices": [" basket", " book", " lamp", " jar"], "answer": 2}
+{"id": "m27", "split": "heldout", "para": 17, "context": "y sea.\n\nFar away, a fishing boat was lost in the", "choices": [" storm", " village", " dark", " sea"], "answer": 0}
+{"id": "m28", "split": "heldout", "para": 17, "context": " in the storm. The men on the boat were cold and", "choices": [" happy", " tired", " afraid", " wet"], "answer": 2}
+{"id": "m29", "split": "heldout", "para": 17, "context": "d away from them, and they came home safe to the", "choices": [" sea", " village", " lighthouse", " rocks"], "answer": 1}
+{"id": "m30", "split": "heldout", "para": 18, "context": "fe to the village.\n\nIn the morning the storm was", "choices": [" back", " gone", " strong", " loud"], "answer": 1}
+{"id": "m31", "split": "heldout", "para": 18, "context": "storm was gone. The sea was calm and the sky was", "choices": [" dark", " blue", " clean", " grey"], "answer": 2}
+{"id": "m32", "split": "heldout", "para": 18, "context": "step at a time, and found the girl asleep by the", "choices": [" window", " stairs", " door", " lamp"], "answer": 3}
+{"id": "m33", "split": "heldout", "para": 19, "context": ".\n\nHe put a blanket over her and sat down by the", "choices": [" sea", " lamp", " window", " door"], "answer": 2}
+{"id": "m34", "split": "heldout", "para": 19, "context": "d wrote the weather for the night: wind from the", "choices": [" west", " north, very strong", " south", " sea"], "answer": 1}
+{"id": "m35", "split": "heldout", "para": 19, "context": "er it, he wrote one more line: the light did not", "choices": [" turn", " work", " shine", " go out"], "answer": 3}
+{"id": "m36", "split": "heldout", "para": 20, "context": "s later, the keeper was gone, and the girl was a", "choices": [" girl", " woman", " keeper", " mother"], "answer": 1}
+{"id": "m37", "split": "heldout", "para": 20, "context": "gone, and the girl was a woman. She lived in the", "choices": [" house", " sea", " lighthouse now", " village"], "answer": 2}
+{"id": "m38", "split": "heldout", "para": 21, "context": "ne morning a small boy came up the path from the", "choices": [" sea", " village", " rocks", " lighthouse"], "answer": 1}
+{"id": "m39", "split": "heldout", "para": 22, "context": "ad and a jar of honey.\n\n\"Good morning,\" said the", "choices": [" keeper.", " man.", " boy.", " girl."], "answer": 2}
+{"id": "m40", "split": "heldout", "para": 21, "context": "village, carrying a basket of bread and a jar of", "choices": [" fish", " honey", " water", " apples"], "answer": 1}
+{"id": "m41", "split": "heldout", "para": 18, "context": "the girl asleep by the lamp. The light was still", "choices": [" weak", " turning", " burning", " strong"], "answer": 2}

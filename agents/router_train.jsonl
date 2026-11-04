@@ -1,0 +1,1800 @@
+{"text": "What is the first heading in mlp/mlp_numpy.py?", "label": "read_file"}
+{"text": "What is the title of mlp/mlp_numpy.py?", "label": "read_file"}
+{"text": "Read the file README.md", "label": "read_file"}
+{"text": "Save 64 as my preferred batch size", "label": "kv_memory"}
+{"text": "Are you conscious?", "label": "no_tool"}
+{"text": "remember it as my default learning rate", "label": "kv_memory"}
+{"text": "calculate 555*28+42", "label": "calculator"}
+{"text": "cool, bye", "label": "no_tool"}
+{"text": "sqrt of 269", "label": "calculator"}
+{"text": "3.5 pounds in kg", "label": "unit_convert"}
+{"text": "What loss did the mlp model reach according to its README?", "label": "search_docs"}
+{"text": "print lstm/lstm_numpy.py", "label": "read_file"}
+{"text": "How many km are in 10 miles", "label": "unit_convert"}
+{"text": "print agents/fixtures/meeting_notes.txt", "label": "read_file"}
+{"text": "What's my home address?", "label": "no_tool"}
+{"text": "What is 12 ounces in grams?", "label": "unit_convert"}
+{"text": "Look up warmup and cosine decay in the documentation", "label": "search_docs"}
+{"text": "search for the forget gate bias", "label": "search_docs"}
+{"text": "Tell me a joke", "label": "no_tool"}
+{"text": "Who are you?", "label": "no_tool"}
+{"text": "subtract 82 from it", "label": "calculator"}
+{"text": "Order a pizza for me", "label": "no_tool"}
+{"text": "then save that as my default learning rate", "label": "kv_memory"}
+{"text": "What can you do?", "label": "no_tool"}
+{"text": "load agents/fixtures/meeting_notes.txt", "label": "read_file"}
+{"text": "cat cnn/README.md", "label": "read_file"}
+{"text": "What is 5% of 368?", "label": "calculator"}
+{"text": "how long is rnn/input.txt in characters?", "label": "read_file"}
+{"text": "How many lines does lstm/lstm_numpy.py have?", "label": "read_file"}
+{"text": "Recall my favorite paper", "label": "kv_memory"}
+{"text": "show me the contents of cnn/readme.md", "label": "read_file"}
+{"text": "Explain GRU vs LSTM according to the docs", "label": "search_docs"}
+{"text": "How many parameters does the lstm model have according to the docs?", "label": "search_docs"}
+{"text": "square it", "label": "calculator"}
+{"text": "subtract 62 from it", "label": "calculator"}
+{"text": "5 kg in pounds", "label": "unit_convert"}
+{"text": "What tools do you have?", "label": "no_tool"}
+{"text": "then convert it to cm", "label": "unit_convert"}
+{"text": "then multiply the result by 50", "label": "calculator"}
+{"text": "check the file mlp/README.md", "label": "read_file"}
+{"text": "Show me the contents of lstm/lstm_numpy.py", "label": "read_file"}
+{"text": "What tools do you have?", "label": "no_tool"}
+{"text": "How many pounds are in 1 kg", "label": "unit_convert"}
+{"text": "Compute 612 divided by 14", "label": "calculator"}
+{"text": "Compute 748 divided by 50", "label": "calculator"}
+{"text": "average of 153 and 74", "label": "calculator"}
+{"text": "then convert it to minutes", "label": "unit_convert"}
+{"text": "What's in mlp/mlp_numpy.py", "label": "read_file"}
+{"text": "convert that to cm", "label": "unit_convert"}
+{"text": "print transformer/generate.py", "label": "read_file"}
+{"text": "Open the file at cnn/README.md", "label": "read_file"}
+{"text": "5 days to hours please", "label": "unit_convert"}
+{"text": "search for L2 regularization", "label": "search_docs"}
+{"text": "read agents/fixtures/meeting_notes.txt", "label": "read_file"}
+{"text": "Who are you?", "label": "no_tool"}
+{"text": "load transformer/gradient_check.py", "label": "read_file"}
+{"text": "what is 656 to the power of 3", "label": "calculator"}
+{"text": "is 250 GiB more than 10 GB? convert it", "label": "unit_convert"}
+{"text": "Order a pizza for me", "label": "no_tool"}
+{"text": "Tell me a joke", "label": "no_tool"}
+{"text": "In the cnn notes, what is said about GRU vs LSTM", "label": "search_docs"}
+{"text": "2 hours in minutes", "label": "unit_convert"}
+{"text": "how much is 484 times 7", "label": "calculator"}
+{"text": "According to the docs, why does softmax cross-entropy matter?", "label": "search_docs"}
+{"text": "update my deadline to Friday", "label": "kv_memory"}
+{"text": "Forget my team lead", "label": "kv_memory"}
+{"text": "How many meters is 3.5 feet?", "label": "unit_convert"}
+{"text": "do you remember my team lead?", "label": "kv_memory"}
+{"text": "What paper introduced vanishing gradients?", "label": "search_docs"}
+{"text": "express 10 kg in pounds", "label": "unit_convert"}
+{"text": "find the section on batch normalization", "label": "search_docs"}
+{"text": "628/3", "label": "calculator"}
+{"text": "Sum of 960, 13 and 4?", "label": "calculator"}
+{"text": "remind me of my favorite paper", "label": "kv_memory"}
+{"text": "multiply it by 44", "label": "calculator"}
+{"text": "read lstm/lstm_numpy.py and tell me what it is about", "label": "read_file"}
+{"text": "According to the docs, why does LayerNorm backward matter?", "label": "search_docs"}
+{"text": "What is 250 feet in meters?", "label": "unit_convert"}
+{"text": "update my favorite optimizer to adamw", "label": "kv_memory"}
+{"text": "Store my preferred batch size = 64", "label": "kv_memory"}
+{"text": "read attention/tasks.py and tell me what it is about", "label": "read_file"}
+{"text": "express 100 miles in km", "label": "unit_convert"}
+{"text": "Forget my preferred batch size", "label": "kv_memory"}
+{"text": "which module covers the forget gate bias?", "label": "search_docs"}
+{"text": "convert that to kb", "label": "unit_convert"}
+{"text": "Look up gradient clipping in the documentation", "label": "search_docs"}
+{"text": "Explain max pooling according to the docs", "label": "search_docs"}
+{"text": "Thank you!", "label": "no_tool"}
+{"text": "thanks, that's all", "label": "no_tool"}
+{"text": "Hi!", "label": "no_tool"}
+{"text": "Write a haiku about gradients", "label": "no_tool"}
+{"text": "change 100 inches into cm", "label": "unit_convert"}
+{"text": "Search the docs for warmup and cosine decay", "label": "search_docs"}
+{"text": "How does the lstm module describe positional embeddings?", "label": "search_docs"}
+{"text": "what does the lstm readme say about the bottleneck problem?", "label": "search_docs"}
+{"text": "average of 262 and 92", "label": "calculator"}
+{"text": "remember it as my GPU budget", "label": "kv_memory"}
+{"text": "Remember that my dataset path is /data/wiki", "label": "kv_memory"}
+{"text": "What's in mlp/README.md?", "label": "read_file"}
+{"text": "what is 815 to the power of 3", "label": "calculator"}
+{"text": "find data augmentation in the readmes", "label": "search_docs"}
+{"text": "what tools do you have?", "label": "no_tool"}
+{"text": "Good morning", "label": "no_tool"}
+{"text": "is 250 feet more than 10 meters? convert it", "label": "unit_convert"}
+{"text": "In the cnn notes, what is said about dropout", "label": "search_docs"}
+{"text": "What is 250 C in F?", "label": "unit_convert"}
+{"text": "What is 2 hours in minutes?", "label": "unit_convert"}
+{"text": "What can you do?", "label": "no_tool"}
+{"text": "change 3.5 pounds into kg", "label": "unit_convert"}
+{"text": "What's my home address?", "label": "no_tool"}
+{"text": "find scaling laws in the readmes", "label": "search_docs"}
+{"text": "then convert it to KB", "label": "unit_convert"}
+{"text": "Do you remember my default learning rate", "label": "kv_memory"}
+{"text": "list what you remember about me", "label": "kv_memory"}
+{"text": "how many tokens is 511 sequences of 41 tokens each", "label": "calculator"}
+{"text": "Repeat the word token three times", "label": "no_tool"}
+{"text": "508/20", "label": "calculator"}
+{"text": "hello there", "label": "no_tool"}
+{"text": "Are you conscious?", "label": "no_tool"}
+{"text": "what is the first heading in transformer/gradient_check.py?", "label": "read_file"}
+{"text": "Search the docs for softmax cross-entropy", "label": "search_docs"}
+{"text": "Read the file mlp/README.md", "label": "read_file"}
+{"text": "calculate 872*48+49", "label": "calculator"}
+{"text": "Read the file mlp/README.md", "label": "read_file"}
+{"text": "What loss did the cnn model reach according to its README?", "label": "search_docs"}
+{"text": "Recall my favorite optimizer", "label": "kv_memory"}
+{"text": "What is my favorite optimizer?", "label": "kv_memory"}
+{"text": "uppercase the word router", "label": "no_tool"}
+{"text": "is 12 GB more than 10 MB? convert it", "label": "unit_convert"}
+{"text": "Compute 687 divided by 24", "label": "calculator"}
+{"text": "subtract 91 from it", "label": "calculator"}
+{"text": "How many lines does mlp/mlp_numpy.py have?", "label": "read_file"}
+{"text": "How many lines does mlp/README.md have?", "label": "read_file"}
+{"text": "Store my GPU budget = 8 A100s", "label": "kv_memory"}
+{"text": "sum of 972, 66 and 14?", "label": "calculator"}
+{"text": "what do you have in memory?", "label": "kv_memory"}
+{"text": "how many mb are in 1 gb", "label": "unit_convert"}
+{"text": "then divide that by 23", "label": "calculator"}
+{"text": "Hi!", "label": "no_tool"}
+{"text": "change 100 F into C", "label": "unit_convert"}
+{"text": "Explain gradient clipping according to the docs", "label": "search_docs"}
+{"text": "What paper introduced the KV cache?", "label": "search_docs"}
+{"text": "calculate 64*51+2", "label": "calculator"}
+{"text": "Convert 3.5 inches to cm", "label": "unit_convert"}
+{"text": "250 miles in km", "label": "unit_convert"}
+{"text": "What does the lstm README say about L2 regularization?", "label": "search_docs"}
+{"text": "How many grams is 10 ounces?", "label": "unit_convert"}
+{"text": "work out 291 divided by 64 for me", "label": "calculator"}
+{"text": "Forget my deadline", "label": "kv_memory"}
+{"text": "then add 15", "label": "calculator"}
+{"text": "list what you remember about me", "label": "kv_memory"}
+{"text": "How many lines does transformer/generate.py have?", "label": "read_file"}
+{"text": "What do you have in memory?", "label": "kv_memory"}
+{"text": "Store my favorite paper = ReAct", "label": "kv_memory"}
+{"text": "what does the attention readme say about weight tying?", "label": "search_docs"}
+{"text": "What does the lstm README say about Bahdanau attention?", "label": "search_docs"}
+{"text": "is 1 GiB more than 10 GB? convert it", "label": "unit_convert"}
+{"text": "100 inches to cm please", "label": "unit_convert"}
+{"text": "docs on the KV cache", "label": "search_docs"}
+{"text": "Forget my GPU budget", "label": "kv_memory"}
+{"text": "According to the docs, why does Bahdanau attention matter?", "label": "search_docs"}
+{"text": "Look up the parameter count in the docs", "label": "search_docs"}
+{"text": "What is 10 days in hours?", "label": "unit_convert"}
+{"text": "Say hello to Fei-Fei", "label": "no_tool"}
+{"text": "work out 587 divided by 32 for me", "label": "calculator"}
+{"text": "Look up the parameter count in the docs", "label": "search_docs"}
+{"text": "book me a flight to tokyo", "label": "no_tool"}
+{"text": "According to the docs, why does dropout matter?", "label": "search_docs"}
+{"text": "922/22", "label": "calculator"}
+{"text": "What is your favorite color?", "label": "no_tool"}
+{"text": "What is 1 GB in MB?", "label": "unit_convert"}
+{"text": "Read the file mlp/mlp_numpy.py", "label": "read_file"}
+{"text": "Save 64 as my preferred batch size", "label": "kv_memory"}
+{"text": "Are you conscious?", "label": "no_tool"}
+{"text": "turn 10 hours into minutes", "label": "unit_convert"}
+{"text": "turn 3.5 GiB into GB", "label": "unit_convert"}
+{"text": "How many words are in the sentence 'agents call tools in a loop'?", "label": "no_tool"}
+{"text": "Who will win the next election?", "label": "no_tool"}
+{"text": "is 42 hours more than 10 minutes? convert it", "label": "unit_convert"}
+{"text": "Save /data/wiki as my dataset path", "label": "kv_memory"}
+{"text": "How many words are in the sentence 'every step is traced'?", "label": "no_tool"}
+{"text": "How does the cnn module describe the receptive field?", "label": "search_docs"}
+{"text": "Who will win the next election?", "label": "no_tool"}
+{"text": "what is half of 584", "label": "calculator"}
+{"text": "Tell me a joke", "label": "no_tool"}
+{"text": "remember it as my preferred batch size", "label": "kv_memory"}
+{"text": "What is 930 multiplied by 86?", "label": "calculator"}
+{"text": "Who are you?", "label": "no_tool"}
+{"text": "Order a pizza for me", "label": "no_tool"}
+{"text": "100 ounces to grams please", "label": "unit_convert"}
+{"text": "What loss did the cnn model reach according to its README?", "label": "search_docs"}
+{"text": "Show me the contents of mlp/mlp_numpy.py", "label": "read_file"}
+{"text": "What is the title of transformer/gradient_check.py?", "label": "read_file"}
+{"text": "note that my project name is tiny-gpt", "label": "kv_memory"}
+{"text": "Look up the parameter count in the docs", "label": "search_docs"}
+{"text": "square it", "label": "calculator"}
+{"text": "change 2 km into miles", "label": "unit_convert"}
+{"text": "double it", "label": "calculator"}
+{"text": "515 + 95 * 12 = ?", "label": "calculator"}
+{"text": "what will the weather be in paris tomorrow?", "label": "no_tool"}
+{"text": "how long is agents/fixtures/meeting_notes.txt in characters?", "label": "read_file"}
+{"text": "How many MB are in 3.5 GB", "label": "unit_convert"}
+{"text": "What tools do you have?", "label": "no_tool"}
+{"text": "remind me of my default learning rate", "label": "kv_memory"}
+{"text": "what loss did the transformer model reach according to its readme?", "label": "search_docs"}
+{"text": "Good morning", "label": "no_tool"}
+{"text": "What did I tell you my favorite paper was?", "label": "kv_memory"}
+{"text": "Order a pizza for me", "label": "no_tool"}
+{"text": "How much is 402 divided by 13", "label": "calculator"}
+{"text": "then add 11", "label": "calculator"}
+{"text": "Remember that my project name is tiny-gpt", "label": "kv_memory"}
+{"text": "Open agents/fixtures/meeting_notes.txt and summarize it", "label": "read_file"}
+{"text": "then save that as my deadline", "label": "kv_memory"}
+{"text": "How does the mlp module describe LayerNorm backward?", "label": "search_docs"}
+{"text": "What is my dataset path?", "label": "kv_memory"}
+{"text": "Search the docs for batch normalization", "label": "search_docs"}
+{"text": "find the receptive field in the readmes", "label": "search_docs"}
+{"text": "remind me of my deadline", "label": "kv_memory"}
+{"text": "10 gb to mb please", "label": "unit_convert"}
+{"text": "42 feet in meters", "label": "unit_convert"}
+{"text": "Look up warmup and cosine decay in the documentation", "label": "search_docs"}
+{"text": "According to the docs, why does im2col matter?", "label": "search_docs"}
+{"text": "how many gb is 42 gib?", "label": "unit_convert"}
+{"text": "square it", "label": "calculator"}
+{"text": "How many parameters does the lstm model have according to the docs?", "label": "search_docs"}
+{"text": "cool, bye", "label": "no_tool"}
+{"text": "how many lines does rnn/input.txt have?", "label": "read_file"}
+{"text": "then save that as my favorite paper", "label": "kv_memory"}
+{"text": "average of 107 and 70", "label": "calculator"}
+{"text": "Good morning", "label": "no_tool"}
+{"text": "Open transformer/gradient_check.py and summarize it", "label": "read_file"}
+{"text": "180 times 35", "label": "calculator"}
+{"text": "Explain the bottleneck problem according to the docs", "label": "search_docs"}
+{"text": "Read attention/tasks.py", "label": "read_file"}
+{"text": "What is my project name?", "label": "kv_memory"}
+{"text": "Search the docs for vanishing gradients", "label": "search_docs"}
+{"text": "cat transformer/generate.py", "label": "read_file"}
+{"text": "What paper introduced GRU vs LSTM?", "label": "search_docs"}
+{"text": "express 1 ounces in grams", "label": "unit_convert"}
+{"text": "Thank you!", "label": "no_tool"}
+{"text": "then convert it to km", "label": "unit_convert"}
+{"text": "12 miles to km please", "label": "unit_convert"}
+{"text": "Save 64 as my preferred batch size", "label": "kv_memory"}
+{"text": "convert that to grams", "label": "unit_convert"}
+{"text": "Read transformer/generate.py", "label": "read_file"}
+{"text": "Look up scaling laws in the documentation", "label": "search_docs"}
+{"text": "Read the file rnn/input.txt", "label": "read_file"}
+{"text": "subtract 53 from it", "label": "calculator"}
+{"text": "How many F are in 250 C", "label": "unit_convert"}
+{"text": "Compute 29 multiplied by 55", "label": "calculator"}
+{"text": "Convert 5 km to miles", "label": "unit_convert"}
+{"text": "how long is attention/tasks.py in characters?", "label": "read_file"}
+{"text": "uppercase the word agent", "label": "no_tool"}
+{"text": "How many parameters does the attention model have according to the docs?", "label": "search_docs"}
+{"text": "What can you do?", "label": "no_tool"}
+{"text": "866 times 90", "label": "calculator"}
+{"text": "Does agents/fixtures/meeting_notes.txt mention weight tying?", "label": "read_file"}
+{"text": "12 feet to meters please", "label": "unit_convert"}
+{"text": "average of 586 and 72", "label": "calculator"}
+{"text": "work out 507 divided by 89 for me", "label": "calculator"}
+{"text": "Open transformer/generate.py and summarize it", "label": "read_file"}
+{"text": "Uppercase the word banana", "label": "no_tool"}
+{"text": "Recall my favorite paper", "label": "kv_memory"}
+{"text": "average of 607 and 56", "label": "calculator"}
+{"text": "read lstm/lstm_numpy.py and tell me what it is about", "label": "read_file"}
+{"text": "What paper introduced weight tying?", "label": "search_docs"}
+{"text": "What is 250 pounds in kg?", "label": "unit_convert"}
+{"text": "Note that my deadline is Friday", "label": "kv_memory"}
+{"text": "32/65", "label": "calculator"}
+{"text": "181 times 90", "label": "calculator"}
+{"text": "What can you do?", "label": "no_tool"}
+{"text": "then save that as my deadline", "label": "kv_memory"}
+{"text": "Good morning", "label": "no_tool"}
+{"text": "remind me of my project name", "label": "kv_memory"}
+{"text": "699/47", "label": "calculator"}
+{"text": "is 100 days more than 10 hours? convert it", "label": "unit_convert"}
+{"text": "Do you remember my default learning rate?", "label": "kv_memory"}
+{"text": "update my GPU budget to 8 A100s", "label": "kv_memory"}
+{"text": "cat cnn/README.md", "label": "read_file"}
+{"text": "Store my favorite optimizer = AdamW", "label": "kv_memory"}
+{"text": "update my favorite paper to react", "label": "kv_memory"}
+{"text": "Please remember my preferred batch size: 64", "label": "kv_memory"}
+{"text": "Hello there", "label": "no_tool"}
+{"text": "then multiply the result by 10", "label": "calculator"}
+{"text": "How many km is 2 miles?", "label": "unit_convert"}
+{"text": "What is the title of attention/tasks.py?", "label": "read_file"}
+{"text": "how many hours is 5 days?", "label": "unit_convert"}
+{"text": "What tools do you have?", "label": "no_tool"}
+{"text": "Sum of 747, 56 and 33?", "label": "calculator"}
+{"text": "Do you remember my favorite paper?", "label": "kv_memory"}
+{"text": "Sum of 457, 15 and 49?", "label": "calculator"}
+{"text": "How many cm are in 12 inches", "label": "unit_convert"}
+{"text": "is 12 days more than 10 hours? convert it", "label": "unit_convert"}
+{"text": "which module covers weight tying?", "label": "search_docs"}
+{"text": "Save ReAct as my favorite paper", "label": "kv_memory"}
+{"text": "Open cnn/README.md and summarize it", "label": "read_file"}
+{"text": "What do you have in memory?", "label": "kv_memory"}
+{"text": "Evaluate 970 ** 2", "label": "calculator"}
+{"text": "remind me of my deadline", "label": "kv_memory"}
+{"text": "check the file transformer/generate.py", "label": "read_file"}
+{"text": "912 + 13 * 8 = ?", "label": "calculator"}
+{"text": "How many lines does transformer/generate.py have?", "label": "read_file"}
+{"text": "Look up the parameter count in the docs", "label": "search_docs"}
+{"text": "How many words are in the sentence 'the model reads the observation'?", "label": "no_tool"}
+{"text": "convert that to grams", "label": "unit_convert"}
+{"text": "what's in transformer/generate.py?", "label": "read_file"}
+{"text": "1 gib in gb", "label": "unit_convert"}
+{"text": "convert that to miles", "label": "unit_convert"}
+{"text": "What loss did the cnn model reach according to its README?", "label": "search_docs"}
+{"text": "What is 20% of 225?", "label": "calculator"}
+{"text": "subtract 85 from it", "label": "calculator"}
+{"text": "add 71 to the result", "label": "calculator"}
+{"text": "How many lines does cnn/README.md have?", "label": "read_file"}
+{"text": "Show me the contents of attention/tasks.py", "label": "read_file"}
+{"text": "What is LayerNorm backward? check the readmes", "label": "search_docs"}
+{"text": "work out 301 divided by 58 for me", "label": "calculator"}
+{"text": "Does rnn/input.txt mention the KV cache", "label": "read_file"}
+{"text": "read mlp/README.md and tell me what it is about", "label": "read_file"}
+{"text": "convert that to pounds", "label": "unit_convert"}
+{"text": "what is 668 to the power of 3", "label": "calculator"}
+{"text": "calculate 365*79+41", "label": "calculator"}
+{"text": "Show me the contents of README.md", "label": "read_file"}
+{"text": "then save that as my favorite optimizer", "label": "kv_memory"}
+{"text": "what is the weight tying formula in the docs", "label": "search_docs"}
+{"text": "search for padding and stride", "label": "search_docs"}
+{"text": "What does the attention README say about padding and stride?", "label": "search_docs"}
+{"text": "3.5 kg in pounds", "label": "unit_convert"}
+{"text": "Reverse the word banana", "label": "no_tool"}
+{"text": "Forget my team lead", "label": "kv_memory"}
+{"text": "how many parameters does the attention model have according to the docs?", "label": "search_docs"}
+{"text": "average of 129 and 67", "label": "calculator"}
+{"text": "What is the title of cnn/README.md?", "label": "read_file"}
+{"text": "convert that to MB", "label": "unit_convert"}
+{"text": "How many words are in the sentence 'agents call tools in a loop'?", "label": "no_tool"}
+{"text": "According to the docs, why does the receptive field matter?", "label": "search_docs"}
+{"text": "What is 628 times 14?", "label": "calculator"}
+{"text": "then save that as my GPU budget", "label": "kv_memory"}
+{"text": "Who are you?", "label": "no_tool"}
+{"text": "How many lines does lstm/lstm_numpy.py have?", "label": "read_file"}
+{"text": "turn 42 ounces into grams", "label": "unit_convert"}
+{"text": "What is 100 MB in KB?", "label": "unit_convert"}
+{"text": "what is the padding and stride formula in the docs", "label": "search_docs"}
+{"text": "Hi!", "label": "no_tool"}
+{"text": "Thank you!", "label": "no_tool"}
+{"text": "docs on the KV cache", "label": "search_docs"}
+{"text": "What's in transformer/generate.py?", "label": "read_file"}
+{"text": "Evaluate 452 ** 2", "label": "calculator"}
+{"text": "is 12 c more than 10 f? convert it", "label": "unit_convert"}
+{"text": "how many pounds is 5 kg?", "label": "unit_convert"}
+{"text": "How many meters is 2 feet?", "label": "unit_convert"}
+{"text": "Book me a flight to Tokyo", "label": "no_tool"}
+{"text": "Save Priya as my team lead", "label": "kv_memory"}
+{"text": "ok", "label": "no_tool"}
+{"text": "What did I tell you my preferred batch size was?", "label": "kv_memory"}
+{"text": "What is 2 hours in minutes?", "label": "unit_convert"}
+{"text": "What is my GPU budget?", "label": "kv_memory"}
+{"text": "Write a haiku about gradients", "label": "no_tool"}
+{"text": "how many tokens is 192 sequences of 16 tokens each", "label": "calculator"}
+{"text": "does transformer/gradient_check.py mention max pooling?", "label": "read_file"}
+{"text": "load attention/tasks.py", "label": "read_file"}
+{"text": "How many minutes are in 42 hours", "label": "unit_convert"}
+{"text": "What is my project name?", "label": "kv_memory"}
+{"text": "print transformer/generate.py", "label": "read_file"}
+{"text": "What do you have in memory?", "label": "kv_memory"}
+{"text": "turn 250 kg into pounds", "label": "unit_convert"}
+{"text": "search for truncated BPTT", "label": "search_docs"}
+{"text": "Book me a flight to Tokyo", "label": "no_tool"}
+{"text": "what do you have in memory?", "label": "kv_memory"}
+{"text": "What is 2 GiB in GB?", "label": "unit_convert"}
+{"text": "What did I tell you my deadline was?", "label": "kv_memory"}
+{"text": "Order a pizza for me", "label": "no_tool"}
+{"text": "What does the mlp README say about LayerNorm backward?", "label": "search_docs"}
+{"text": "Note that my default learning rate is 3e-4", "label": "kv_memory"}
+{"text": "Open the file at transformer/generate.py", "label": "read_file"}
+{"text": "Look up the parameter count in the docs", "label": "search_docs"}
+{"text": "read the file transformer/generate.py", "label": "read_file"}
+{"text": "What's in rnn/input.txt?", "label": "read_file"}
+{"text": "Read the file rnn/input.txt", "label": "read_file"}
+{"text": "What is 100 feet in meters?", "label": "unit_convert"}
+{"text": "Store my team lead = Priya", "label": "kv_memory"}
+{"text": "docs on the receptive field", "label": "search_docs"}
+{"text": "remember it as my favorite paper", "label": "kv_memory"}
+{"text": "search for truncated BPTT", "label": "search_docs"}
+{"text": "What can you do", "label": "no_tool"}
+{"text": "Order a pizza for me", "label": "no_tool"}
+{"text": "sum of 127, 12 and 39?", "label": "calculator"}
+{"text": "What will the weather be in Paris tomorrow?", "label": "no_tool"}
+{"text": "what do you have in memory?", "label": "kv_memory"}
+{"text": "remember that my project name is tiny-gpt", "label": "kv_memory"}
+{"text": "Write a haiku about gradients", "label": "no_tool"}
+{"text": "Forget my team lead", "label": "kv_memory"}
+{"text": "What loss did the attention model reach according to its README?", "label": "search_docs"}
+{"text": "remember it as my team lead", "label": "kv_memory"}
+{"text": "How many parameters does the mlp model have according to the docs?", "label": "search_docs"}
+{"text": "Read the file agents/fixtures/meeting_notes.txt", "label": "read_file"}
+{"text": "Which module covers beam search?", "label": "search_docs"}
+{"text": "ok", "label": "no_tool"}
+{"text": "Who are you?", "label": "no_tool"}
+{"text": "What loss did the lstm model reach according to its README?", "label": "search_docs"}
+{"text": "Read the file transformer/generate.py", "label": "read_file"}
+{"text": "Are you conscious", "label": "no_tool"}
+{"text": "Save tiny-gpt as my project name", "label": "kv_memory"}
+{"text": "What's in mlp/README.md?", "label": "read_file"}
+{"text": "Good morning", "label": "no_tool"}
+{"text": "Note that my favorite optimizer is AdamW", "label": "kv_memory"}
+{"text": "convert 2 f to c", "label": "unit_convert"}
+{"text": "then divide that by 39", "label": "calculator"}
+{"text": "Store my deadline = Friday", "label": "kv_memory"}
+{"text": "How many parameters does the transformer model have according to the docs?", "label": "search_docs"}
+{"text": "is 10 feet more than 10 meters? convert it", "label": "unit_convert"}
+{"text": "cool, bye", "label": "no_tool"}
+{"text": "Remember that my favorite paper is ReAct", "label": "kv_memory"}
+{"text": "How many lines does mlp/mlp_numpy.py have?", "label": "read_file"}
+{"text": "print lstm/lstm_numpy.py", "label": "read_file"}
+{"text": "print attention/tasks.py", "label": "read_file"}
+{"text": "Convert 12 F to C", "label": "unit_convert"}
+{"text": "Which module covers multi-head attention?", "label": "search_docs"}
+{"text": "update my project name to tiny-gpt", "label": "kv_memory"}
+{"text": "Do you remember my team lead?", "label": "kv_memory"}
+{"text": "Read the file lstm/lstm_numpy.py", "label": "read_file"}
+{"text": "docs on max pooling", "label": "search_docs"}
+{"text": "Open transformer/gradient_check.py and summarize it", "label": "read_file"}
+{"text": "Explain the residual stream according to the docs", "label": "search_docs"}
+{"text": "list what you remember about me", "label": "kv_memory"}
+{"text": "What is my preferred batch size?", "label": "kv_memory"}
+{"text": "Evaluate 732 ** 2", "label": "calculator"}
+{"text": "subtract 83 from it", "label": "calculator"}
+{"text": "Read transformer/generate.py", "label": "read_file"}
+{"text": "Find where the repo explains padding and stride", "label": "search_docs"}
+{"text": "load rnn/input.txt", "label": "read_file"}
+{"text": "Store my favorite paper = ReAct", "label": "kv_memory"}
+{"text": "How many words are in the sentence 'the model reads the observation'?", "label": "no_tool"}
+{"text": "Does transformer/generate.py mention warmup and cosine decay?", "label": "read_file"}
+{"text": "Good morning", "label": "no_tool"}
+{"text": "How many lines does transformer/generate.py have?", "label": "read_file"}
+{"text": "How many parameters does the mlp model have according to the docs?", "label": "search_docs"}
+{"text": "How many words are in the sentence 'agents call tools in a loop'?", "label": "no_tool"}
+{"text": "Order a pizza for me", "label": "no_tool"}
+{"text": "Who will win the next election?", "label": "no_tool"}
+{"text": "then convert it to grams", "label": "unit_convert"}
+{"text": "What is 5 GiB in GB?", "label": "unit_convert"}
+{"text": "Does attention/tasks.py mention beam search?", "label": "read_file"}
+{"text": "Write a haiku about gradients", "label": "no_tool"}
+{"text": "What's my home address?", "label": "no_tool"}
+{"text": "then convert it to grams", "label": "unit_convert"}
+{"text": "how long is transformer/gradient_check.py in characters?", "label": "read_file"}
+{"text": "Look up the parameter count in the docs", "label": "search_docs"}
+{"text": "3.5 kg in pounds", "label": "unit_convert"}
+{"text": "does lstm/lstm_numpy.py mention vanishing gradients?", "label": "read_file"}
+{"text": "is 5 pounds more than 10 kg? convert it", "label": "unit_convert"}
+{"text": "559/56", "label": "calculator"}
+{"text": "What is the title of agents/fixtures/meeting_notes.txt?", "label": "read_file"}
+{"text": "Thank you!", "label": "no_tool"}
+{"text": "What loss did the attention model reach according to its README?", "label": "search_docs"}
+{"text": "Find where the repo explains beam search", "label": "search_docs"}
+{"text": "Who are you?", "label": "no_tool"}
+{"text": "What is my team lead?", "label": "kv_memory"}
+{"text": "Save /data/wiki as my dataset path", "label": "kv_memory"}
+{"text": "What is the title of agents/fixtures/meeting_notes.txt?", "label": "read_file"}
+{"text": "check the file mlp/mlp_numpy.py", "label": "read_file"}
+{"text": "what is the the KV cache formula in the docs", "label": "search_docs"}
+{"text": "Store my team lead = Priya", "label": "kv_memory"}
+{"text": "Search the docs for truncated BPTT", "label": "search_docs"}
+{"text": "compute 954 divided by 96", "label": "calculator"}
+{"text": "turn 3.5 km into miles", "label": "unit_convert"}
+{"text": "How much is 227 minus 35", "label": "calculator"}
+{"text": "Do you remember my favorite optimizer?", "label": "kv_memory"}
+{"text": "average of 883 and 45", "label": "calculator"}
+{"text": "Convert 3.5 miles to km", "label": "unit_convert"}
+{"text": "print mlp/README.md", "label": "read_file"}
+{"text": "what's (194 - 40) / 35", "label": "calculator"}
+{"text": "Do you remember my GPU budget?", "label": "kv_memory"}
+{"text": "887 times 98", "label": "calculator"}
+{"text": "list what you remember about me", "label": "kv_memory"}
+{"text": "convert that to F", "label": "unit_convert"}
+{"text": "recall my team lead", "label": "kv_memory"}
+{"text": "Forget my preferred batch size", "label": "kv_memory"}
+{"text": "Remember that my preferred batch size is 64", "label": "kv_memory"}
+{"text": "Evaluate 782 ** 2", "label": "calculator"}
+{"text": "look up the parameter count in the docs", "label": "search_docs"}
+{"text": "docs on the KV cache", "label": "search_docs"}
+{"text": "send an email to my boss", "label": "no_tool"}
+{"text": "What do you have in memory?", "label": "kv_memory"}
+{"text": "check the file transformer/generate.py", "label": "read_file"}
+{"text": "What is 10 MB in KB", "label": "unit_convert"}
+{"text": "hi!", "label": "no_tool"}
+{"text": "Who will win the next election?", "label": "no_tool"}
+{"text": "express 1 GiB in GB", "label": "unit_convert"}
+{"text": "Look up the parameter count in the docs", "label": "search_docs"}
+{"text": "Thank you!", "label": "no_tool"}
+{"text": "Who are you?", "label": "no_tool"}
+{"text": "How does the rnn module describe weight tying?", "label": "search_docs"}
+{"text": "How many grams are in 3.5 ounces", "label": "unit_convert"}
+{"text": "what is half of 704", "label": "calculator"}
+{"text": "If I have 610 GPUs and each costs 26 dollars, what is the total cost?", "label": "calculator"}
+{"text": "What is the first heading in attention/tasks.py?", "label": "read_file"}
+{"text": "print README.md", "label": "read_file"}
+{"text": "docs on GRU vs LSTM", "label": "search_docs"}
+{"text": "what's (511 - 21) / 8", "label": "calculator"}
+{"text": "What did I tell you my deadline was?", "label": "kv_memory"}
+{"text": "Open the file at README.md", "label": "read_file"}
+{"text": "find batch normalization in the readmes", "label": "search_docs"}
+{"text": "Say hello to Yann", "label": "no_tool"}
+{"text": "update my default learning rate to 3e-4", "label": "kv_memory"}
+{"text": "How many words are in the sentence 'every step is traced'?", "label": "no_tool"}
+{"text": "how long is mlp/mlp_numpy.py in characters?", "label": "read_file"}
+{"text": "sqrt of 555", "label": "calculator"}
+{"text": "load agents/fixtures/meeting_notes.txt", "label": "read_file"}
+{"text": "store my project name = tiny-gpt", "label": "kv_memory"}
+{"text": "What will the weather be in Paris tomorrow?", "label": "no_tool"}
+{"text": "what is 20% of 103?", "label": "calculator"}
+{"text": "express 100 MB in KB", "label": "unit_convert"}
+{"text": "express 2 km in miles", "label": "unit_convert"}
+{"text": "If I have 672 GPUs and each costs 85 dollars, what is the total cost?", "label": "calculator"}
+{"text": "Open the file at rnn/input.txt", "label": "read_file"}
+{"text": "What did I tell you my deadline was?", "label": "kv_memory"}
+{"text": "print transformer/gradient_check.py", "label": "read_file"}
+{"text": "Hello there", "label": "no_tool"}
+{"text": "Hi!", "label": "no_tool"}
+{"text": "Forget my GPU budget", "label": "kv_memory"}
+{"text": "In the lstm notes, what is said about vanishing gradients", "label": "search_docs"}
+{"text": "What loss did the cnn model reach according to its README?", "label": "search_docs"}
+{"text": "recall my deadline", "label": "kv_memory"}
+{"text": "250 f to c please", "label": "unit_convert"}
+{"text": "Who will win the next election?", "label": "no_tool"}
+{"text": "What is the title of cnn/README.md?", "label": "read_file"}
+{"text": "In the transformer notes, what is said about the bottleneck problem", "label": "search_docs"}
+{"text": "Who are you?", "label": "no_tool"}
+{"text": "If I have 745 GPUs and each costs 12 dollars, what is the total cost?", "label": "calculator"}
+{"text": "453 + 80 * 6 = ?", "label": "calculator"}
+{"text": "Save 64 as my preferred batch size", "label": "kv_memory"}
+{"text": "what is 729 to the power of 3", "label": "calculator"}
+{"text": "What paper introduced max pooling?", "label": "search_docs"}
+{"text": "Read rnn/input.txt", "label": "read_file"}
+{"text": "Open cnn/README.md and summarize it", "label": "read_file"}
+{"text": "Note that my favorite paper is ReAct", "label": "kv_memory"}
+{"text": "Good morning", "label": "no_tool"}
+{"text": "Do you remember my favorite paper?", "label": "kv_memory"}
+{"text": "docs on padding and stride", "label": "search_docs"}
+{"text": "double it", "label": "calculator"}
+{"text": "Tell me a joke", "label": "no_tool"}
+{"text": "How many lines does transformer/gradient_check.py have?", "label": "read_file"}
+{"text": "165 + 65 * 43 = ?", "label": "calculator"}
+{"text": "Hello there", "label": "no_tool"}
+{"text": "what is the multi-head attention formula in the docs", "label": "search_docs"}
+{"text": "What did I tell you my team lead was?", "label": "kv_memory"}
+{"text": "According to the docs, why does the forget gate bias matter?", "label": "search_docs"}
+{"text": "Read the file lstm/lstm_numpy.py", "label": "read_file"}
+{"text": "double it", "label": "calculator"}
+{"text": "What is the title of mlp/README.md?", "label": "read_file"}
+{"text": "Good morning", "label": "no_tool"}
+{"text": "then convert it to kg", "label": "unit_convert"}
+{"text": "In the lstm notes, what is said about batch normalization", "label": "search_docs"}
+{"text": "remember it as my dataset path", "label": "kv_memory"}
+{"text": "Book me a flight to Tokyo", "label": "no_tool"}
+{"text": "Sum of 450, 92 and 45?", "label": "calculator"}
+{"text": "In the mlp notes, what is said about beam search", "label": "search_docs"}
+{"text": "How much is 516 times 66", "label": "calculator"}
+{"text": "What time is it in Tokyo right now?", "label": "no_tool"}
+{"text": "list what you remember about me", "label": "kv_memory"}
+{"text": "Open the file at agents/fixtures/meeting_notes.txt", "label": "read_file"}
+{"text": "Please remember my preferred batch size: 64", "label": "kv_memory"}
+{"text": "change 12 C into F", "label": "unit_convert"}
+{"text": "remember it as my project name", "label": "kv_memory"}
+{"text": "Which module covers dropout?", "label": "search_docs"}
+{"text": "What loss did the cnn model reach according to its README?", "label": "search_docs"}
+{"text": "How many pounds is 2 kg?", "label": "unit_convert"}
+{"text": "Open transformer/gradient_check.py and summarize it", "label": "read_file"}
+{"text": "Reverse the word token", "label": "no_tool"}
+{"text": "express 10 ounces in grams", "label": "unit_convert"}
+{"text": "What is my dataset path?", "label": "kv_memory"}
+{"text": "ok", "label": "no_tool"}
+{"text": "is 250 C more than 10 F? convert it", "label": "unit_convert"}
+{"text": "Read lstm/lstm_numpy.py", "label": "read_file"}
+{"text": "Recall my default learning rate", "label": "kv_memory"}
+{"text": "What is the stock price of NVDA right now?", "label": "no_tool"}
+{"text": "Thanks, that's all", "label": "no_tool"}
+{"text": "Open the file at README.md", "label": "read_file"}
+{"text": "Does transformer/generate.py mention scaling laws?", "label": "read_file"}
+{"text": "Convert 42 ounces to grams", "label": "unit_convert"}
+{"text": "Sum of 245, 24 and 17?", "label": "calculator"}
+{"text": "cat mlp/readme.md", "label": "read_file"}
+{"text": "find the section on GRU vs LSTM", "label": "search_docs"}
+{"text": "check the file lstm/lstm_numpy.py", "label": "read_file"}
+{"text": "Say hello to Ada", "label": "no_tool"}
+{"text": "read readme.md and tell me what it is about", "label": "read_file"}
+{"text": "Convert 10 F to C", "label": "unit_convert"}
+{"text": "explain l2 regularization according to the docs", "label": "search_docs"}
+{"text": "What is the first heading in attention/tasks.py", "label": "read_file"}
+{"text": "how many lines does transformer/generate.py have?", "label": "read_file"}
+{"text": "how many hours are in 100 days", "label": "unit_convert"}
+{"text": "what is half of 767", "label": "calculator"}
+{"text": "what's (180 - 64) / 20", "label": "calculator"}
+{"text": "Remember that my default learning rate is 3e-4", "label": "kv_memory"}
+{"text": "say hello to alan", "label": "no_tool"}
+{"text": "Save AdamW as my favorite optimizer", "label": "kv_memory"}
+{"text": "Find where the repo explains batch normalization", "label": "search_docs"}
+{"text": "How many lines does rnn/input.txt have?", "label": "read_file"}
+{"text": "how many c are in 42 f", "label": "unit_convert"}
+{"text": "Reverse the word agent", "label": "no_tool"}
+{"text": "How many lines does attention/tasks.py have?", "label": "read_file"}
+{"text": "What is 25% of 448?", "label": "calculator"}
+{"text": "1 GB to MB please", "label": "unit_convert"}
+{"text": "then divide that by 99", "label": "calculator"}
+{"text": "turn 3.5 gib into gb", "label": "unit_convert"}
+{"text": "then add 50", "label": "calculator"}
+{"text": "double it", "label": "calculator"}
+{"text": "change 2 feet into meters", "label": "unit_convert"}
+{"text": "update my project name to tiny-gpt", "label": "kv_memory"}
+{"text": "What is the title of mlp/README.md?", "label": "read_file"}
+{"text": "check the file mlp/README.md", "label": "read_file"}
+{"text": "remind me of my default learning rate", "label": "kv_memory"}
+{"text": "subtract 21 from it", "label": "calculator"}
+{"text": "How many F is 1 C?", "label": "unit_convert"}
+{"text": "Does mlp/mlp_numpy.py mention dropout?", "label": "read_file"}
+{"text": "How many lines does transformer/gradient_check.py have?", "label": "read_file"}
+{"text": "sqrt of 418", "label": "calculator"}
+{"text": "12 days to hours please", "label": "unit_convert"}
+{"text": "load transformer/generate.py", "label": "read_file"}
+{"text": "Remember that my dataset path is /data/wiki", "label": "kv_memory"}
+{"text": "How many lines does cnn/README.md have?", "label": "read_file"}
+{"text": "how long is cnn/README.md in characters?", "label": "read_file"}
+{"text": "What do you have in memory?", "label": "kv_memory"}
+{"text": "Sum of 784, 45 and 42?", "label": "calculator"}
+{"text": "then save that as my deadline", "label": "kv_memory"}
+{"text": "store my deadline = friday", "label": "kv_memory"}
+{"text": "Find where the repo explains LayerNorm backward", "label": "search_docs"}
+{"text": "what's in transformer/generate.py?", "label": "read_file"}
+{"text": "What is 183 multiplied by 67?", "label": "calculator"}
+{"text": "Who are you?", "label": "no_tool"}
+{"text": "What's in transformer/generate.py?", "label": "read_file"}
+{"text": "Show me the contents of transformer/generate.py", "label": "read_file"}
+{"text": "Find where the repo explains scaling laws", "label": "search_docs"}
+{"text": "what's (852 - 13) / 38", "label": "calculator"}
+{"text": "is 1 pounds more than 10 kg? convert it", "label": "unit_convert"}
+{"text": "then multiply the result by 34", "label": "calculator"}
+{"text": "convert that to hours", "label": "unit_convert"}
+{"text": "how many tokens is 864 sequences of 12 tokens each", "label": "calculator"}
+{"text": "Does transformer/generate.py mention the KV cache?", "label": "read_file"}
+{"text": "Thank you!", "label": "no_tool"}
+{"text": "turn 100 pounds into kg", "label": "unit_convert"}
+{"text": "what paper introduced the bottleneck problem?", "label": "search_docs"}
+{"text": "1 hours to minutes please", "label": "unit_convert"}
+{"text": "What can you do?", "label": "no_tool"}
+{"text": "What is the stock price of NVDA right now?", "label": "no_tool"}
+{"text": "then convert it to miles", "label": "unit_convert"}
+{"text": "what will the weather be in paris tomorrow?", "label": "no_tool"}
+{"text": "subtract 76 from it", "label": "calculator"}
+{"text": "is 2 kg more than 10 pounds? convert it", "label": "unit_convert"}
+{"text": "Which module covers the bottleneck problem?", "label": "search_docs"}
+{"text": "What is the first heading in attention/tasks.py?", "label": "read_file"}
+{"text": "remember it as my project name", "label": "kv_memory"}
+{"text": "does agents/fixtures/meeting_notes.txt mention the residual stream?", "label": "read_file"}
+{"text": "What do you have in memory?", "label": "kv_memory"}
+{"text": "Open rnn/input.txt and summarize it", "label": "read_file"}
+{"text": "what is 137 times 73?", "label": "calculator"}
+{"text": "search for padding and stride", "label": "search_docs"}
+{"text": "Does transformer/generate.py mention positional embeddings?", "label": "read_file"}
+{"text": "average of 158 and 28", "label": "calculator"}
+{"text": "what is 2 to the power of 3", "label": "calculator"}
+{"text": "Look up the parameter count in the docs", "label": "search_docs"}
+{"text": "How many miles is 2 km?", "label": "unit_convert"}
+{"text": "What is my default learning rate?", "label": "kv_memory"}
+{"text": "cat mlp/mlp_numpy.py", "label": "read_file"}
+{"text": "Forget my team lead", "label": "kv_memory"}
+{"text": "Convert 12 inches to cm", "label": "unit_convert"}
+{"text": "What is 250 F in C", "label": "unit_convert"}
+{"text": "read cnn/README.md and tell me what it is about", "label": "read_file"}
+{"text": "remember it as my team lead", "label": "kv_memory"}
+{"text": "Explain vanishing gradients according to the docs", "label": "search_docs"}
+{"text": "Open the file at transformer/gradient_check.py", "label": "read_file"}
+{"text": "What is 524 times 2?", "label": "calculator"}
+{"text": "show me the contents of transformer/generate.py", "label": "read_file"}
+{"text": "What is the title of attention/tasks.py?", "label": "read_file"}
+{"text": "Do you remember my favorite paper?", "label": "kv_memory"}
+{"text": "Who are you?", "label": "no_tool"}
+{"text": "turn 250 F into C", "label": "unit_convert"}
+{"text": "Who will win the next election?", "label": "no_tool"}
+{"text": "express 12 ounces in grams", "label": "unit_convert"}
+{"text": "then add 24", "label": "calculator"}
+{"text": "Show me the contents of mlp/mlp_numpy.py", "label": "read_file"}
+{"text": "then convert it to miles", "label": "unit_convert"}
+{"text": "What is my team lead?", "label": "kv_memory"}
+{"text": "square it", "label": "calculator"}
+{"text": "what's my home address?", "label": "no_tool"}
+{"text": "docs on Bahdanau attention", "label": "search_docs"}
+{"text": "What is 1 hours in minutes?", "label": "unit_convert"}
+{"text": "what's (906 - 81) / 46", "label": "calculator"}
+{"text": "Forget my team lead", "label": "kv_memory"}
+{"text": "Read the file transformer/generate.py", "label": "read_file"}
+{"text": "what is the stock price of nvda right now?", "label": "no_tool"}
+{"text": "Do you remember my favorite optimizer?", "label": "kv_memory"}
+{"text": "turn 42 pounds into kg", "label": "unit_convert"}
+{"text": "then save that as my default learning rate", "label": "kv_memory"}
+{"text": "work out 421 divided by 32 for me", "label": "calculator"}
+{"text": "load rnn/input.txt", "label": "read_file"}
+{"text": "Read the file mlp/mlp_numpy.py", "label": "read_file"}
+{"text": "what does the transformer readme say about dropout?", "label": "search_docs"}
+{"text": "What is the title of transformer/generate.py?", "label": "read_file"}
+{"text": "then convert it to meters", "label": "unit_convert"}
+{"text": "Repeat the word loop three times", "label": "no_tool"}
+{"text": "how many tokens is 409 sequences of 34 tokens each", "label": "calculator"}
+{"text": "Read transformer/gradient_check.py", "label": "read_file"}
+{"text": "Find where the repo explains padding and stride", "label": "search_docs"}
+{"text": "sqrt of 920", "label": "calculator"}
+{"text": "Send an email to my boss", "label": "no_tool"}
+{"text": "read README.md and tell me what it is about", "label": "read_file"}
+{"text": "what is half of 719", "label": "calculator"}
+{"text": "In the rnn notes, what is said about the bottleneck problem", "label": "search_docs"}
+{"text": "What is the forget gate bias? check the readmes", "label": "search_docs"}
+{"text": "How many meters are in 42 feet", "label": "unit_convert"}
+{"text": "cool, bye", "label": "no_tool"}
+{"text": "12 hours in minutes", "label": "unit_convert"}
+{"text": "Uppercase the word gradient", "label": "no_tool"}
+{"text": "Say hello to Yann", "label": "no_tool"}
+{"text": "Explain positional embeddings according to the docs", "label": "search_docs"}
+{"text": "What time is it in Tokyo right now?", "label": "no_tool"}
+{"text": "convert that to GB", "label": "unit_convert"}
+{"text": "What can you do?", "label": "no_tool"}
+{"text": "Who are you?", "label": "no_tool"}
+{"text": "How many cm are in 1 inches", "label": "unit_convert"}
+{"text": "Open cnn/README.md and summarize it", "label": "read_file"}
+{"text": "What is my dataset path?", "label": "kv_memory"}
+{"text": "calculate 113*40+37", "label": "calculator"}
+{"text": "is 12 feet more than 10 meters? convert it", "label": "unit_convert"}
+{"text": "change 250 ounces into grams", "label": "unit_convert"}
+{"text": "convert that to KB", "label": "unit_convert"}
+{"text": "Store my deadline = Friday", "label": "kv_memory"}
+{"text": "If I have 130 GPUs and each costs 99 dollars, what is the total cost?", "label": "calculator"}
+{"text": "change 12 hours into minutes", "label": "unit_convert"}
+{"text": "What loss did the cnn model reach according to its README?", "label": "search_docs"}
+{"text": "what do you have in memory?", "label": "kv_memory"}
+{"text": "Do you remember my GPU budget?", "label": "kv_memory"}
+{"text": "What accuracy does the attention README report?", "label": "search_docs"}
+{"text": "Recall my favorite paper", "label": "kv_memory"}
+{"text": "find the section on dropout", "label": "search_docs"}
+{"text": "Forget my preferred batch size", "label": "kv_memory"}
+{"text": "What do you have in memory?", "label": "kv_memory"}
+{"text": "please remember my preferred batch size: 64", "label": "kv_memory"}
+{"text": "How many words are in the sentence 'every step is traced'?", "label": "no_tool"}
+{"text": "How many kg is 2 pounds?", "label": "unit_convert"}
+{"text": "convert that to kg", "label": "unit_convert"}
+{"text": "double it", "label": "calculator"}
+{"text": "then convert it to C", "label": "unit_convert"}
+{"text": "cool, bye", "label": "no_tool"}
+{"text": "What is 1 inches in cm?", "label": "unit_convert"}
+{"text": "Open the file at README.md", "label": "read_file"}
+{"text": "then save that as my GPU budget", "label": "kv_memory"}
+{"text": "Open the file at rnn/input.txt", "label": "read_file"}
+{"text": "250 mb to kb please", "label": "unit_convert"}
+{"text": "Good morning", "label": "no_tool"}
+{"text": "how many tokens is 477 sequences of 6 tokens each", "label": "calculator"}
+{"text": "Do you remember my deadline?", "label": "kv_memory"}
+{"text": "then add 17", "label": "calculator"}
+{"text": "find the causal mask in the readmes", "label": "search_docs"}
+{"text": "express 250 miles in km", "label": "unit_convert"}
+{"text": "load transformer/gradient_check.py", "label": "read_file"}
+{"text": "Explain dropout according to the docs", "label": "search_docs"}
+{"text": "convert that to F", "label": "unit_convert"}
+{"text": "find im2col in the readmes", "label": "search_docs"}
+{"text": "Evaluate 703 ** 2", "label": "calculator"}
+{"text": "what did i tell you my dataset path was?", "label": "kv_memory"}
+{"text": "docs on L2 regularization", "label": "search_docs"}
+{"text": "Repeat the word tensor three times", "label": "no_tool"}
+{"text": "sqrt of 691", "label": "calculator"}
+{"text": "is 250 GB more than 10 MB? convert it", "label": "unit_convert"}
+{"text": "check the file transformer/generate.py", "label": "read_file"}
+{"text": "How many parameters does the cnn model have according to the docs?", "label": "search_docs"}
+{"text": "Uppercase the word loop", "label": "no_tool"}
+{"text": "463 times 65", "label": "calculator"}
+{"text": "change 10 inches into cm", "label": "unit_convert"}
+{"text": "average of 509 and 94", "label": "calculator"}
+{"text": "Store my dataset path = /data/wiki", "label": "kv_memory"}
+{"text": "Who will win the next election?", "label": "no_tool"}
+{"text": "sqrt of 194", "label": "calculator"}
+{"text": "What is my preferred batch size", "label": "kv_memory"}
+{"text": "calculate 585*59+23", "label": "calculator"}
+{"text": "then convert it to MB", "label": "unit_convert"}
+{"text": "find L2 regularization in the readmes", "label": "search_docs"}
+{"text": "Compute 95 times 77", "label": "calculator"}
+{"text": "docs on warmup and cosine decay", "label": "search_docs"}
+{"text": "print transformer/gradient_check.py", "label": "read_file"}
+{"text": "who will win the next election?", "label": "no_tool"}
+{"text": "Thank you!", "label": "no_tool"}
+{"text": "cat agents/fixtures/meeting_notes.txt", "label": "read_file"}
+{"text": "search for beam search", "label": "search_docs"}
+{"text": "Note that my default learning rate is 3e-4", "label": "kv_memory"}
+{"text": "Look up the parameter count in the docs", "label": "search_docs"}
+{"text": "double it", "label": "calculator"}
+{"text": "What paper introduced warmup and cosine decay?", "label": "search_docs"}
+{"text": "remind me of my default learning rate", "label": "kv_memory"}
+{"text": "What can you do?", "label": "no_tool"}
+{"text": "How many GB are in 2 GiB", "label": "unit_convert"}
+{"text": "list what you remember about me", "label": "kv_memory"}
+{"text": "remind me of my project name", "label": "kv_memory"}
+{"text": "search for scaling laws", "label": "search_docs"}
+{"text": "Open agents/fixtures/meeting_notes.txt and summarize it", "label": "read_file"}
+{"text": "square it", "label": "calculator"}
+{"text": "sqrt of 272", "label": "calculator"}
+{"text": "How many miles is 1 km?", "label": "unit_convert"}
+{"text": "What is your favorite color?", "label": "no_tool"}
+{"text": "is 42 GB more than 10 MB? convert it", "label": "unit_convert"}
+{"text": "sqrt of 678", "label": "calculator"}
+{"text": "How many C is 2 F?", "label": "unit_convert"}
+{"text": "find the section on the kv cache", "label": "search_docs"}
+{"text": "print transformer/generate.py", "label": "read_file"}
+{"text": "Store my default learning rate = 3e-4", "label": "kv_memory"}
+{"text": "Note that my favorite optimizer is AdamW", "label": "kv_memory"}
+{"text": "turn 12 GB into MB", "label": "unit_convert"}
+{"text": "convert that to C", "label": "unit_convert"}
+{"text": "Tell me a joke", "label": "no_tool"}
+{"text": "Sum of 70, 70 and 13?", "label": "calculator"}
+{"text": "How many miles is 250 km?", "label": "unit_convert"}
+{"text": "multiply it by 75", "label": "calculator"}
+{"text": "Good morning", "label": "no_tool"}
+{"text": "Hello there", "label": "no_tool"}
+{"text": "square it", "label": "calculator"}
+{"text": "Are you conscious?", "label": "no_tool"}
+{"text": "Write a haiku about gradients", "label": "no_tool"}
+{"text": "find where the repo explains gradient clipping", "label": "search_docs"}
+{"text": "is 250 km more than 10 miles? convert it", "label": "unit_convert"}
+{"text": "What's in mlp/mlp_numpy.py?", "label": "read_file"}
+{"text": "work out 947 divided by 67 for me", "label": "calculator"}
+{"text": "What loss did the mlp model reach according to its README?", "label": "search_docs"}
+{"text": "docs on im2col", "label": "search_docs"}
+{"text": "What paper introduced Bahdanau attention?", "label": "search_docs"}
+{"text": "Open the file at rnn/input.txt", "label": "read_file"}
+{"text": "Look up dropout in the documentation", "label": "search_docs"}
+{"text": "Remember that my favorite optimizer is AdamW", "label": "kv_memory"}
+{"text": "What loss did the lstm model reach according to its README?", "label": "search_docs"}
+{"text": "What loss did the lstm model reach according to its README?", "label": "search_docs"}
+{"text": "note that my deadline is friday", "label": "kv_memory"}
+{"text": "what is your favorite color?", "label": "no_tool"}
+{"text": "then save that as my GPU budget", "label": "kv_memory"}
+{"text": "What loss did the attention model reach according to its README?", "label": "search_docs"}
+{"text": "check the file transformer/gradient_check.py", "label": "read_file"}
+{"text": "change 1 inches into cm", "label": "unit_convert"}
+{"text": "what is the first heading in mlp/readme.md?", "label": "read_file"}
+{"text": "square it", "label": "calculator"}
+{"text": "What loss did the transformer model reach according to its README?", "label": "search_docs"}
+{"text": "What's in transformer/gradient_check.py?", "label": "read_file"}
+{"text": "What do you have in memory?", "label": "kv_memory"}
+{"text": "Find where the repo explains data augmentation", "label": "search_docs"}
+{"text": "Which module covers L2 regularization?", "label": "search_docs"}
+{"text": "add 94 to the result", "label": "calculator"}
+{"text": "Note that my dataset path is /data/wiki", "label": "kv_memory"}
+{"text": "then convert it to kg", "label": "unit_convert"}
+{"text": "Who are you?", "label": "no_tool"}
+{"text": "then add 42", "label": "calculator"}
+{"text": "Remember that my deadline is Friday", "label": "kv_memory"}
+{"text": "Look up batch normalization in the documentation", "label": "search_docs"}
+{"text": "double it", "label": "calculator"}
+{"text": "Who are you?", "label": "no_tool"}
+{"text": "what is the softmax cross-entropy formula in the docs", "label": "search_docs"}
+{"text": "load rnn/input.txt", "label": "read_file"}
+{"text": "what's (623 - 21) / 33", "label": "calculator"}
+{"text": "store my team lead = priya", "label": "kv_memory"}
+{"text": "what is half of 270", "label": "calculator"}
+{"text": "How many cm is 2 inches?", "label": "unit_convert"}
+{"text": "Are you conscious?", "label": "no_tool"}
+{"text": "Are you conscious?", "label": "no_tool"}
+{"text": "Recall my team lead", "label": "kv_memory"}
+{"text": "then add 10", "label": "calculator"}
+{"text": "Compute 969 minus 68", "label": "calculator"}
+{"text": "Open rnn/input.txt and summarize it", "label": "read_file"}
+{"text": "then divide that by 9", "label": "calculator"}
+{"text": "Compute 682 minus 10", "label": "calculator"}
+{"text": "Do you remember my project name?", "label": "kv_memory"}
+{"text": "find where the repo explains scaling laws", "label": "search_docs"}
+{"text": "What is 3.5 kg in pounds?", "label": "unit_convert"}
+{"text": "What is my favorite paper?", "label": "kv_memory"}
+{"text": "What did I tell you my preferred batch size was?", "label": "kv_memory"}
+{"text": "remember it as my favorite paper", "label": "kv_memory"}
+{"text": "average of 433 and 87", "label": "calculator"}
+{"text": "Show me the contents of attention/tasks.py", "label": "read_file"}
+{"text": "What is my team lead?", "label": "kv_memory"}
+{"text": "search the docs for the forget gate bias", "label": "search_docs"}
+{"text": "double it", "label": "calculator"}
+{"text": "Store my team lead = Priya", "label": "kv_memory"}
+{"text": "What is 25% of 111?", "label": "calculator"}
+{"text": "check the file lstm/lstm_numpy.py", "label": "read_file"}
+{"text": "express 12 hours in minutes", "label": "unit_convert"}
+{"text": "What do you have in memory?", "label": "kv_memory"}
+{"text": "what is half of 219", "label": "calculator"}
+{"text": "What can you do?", "label": "no_tool"}
+{"text": "Save ReAct as my favorite paper", "label": "kv_memory"}
+{"text": "Read rnn/input.txt", "label": "read_file"}
+{"text": "check the file readme.md", "label": "read_file"}
+{"text": "docs on the receptive field", "label": "search_docs"}
+{"text": "average of 180 and 16", "label": "calculator"}
+{"text": "load README.md", "label": "read_file"}
+{"text": "ok", "label": "no_tool"}
+{"text": "then convert it to grams", "label": "unit_convert"}
+{"text": "In the rnn notes, what is said about gradient clipping", "label": "search_docs"}
+{"text": "Convert 2 ounces to grams", "label": "unit_convert"}
+{"text": "Who are you?", "label": "no_tool"}
+{"text": "Do you remember my favorite paper?", "label": "kv_memory"}
+{"text": "what's (514 - 62) / 16", "label": "calculator"}
+{"text": "square it", "label": "calculator"}
+{"text": "search for weight tying", "label": "search_docs"}
+{"text": "Open mlp/README.md and summarize it", "label": "read_file"}
+{"text": "How many words are in the sentence 'retries need good error messages'?", "label": "no_tool"}
+{"text": "remember it as my preferred batch size", "label": "kv_memory"}
+{"text": "What is the stock price of NVDA right now?", "label": "no_tool"}
+{"text": "open the file at transformer/generate.py", "label": "read_file"}
+{"text": "How many lines does attention/tasks.py have?", "label": "read_file"}
+{"text": "140 times 15", "label": "calculator"}
+{"text": "Convert 250 GB to MB", "label": "unit_convert"}
+{"text": "then convert it to MB", "label": "unit_convert"}
+{"text": "then multiply the result by 25", "label": "calculator"}
+{"text": "list what you remember about me", "label": "kv_memory"}
+{"text": "192/72", "label": "calculator"}
+{"text": "write a haiku about gradients", "label": "no_tool"}
+{"text": "What's in mlp/mlp_numpy.py?", "label": "read_file"}
+{"text": "square it", "label": "calculator"}
+{"text": "what is half of 41", "label": "calculator"}
+{"text": "What is 100 miles in km?", "label": "unit_convert"}
+{"text": "Note that my favorite paper is ReAct", "label": "kv_memory"}
+{"text": "5 days in hours", "label": "unit_convert"}
+{"text": "how long is lstm/lstm_numpy.py in characters?", "label": "read_file"}
+{"text": "What's in transformer/generate.py?", "label": "read_file"}
+{"text": "find the section on data augmentation", "label": "search_docs"}
+{"text": "sqrt of 214", "label": "calculator"}
+{"text": "What is the first heading in lstm/lstm_numpy.py?", "label": "read_file"}
+{"text": "In the transformer notes, what is said about GRU vs LSTM", "label": "search_docs"}
+{"text": "load rnn/input.txt", "label": "read_file"}
+{"text": "Note that my GPU budget is 8 A100s", "label": "kv_memory"}
+{"text": "Do you remember my GPU budget?", "label": "kv_memory"}
+{"text": "sqrt of 431", "label": "calculator"}
+{"text": "In the attention notes, what is said about Bahdanau attention", "label": "search_docs"}
+{"text": "then multiply the result by 14", "label": "calculator"}
+{"text": "Find where the repo explains truncated BPTT", "label": "search_docs"}
+{"text": "is 2 days more than 10 hours? convert it", "label": "unit_convert"}
+{"text": "Do you remember my deadline?", "label": "kv_memory"}
+{"text": "what's (337 - 5) / 27", "label": "calculator"}
+{"text": "turn 3.5 km into miles", "label": "unit_convert"}
+{"text": "What is the residual stream? check the readmes", "label": "search_docs"}
+{"text": "read transformer/gradient_check.py and tell me what it is about", "label": "read_file"}
+{"text": "recall my gpu budget", "label": "kv_memory"}
+{"text": "What is softmax cross-entropy? check the readmes", "label": "search_docs"}
+{"text": "how many tokens is 650 sequences of 29 tokens each", "label": "calculator"}
+{"text": "calculate 278*81+31", "label": "calculator"}
+{"text": "uppercase the word banana", "label": "no_tool"}
+{"text": "load agents/fixtures/meeting_notes.txt", "label": "read_file"}
+{"text": "Compute 352 multiplied by 69", "label": "calculator"}
+{"text": "change 10 hours into minutes", "label": "unit_convert"}
+{"text": "read readme.md and tell me what it is about", "label": "read_file"}
+{"text": "How many lines does cnn/README.md have?", "label": "read_file"}
+{"text": "How much is 484 times 11", "label": "calculator"}
+{"text": "what is 527 to the power of 3", "label": "calculator"}
+{"text": "then convert it to pounds", "label": "unit_convert"}
+{"text": "convert that to meters", "label": "unit_convert"}
+{"text": "list what you remember about me", "label": "kv_memory"}
+{"text": "remind me of my project name", "label": "kv_memory"}
+{"text": "which module covers the bottleneck problem?", "label": "search_docs"}
+{"text": "work out 852 divided by 79 for me", "label": "calculator"}
+{"text": "are you conscious?", "label": "no_tool"}
+{"text": "then convert it to grams", "label": "unit_convert"}
+{"text": "What is weight tying? check the readmes", "label": "search_docs"}
+{"text": "250 km to miles please", "label": "unit_convert"}
+{"text": "What is the first heading in rnn/input.txt?", "label": "read_file"}
+{"text": "Uppercase the word tensor", "label": "no_tool"}
+{"text": "What loss did the transformer model reach according to its README?", "label": "search_docs"}
+{"text": "How does the rnn module describe the receptive field?", "label": "search_docs"}
+{"text": "What is my team lead?", "label": "kv_memory"}
+{"text": "Look up softmax cross-entropy in the documentation", "label": "search_docs"}
+{"text": "Book me a flight to Tokyo", "label": "no_tool"}
+{"text": "Remember that my preferred batch size is 64", "label": "kv_memory"}
+{"text": "subtract 64 from it", "label": "calculator"}
+{"text": "multiply it by 95", "label": "calculator"}
+{"text": "According to the docs, why does weight tying matter?", "label": "search_docs"}
+{"text": "then multiply the result by 7", "label": "calculator"}
+{"text": "Are you conscious?", "label": "no_tool"}
+{"text": "Look up padding and stride in the documentation", "label": "search_docs"}
+{"text": "then multiply the result by 32", "label": "calculator"}
+{"text": "hello there", "label": "no_tool"}
+{"text": "then save that as my deadline", "label": "kv_memory"}
+{"text": "convert that to minutes", "label": "unit_convert"}
+{"text": "Thank you!", "label": "no_tool"}
+{"text": "change 5 F into C", "label": "unit_convert"}
+{"text": "then convert it to MB", "label": "unit_convert"}
+{"text": "If I have 159 GPUs and each costs 46 dollars, what is the total cost?", "label": "calculator"}
+{"text": "what is half of 382", "label": "calculator"}
+{"text": "express 2 f in c", "label": "unit_convert"}
+{"text": "What is the stock price of NVDA right now", "label": "no_tool"}
+{"text": "What does the cnn README say about truncated BPTT?", "label": "search_docs"}
+{"text": "then convert it to gb", "label": "unit_convert"}
+{"text": "search for truncated bptt", "label": "search_docs"}
+{"text": "Remember that my deadline is Friday", "label": "kv_memory"}
+{"text": "How does the cnn module describe vanishing gradients?", "label": "search_docs"}
+{"text": "then add 7", "label": "calculator"}
+{"text": "Save Friday as my deadline", "label": "kv_memory"}
+{"text": "What is max pooling? check the readmes", "label": "search_docs"}
+{"text": "How many parameters does the cnn model have according to the docs?", "label": "search_docs"}
+{"text": "According to the docs, why does the receptive field matter?", "label": "search_docs"}
+{"text": "How many parameters does the cnn model have according to the docs?", "label": "search_docs"}
+{"text": "Which module covers the bottleneck problem?", "label": "search_docs"}
+{"text": "update my favorite optimizer to AdamW", "label": "kv_memory"}
+{"text": "search for the residual stream", "label": "search_docs"}
+{"text": "Open the file at cnn/README.md", "label": "read_file"}
+{"text": "square it", "label": "calculator"}
+{"text": "363 times 4", "label": "calculator"}
+{"text": "What did I tell you my deadline was?", "label": "kv_memory"}
+{"text": "search for truncated bptt", "label": "search_docs"}
+{"text": "evaluate 255 ** 2", "label": "calculator"}
+{"text": "find L2 regularization in the readmes", "label": "search_docs"}
+{"text": "How many lines does transformer/generate.py have?", "label": "read_file"}
+{"text": "then save that as my deadline", "label": "kv_memory"}
+{"text": "Find where the repo explains gradient clipping", "label": "search_docs"}
+{"text": "Remember that my team lead is Priya", "label": "kv_memory"}
+{"text": "What's my home address?", "label": "no_tool"}
+{"text": "Write a haiku about gradients", "label": "no_tool"}
+{"text": "Hello there", "label": "no_tool"}
+{"text": "convert that to GB", "label": "unit_convert"}
+{"text": "Are you conscious?", "label": "no_tool"}
+{"text": "What is vanishing gradients? check the readmes", "label": "search_docs"}
+{"text": "Do you remember my GPU budget?", "label": "kv_memory"}
+{"text": "Thank you!", "label": "no_tool"}
+{"text": "Store my deadline = Friday", "label": "kv_memory"}
+{"text": "then save that as my project name", "label": "kv_memory"}
+{"text": "What is 1 inches in cm?", "label": "unit_convert"}
+{"text": "in the lstm notes, what is said about gru vs lstm", "label": "search_docs"}
+{"text": "Look up data augmentation in the documentation", "label": "search_docs"}
+{"text": "How many parameters does the lstm model have according to the docs?", "label": "search_docs"}
+{"text": "then convert it to C", "label": "unit_convert"}
+{"text": "What is 15% of 757?", "label": "calculator"}
+{"text": "find padding and stride in the readmes", "label": "search_docs"}
+{"text": "average of 673 and 41", "label": "calculator"}
+{"text": "Open the file at transformer/generate.py", "label": "read_file"}
+{"text": "then save that as my deadline", "label": "kv_memory"}
+{"text": "how does the mlp module describe beam search?", "label": "search_docs"}
+{"text": "what is 169 to the power of 3", "label": "calculator"}
+{"text": "What is the title of transformer/gradient_check.py?", "label": "read_file"}
+{"text": "Save 64 as my preferred batch size", "label": "kv_memory"}
+{"text": "print README.md", "label": "read_file"}
+{"text": "what did i tell you my team lead was?", "label": "kv_memory"}
+{"text": "Book me a flight to Tokyo", "label": "no_tool"}
+{"text": "change 250 km into miles", "label": "unit_convert"}
+{"text": "Convert 250 F to C", "label": "unit_convert"}
+{"text": "add 18 to the result", "label": "calculator"}
+{"text": "subtract 16 from it", "label": "calculator"}
+{"text": "is 10 feet more than 10 meters? convert it", "label": "unit_convert"}
+{"text": "reverse the word tensor", "label": "no_tool"}
+{"text": "what did i tell you my favorite paper was?", "label": "kv_memory"}
+{"text": "Who will win the next election?", "label": "no_tool"}
+{"text": "find dropout in the readmes", "label": "search_docs"}
+{"text": "Do you remember my default learning rate", "label": "kv_memory"}
+{"text": "Store my favorite optimizer = AdamW", "label": "kv_memory"}
+{"text": "What do you have in memory?", "label": "kv_memory"}
+{"text": "Show me the contents of cnn/README.md", "label": "read_file"}
+{"text": "turn 3.5 MB into KB", "label": "unit_convert"}
+{"text": "what's (499 - 63) / 40", "label": "calculator"}
+{"text": "How many KB are in 3.5 MB", "label": "unit_convert"}
+{"text": "Read the file mlp/mlp_numpy.py", "label": "read_file"}
+{"text": "Open transformer/gradient_check.py and summarize it", "label": "read_file"}
+{"text": "What can you do?", "label": "no_tool"}
+{"text": "read README.md and tell me what it is about", "label": "read_file"}
+{"text": "What do you have in memory?", "label": "kv_memory"}
+{"text": "Hi!", "label": "no_tool"}
+{"text": "print transformer/generate.py", "label": "read_file"}
+{"text": "what is the the forget gate bias formula in the docs", "label": "search_docs"}
+{"text": "what is the the causal mask formula in the docs", "label": "search_docs"}
+{"text": "How much is 847 plus 63", "label": "calculator"}
+{"text": "order a pizza for me", "label": "no_tool"}
+{"text": "remember it as my GPU budget", "label": "kv_memory"}
+{"text": "Hi!", "label": "no_tool"}
+{"text": "Say hello to Fei-Fei", "label": "no_tool"}
+{"text": "If I have 555 GPUs and each costs 48 dollars, what is the total cost?", "label": "calculator"}
+{"text": "Book me a flight to Tokyo", "label": "no_tool"}
+{"text": "What paper introduced dropout?", "label": "search_docs"}
+{"text": "ok", "label": "no_tool"}
+{"text": "how long is README.md in characters?", "label": "read_file"}
+{"text": "what is your favorite color?", "label": "no_tool"}
+{"text": "466 times 33", "label": "calculator"}
+{"text": "What is 5 kg in pounds?", "label": "unit_convert"}
+{"text": "What is the residual stream? check the readmes", "label": "search_docs"}
+{"text": "then save that as my favorite optimizer", "label": "kv_memory"}
+{"text": "Open cnn/README.md and summarize it", "label": "read_file"}
+{"text": "What accuracy does the mlp README report?", "label": "search_docs"}
+{"text": "remember it as my dataset path", "label": "kv_memory"}
+{"text": "Open the file at agents/fixtures/meeting_notes.txt", "label": "read_file"}
+{"text": "order a pizza for me", "label": "no_tool"}
+{"text": "How many meters is 1 feet?", "label": "unit_convert"}
+{"text": "look up the parameter count in the docs", "label": "search_docs"}
+{"text": "express 10 F in C", "label": "unit_convert"}
+{"text": "Order a pizza for me", "label": "no_tool"}
+{"text": "save 64 as my preferred batch size", "label": "kv_memory"}
+{"text": "How many grams are in 12 ounces", "label": "unit_convert"}
+{"text": "What do you have in memory?", "label": "kv_memory"}
+{"text": "What loss did the cnn model reach according to its README?", "label": "search_docs"}
+{"text": "what is half of 204", "label": "calculator"}
+{"text": "2 MB to KB please", "label": "unit_convert"}
+{"text": "In the rnn notes, what is said about scaling laws", "label": "search_docs"}
+{"text": "remember it as my dataset path", "label": "kv_memory"}
+{"text": "change 100 feet into meters", "label": "unit_convert"}
+{"text": "Sum of 620, 80 and 32?", "label": "calculator"}
+{"text": "How many parameters does the mlp model have according to the docs?", "label": "search_docs"}
+{"text": "What tools do you have?", "label": "no_tool"}
+{"text": "Tell me a joke", "label": "no_tool"}
+{"text": "what is layernorm backward? check the readmes", "label": "search_docs"}
+{"text": "What is the stock price of NVDA right now?", "label": "no_tool"}
+{"text": "what time is it in tokyo right now?", "label": "no_tool"}
+{"text": "how many tokens is 67 sequences of 35 tokens each", "label": "calculator"}
+{"text": "open the file at agents/fixtures/meeting_notes.txt", "label": "read_file"}
+{"text": "Find where the repo explains im2col", "label": "search_docs"}
+{"text": "Convert 42 GiB to GB", "label": "unit_convert"}
+{"text": "What can you do?", "label": "no_tool"}
+{"text": "Read README.md", "label": "read_file"}
+{"text": "ok", "label": "no_tool"}
+{"text": "Compute 573 times 42", "label": "calculator"}
+{"text": "thanks, that's all", "label": "no_tool"}
+{"text": "Search the docs for the causal mask", "label": "search_docs"}
+{"text": "Read README.md", "label": "read_file"}
+{"text": "Which module covers data augmentation?", "label": "search_docs"}
+{"text": "print transformer/generate.py", "label": "read_file"}
+{"text": "Convert 250 days to hours", "label": "unit_convert"}
+{"text": "average of 157 and 83", "label": "calculator"}
+{"text": "Book me a flight to Tokyo", "label": "no_tool"}
+{"text": "multiply it by 73", "label": "calculator"}
+{"text": "769 times 6", "label": "calculator"}
+{"text": "find the forget gate bias in the readmes", "label": "search_docs"}
+{"text": "Write a haiku about gradients", "label": "no_tool"}
+{"text": "Explain Bahdanau attention according to the docs", "label": "search_docs"}
+{"text": "average of 880 and 8", "label": "calculator"}
+{"text": "what is half of 623", "label": "calculator"}
+{"text": "3.5 ounces in grams", "label": "unit_convert"}
+{"text": "double it", "label": "calculator"}
+{"text": "then multiply the result by 50", "label": "calculator"}
+{"text": "convert that to F", "label": "unit_convert"}
+{"text": "What did I tell you my default learning rate was?", "label": "kv_memory"}
+{"text": "turn 42 km into miles", "label": "unit_convert"}
+{"text": "What did I tell you my team lead was?", "label": "kv_memory"}
+{"text": "what is the multi-head attention formula in the docs", "label": "search_docs"}
+{"text": "what is half of 223", "label": "calculator"}
+{"text": "change 12 kg into pounds", "label": "unit_convert"}
+{"text": "Look up the parameter count in the docs", "label": "search_docs"}
+{"text": "Remember that my dataset path is /data/wiki", "label": "kv_memory"}
+{"text": "How many lines does mlp/README.md have?", "label": "read_file"}
+{"text": "How much is 230 plus 83", "label": "calculator"}
+{"text": "12 gib in gb", "label": "unit_convert"}
+{"text": "add 72 to the result", "label": "calculator"}
+{"text": "check the file transformer/generate.py", "label": "read_file"}
+{"text": "how long is rnn/input.txt in characters?", "label": "read_file"}
+{"text": "print README.md", "label": "read_file"}
+{"text": "Which module covers data augmentation?", "label": "search_docs"}
+{"text": "open attention/tasks.py and summarize it", "label": "read_file"}
+{"text": "square it", "label": "calculator"}
+{"text": "What accuracy does the lstm README report?", "label": "search_docs"}
+{"text": "947 + 12 * 8 = ?", "label": "calculator"}
+{"text": "What is my team lead?", "label": "kv_memory"}
+{"text": "find the section on dropout", "label": "search_docs"}
+{"text": "How many words are in the sentence 'the model reads the observation'?", "label": "no_tool"}
+{"text": "Forget my favorite paper", "label": "kv_memory"}
+{"text": "Read the file lstm/lstm_numpy.py", "label": "read_file"}
+{"text": "What tools do you have?", "label": "no_tool"}
+{"text": "check the file rnn/input.txt", "label": "read_file"}
+{"text": "Repeat the word gradient three times", "label": "no_tool"}
+{"text": "How many minutes is 12 hours?", "label": "unit_convert"}
+{"text": "check the file transformer/gradient_check.py", "label": "read_file"}
+{"text": "932 + 68 * 42 = ", "label": "calculator"}
+{"text": "How does the mlp module describe truncated BPTT", "label": "search_docs"}
+{"text": "change 1 ounces into grams", "label": "unit_convert"}
+{"text": "Read mlp/README.md", "label": "read_file"}
+{"text": "Does agents/fixtures/meeting_notes.txt mention scaling laws?", "label": "read_file"}
+{"text": "Note that my GPU budget is 8 A100s", "label": "kv_memory"}
+{"text": "sqrt of 424", "label": "calculator"}
+{"text": "what time is it in tokyo right now?", "label": "no_tool"}
+{"text": "Please remember my GPU budget: 8 A100s", "label": "kv_memory"}
+{"text": "Are you conscious?", "label": "no_tool"}
+{"text": "what's in transformer/gradient_check.py?", "label": "read_file"}
+{"text": "double it", "label": "calculator"}
+{"text": "change 10 ounces into grams", "label": "unit_convert"}
+{"text": "forget my dataset path", "label": "kv_memory"}
+{"text": "docs on vanishing gradients", "label": "search_docs"}
+{"text": "is 250 inches more than 10 cm? convert it", "label": "unit_convert"}
+{"text": "Find where the repo explains LayerNorm backward", "label": "search_docs"}
+{"text": "42 pounds to kg please", "label": "unit_convert"}
+{"text": "Note that my deadline is Friday", "label": "kv_memory"}
+{"text": "load attention/tasks.py", "label": "read_file"}
+{"text": "how many lines does transformer/gradient_check.py have?", "label": "read_file"}
+{"text": "work out 374 divided by 9 for me", "label": "calculator"}
+{"text": "turn 100 feet into meters", "label": "unit_convert"}
+{"text": "what's (764 - 33) / 35", "label": "calculator"}
+{"text": "change 100 miles into km", "label": "unit_convert"}
+{"text": "then add 29", "label": "calculator"}
+{"text": "250 GiB to GB please", "label": "unit_convert"}
+{"text": "What does the cnn README say about L2 regularization?", "label": "search_docs"}
+{"text": "is 100 F more than 10 C? convert it", "label": "unit_convert"}
+{"text": "search for gradient clipping", "label": "search_docs"}
+{"text": "print lstm/lstm_numpy.py", "label": "read_file"}
+{"text": "How many GB is 1 GiB?", "label": "unit_convert"}
+{"text": "convert that to kg", "label": "unit_convert"}
+{"text": "Save Friday as my deadline", "label": "kv_memory"}
+{"text": "Order a pizza for me", "label": "no_tool"}
+{"text": "Write a haiku about gradients", "label": "no_tool"}
+{"text": "100 miles in km", "label": "unit_convert"}
+{"text": "5 C in F", "label": "unit_convert"}
+{"text": "What did I tell you my GPU budget was?", "label": "kv_memory"}
+{"text": "Say hello to Alan", "label": "no_tool"}
+{"text": "explain scaling laws according to the docs", "label": "search_docs"}
+{"text": "According to the docs, why does LayerNorm backward matter?", "label": "search_docs"}
+{"text": "check the file mlp/mlp_numpy.py", "label": "read_file"}
+{"text": "multiply it by 19", "label": "calculator"}
+{"text": "what loss did the cnn model reach according to its readme?", "label": "search_docs"}
+{"text": "Thank you!", "label": "no_tool"}
+{"text": "how much is 859 divided by 27", "label": "calculator"}
+{"text": "change 12 pounds into kg", "label": "unit_convert"}
+{"text": "Recall my favorite optimizer", "label": "kv_memory"}
+{"text": "Hi!", "label": "no_tool"}
+{"text": "is 3.5 days more than 10 hours? convert it", "label": "unit_convert"}
+{"text": "If I have 209 GPUs and each costs 99 dollars, what is the total cost?", "label": "calculator"}
+{"text": "896 + 83 * 46 = ?", "label": "calculator"}
+{"text": "cat agents/fixtures/meeting_notes.txt", "label": "read_file"}
+{"text": "then convert it to minutes", "label": "unit_convert"}
+{"text": "What is 12 inches in cm?", "label": "unit_convert"}
+{"text": "how many parameters does the rnn model have according to the docs?", "label": "search_docs"}
+{"text": "how long is mlp/mlp_numpy.py in characters?", "label": "read_file"}
+{"text": "100 inches to cm please", "label": "unit_convert"}
+{"text": "change 100 hours into minutes", "label": "unit_convert"}
+{"text": "How many F is 5 C?", "label": "unit_convert"}
+{"text": "Does transformer/gradient_check.py mention vanishing gradients?", "label": "read_file"}
+{"text": "check the file mlp/README.md", "label": "read_file"}
+{"text": "What is GRU vs LSTM? check the readmes", "label": "search_docs"}
+{"text": "What accuracy does the lstm README report?", "label": "search_docs"}
+{"text": "Show me the contents of cnn/README.md", "label": "read_file"}
+{"text": "Who will win the next election?", "label": "no_tool"}
+{"text": "find padding and stride in the readmes", "label": "search_docs"}
+{"text": "Do you remember my preferred batch size?", "label": "kv_memory"}
+{"text": "How many lines does lstm/lstm_numpy.py have?", "label": "read_file"}
+{"text": "what is 30 to the power of 3", "label": "calculator"}
+{"text": "Recall my favorite optimizer", "label": "kv_memory"}
+{"text": "What did I tell you my GPU budget was?", "label": "kv_memory"}
+{"text": "Reverse the word tensor", "label": "no_tool"}
+{"text": "load lstm/lstm_numpy.py", "label": "read_file"}
+{"text": "read lstm/lstm_numpy.py and tell me what it is about", "label": "read_file"}
+{"text": "Please remember my deadline: Friday", "label": "kv_memory"}
+{"text": "What is the title of README.md?", "label": "read_file"}
+{"text": "Say hello to Ada", "label": "no_tool"}
+{"text": "What accuracy does the rnn README report?", "label": "search_docs"}
+{"text": "721 + 96 * 7 = ?", "label": "calculator"}
+{"text": "what is 100 mb in kb?", "label": "unit_convert"}
+{"text": "What is the first heading in attention/tasks.py?", "label": "read_file"}
+{"text": "list what you remember about me", "label": "kv_memory"}
+{"text": "express 42 feet in meters", "label": "unit_convert"}
+{"text": "ok", "label": "no_tool"}
+{"text": "What is 20% of 882?", "label": "calculator"}
+{"text": "Compute 856 times 53", "label": "calculator"}
+{"text": "what do you have in memory?", "label": "kv_memory"}
+{"text": "What is 5% of 686?", "label": "calculator"}
+{"text": "search for dropout", "label": "search_docs"}
+{"text": "Please remember my default learning rate: 3e-4", "label": "kv_memory"}
+{"text": "What is my GPU budget?", "label": "kv_memory"}
+{"text": "What's in agents/fixtures/meeting_notes.txt?", "label": "read_file"}
+{"text": "Good morning", "label": "no_tool"}
+{"text": "Does transformer/generate.py mention the KV cache?", "label": "read_file"}
+{"text": "What is my dataset path?", "label": "kv_memory"}
+{"text": "According to the docs, why does L2 regularization matter?", "label": "search_docs"}
+{"text": "then multiply the result by 4", "label": "calculator"}
+{"text": "read mlp/mlp_numpy.py and tell me what it is about", "label": "read_file"}
+{"text": "what is the L2 regularization formula in the docs", "label": "search_docs"}
+{"text": "convert that to grams", "label": "unit_convert"}
+{"text": "Store my project name = tiny-gpt", "label": "kv_memory"}
+{"text": "remind me of my deadline", "label": "kv_memory"}
+{"text": "Reverse the word gradient", "label": "no_tool"}
+{"text": "Convert 1 miles to km", "label": "unit_convert"}
+{"text": "183 times 94", "label": "calculator"}
+{"text": "What can you do?", "label": "no_tool"}
+{"text": "Show me the contents of transformer/gradient_check.py", "label": "read_file"}
+{"text": "100 ounces to grams please", "label": "unit_convert"}
+{"text": "convert 42 gb to mb", "label": "unit_convert"}
+{"text": "find max pooling in the readmes", "label": "search_docs"}
+{"text": "What is scaling laws? check the readmes", "label": "search_docs"}
+{"text": "list what you remember about me", "label": "kv_memory"}
+{"text": "3.5 kg in pounds", "label": "unit_convert"}
+{"text": "Who are you?", "label": "no_tool"}
+{"text": "1 ounces in grams", "label": "unit_convert"}
+{"text": "What do you have in memory?", "label": "kv_memory"}
+{"text": "What's my home address?", "label": "no_tool"}
+{"text": "How many KB are in 1 MB", "label": "unit_convert"}
+{"text": "thank you!", "label": "no_tool"}
+{"text": "Convert 100 C to F", "label": "unit_convert"}
+{"text": "Hi!", "label": "no_tool"}
+{"text": "Remember that my preferred batch size is 64", "label": "kv_memory"}
+{"text": "remember it as my favorite optimizer", "label": "kv_memory"}
+{"text": "then convert it to miles", "label": "unit_convert"}
+{"text": "express 12 days in hours", "label": "unit_convert"}
+{"text": "What is 10 hours in minutes?", "label": "unit_convert"}
+{"text": "What is 378 divided by 21?", "label": "calculator"}
+{"text": "How many grams is 250 ounces?", "label": "unit_convert"}
+{"text": "read agents/fixtures/meeting_notes.txt", "label": "read_file"}
+{"text": "What is 10 miles in km?", "label": "unit_convert"}
+{"text": "load transformer/generate.py", "label": "read_file"}
+{"text": "Repeat the word tensor three times", "label": "no_tool"}
+{"text": "are you conscious?", "label": "no_tool"}
+{"text": "add 99 to the result", "label": "calculator"}
+{"text": "Do you remember my deadline?", "label": "kv_memory"}
+{"text": "thank you!", "label": "no_tool"}
+{"text": "Send an email to my boss", "label": "no_tool"}
+{"text": "search for vanishing gradients", "label": "search_docs"}
+{"text": "what's (435 - 24) / 4", "label": "calculator"}
+{"text": "list what you remember about me", "label": "kv_memory"}
+{"text": "Note that my GPU budget is 8 A100s", "label": "kv_memory"}
+{"text": "Good morning", "label": "no_tool"}
+{"text": "What does the cnn README say about max pooling?", "label": "search_docs"}
+{"text": "ok", "label": "no_tool"}
+{"text": "What's in mlp/mlp_numpy.py?", "label": "read_file"}
+{"text": "express 10 km in miles", "label": "unit_convert"}
+{"text": "sqrt of 839", "label": "calculator"}
+{"text": "Convert 3.5 GB to MB", "label": "unit_convert"}
+{"text": "what tools do you have?", "label": "no_tool"}
+{"text": "update my preferred batch size to 64", "label": "kv_memory"}
+{"text": "average of 603 and 39", "label": "calculator"}
+{"text": "Show me the contents of mlp/README.md", "label": "read_file"}
+{"text": "10 miles in km", "label": "unit_convert"}
+{"text": "update my GPU budget to 8 A100s", "label": "kv_memory"}
+{"text": "ok", "label": "no_tool"}
+{"text": "change 1 GiB into GB", "label": "unit_convert"}
+{"text": "print transformer/generate.py", "label": "read_file"}
+{"text": "Read the file README.md", "label": "read_file"}
+{"text": "read transformer/generate.py and tell me what it is about", "label": "read_file"}
+{"text": "multiply it by 64", "label": "calculator"}
+{"text": "Please remember my favorite optimizer: AdamW", "label": "kv_memory"}
+{"text": "Convert 1 GiB to GB", "label": "unit_convert"}
+{"text": "What is the first heading in rnn/input.txt", "label": "read_file"}
+{"text": "215/6", "label": "calculator"}
+{"text": "cool, bye", "label": "no_tool"}
+{"text": "What do you have in memory?", "label": "kv_memory"}
+{"text": "What is positional embeddings? check the readmes", "label": "search_docs"}
+{"text": "convert that to pounds", "label": "unit_convert"}
+{"text": "list what you remember about me", "label": "kv_memory"}
+{"text": "What is 15% of 71?", "label": "calculator"}
+{"text": "Reverse the word agent", "label": "no_tool"}
+{"text": "Do you remember my favorite paper?", "label": "kv_memory"}
+{"text": "What do you have in memory?", "label": "kv_memory"}
+{"text": "Book me a flight to Tokyo", "label": "no_tool"}
+{"text": "Convert 1 MB to KB", "label": "unit_convert"}
+{"text": "Compute 748 plus 11", "label": "calculator"}
+{"text": "Show me the contents of transformer/gradient_check.py", "label": "read_file"}
+{"text": "find truncated BPTT in the readmes", "label": "search_docs"}
+{"text": "685 + 26 * 6 = ?", "label": "calculator"}
+{"text": "42 MB to KB please", "label": "unit_convert"}
+{"text": "Does lstm/lstm_numpy.py mention scaling laws?", "label": "read_file"}
+{"text": "Evaluate 135 ** 2", "label": "calculator"}
+{"text": "cat mlp/mlp_numpy.py", "label": "read_file"}
+{"text": "Look up the parameter count in the docs", "label": "search_docs"}
+{"text": "what is the data augmentation formula in the docs", "label": "search_docs"}
+{"text": "What's in README.md?", "label": "read_file"}
+{"text": "Convert 2 pounds to kg", "label": "unit_convert"}
+{"text": "update my favorite optimizer to AdamW", "label": "kv_memory"}
+{"text": "What is LayerNorm backward? check the readmes", "label": "search_docs"}
+{"text": "then save that as my deadline", "label": "kv_memory"}
+{"text": "What is 12 pounds in kg?", "label": "unit_convert"}
+{"text": "What loss did the lstm model reach according to its README?", "label": "search_docs"}
+{"text": "note that my team lead is priya", "label": "kv_memory"}
+{"text": "docs on multi-head attention", "label": "search_docs"}
+{"text": "recall my gpu budget", "label": "kv_memory"}
+{"text": "then convert it to C", "label": "unit_convert"}
+{"text": "Compute 357 divided by 14", "label": "calculator"}
+{"text": "does rnn/input.txt mention vanishing gradients?", "label": "read_file"}
+{"text": "Show me the contents of transformer/generate.py", "label": "read_file"}
+{"text": "Who will win the next election?", "label": "no_tool"}
+{"text": "Search the docs for LayerNorm backward", "label": "search_docs"}
+{"text": "Read transformer/gradient_check.py", "label": "read_file"}
+{"text": "then divide that by 84", "label": "calculator"}
+{"text": "What's my home address?", "label": "no_tool"}
+{"text": "What is the stock price of NVDA right now?", "label": "no_tool"}
+{"text": "If I have 780 GPUs and each costs 31 dollars, what is the total cost?", "label": "calculator"}
+{"text": "What is the first heading in lstm/lstm_numpy.py", "label": "read_file"}
+{"text": "add 62 to the result", "label": "calculator"}
+{"text": "Forget my GPU budget", "label": "kv_memory"}
+{"text": "Read the file attention/tasks.py", "label": "read_file"}
+{"text": "How many parameters does the lstm model have according to the docs?", "label": "search_docs"}
+{"text": "Store my GPU budget = 8 A100s", "label": "kv_memory"}
+{"text": "then add 30", "label": "calculator"}
+{"text": "cat mlp/README.md", "label": "read_file"}
+{"text": "What is the stock price of NVDA right now?", "label": "no_tool"}
+{"text": "express 12 GB in MB", "label": "unit_convert"}
+{"text": "Note that my GPU budget is 8 A100s", "label": "kv_memory"}
+{"text": "42 days in hours", "label": "unit_convert"}
+{"text": "tell me a joke", "label": "no_tool"}
+{"text": "average of 779 and 7", "label": "calculator"}
+{"text": "find the residual stream in the readmes", "label": "search_docs"}
+{"text": "then multiply the result by 8", "label": "calculator"}
+{"text": "is 250 pounds more than 10 kg? convert it", "label": "unit_convert"}
+{"text": "Evaluate 666 ** 2", "label": "calculator"}
+{"text": "how many f are in 2 c", "label": "unit_convert"}
+{"text": "What is the first heading in cnn/README.md?", "label": "read_file"}
+{"text": "672/63", "label": "calculator"}
+{"text": "Write a haiku about gradients", "label": "no_tool"}
+{"text": "What is my favorite optimizer?", "label": "kv_memory"}
+{"text": "What is 529 plus 29?", "label": "calculator"}
+{"text": "check the file README.md", "label": "read_file"}
+{"text": "Forget my default learning rate", "label": "kv_memory"}
+{"text": "What does the cnn README say about softmax cross-entropy?", "label": "search_docs"}
+{"text": "Open README.md and summarize it", "label": "read_file"}
+{"text": "what is the im2col formula in the docs", "label": "search_docs"}
+{"text": "how long is transformer/generate.py in characters?", "label": "read_file"}
+{"text": "Search the docs for the KV cache", "label": "search_docs"}
+{"text": "is 250 pounds more than 10 kg? convert it", "label": "unit_convert"}
+{"text": "Compute 123 times 96", "label": "calculator"}
+{"text": "Recall my favorite optimizer", "label": "kv_memory"}
+{"text": "then save that as my GPU budget", "label": "kv_memory"}
+{"text": "Thanks, that's all", "label": "no_tool"}
+{"text": "Send an email to my boss", "label": "no_tool"}
+{"text": "3.5 km in miles", "label": "unit_convert"}
+{"text": "Forget my default learning rate", "label": "kv_memory"}
+{"text": "sqrt of 883", "label": "calculator"}
+{"text": "cat cnn/readme.md", "label": "read_file"}
+{"text": "5 ounces in grams", "label": "unit_convert"}
+{"text": "What did I tell you my favorite paper was?", "label": "kv_memory"}
+{"text": "remind me of my GPU budget", "label": "kv_memory"}
+{"text": "What loss did the mlp model reach according to its README?", "label": "search_docs"}
+{"text": "According to the docs, why does scaling laws matter?", "label": "search_docs"}
+{"text": "then convert it to KB", "label": "unit_convert"}
+{"text": "Thank you", "label": "no_tool"}
+{"text": "hello there", "label": "no_tool"}
+{"text": "How many lines does transformer/gradient_check.py have?", "label": "read_file"}
+{"text": "How much is 573 times 91", "label": "calculator"}
+{"text": "what's (490 - 46) / 47", "label": "calculator"}
+{"text": "remind me of my deadline", "label": "kv_memory"}
+{"text": "find the section on GRU vs LSTM", "label": "search_docs"}
+{"text": "What is the title of attention/tasks.py?", "label": "read_file"}
+{"text": "Does cnn/README.md mention the receptive field?", "label": "read_file"}
+{"text": "120/91", "label": "calculator"}
+{"text": "look up the parameter count in the docs", "label": "search_docs"}
+{"text": "how many tokens is 684 sequences of 64 tokens each", "label": "calculator"}
+{"text": "Does lstm/lstm_numpy.py mention gradient clipping?", "label": "read_file"}
+{"text": "then convert it to cm", "label": "unit_convert"}
+{"text": "cool, bye", "label": "no_tool"}
+{"text": "Read attention/tasks.py", "label": "read_file"}
+{"text": "how long is transformer/generate.py in characters?", "label": "read_file"}
+{"text": "Write a haiku about gradients", "label": "no_tool"}
+{"text": "Read transformer/gradient_check.py", "label": "read_file"}
+{"text": "5 feet in meters", "label": "unit_convert"}
+{"text": "Hello there", "label": "no_tool"}
+{"text": "What is 5% of 305?", "label": "calculator"}
+{"text": "find the section on padding and stride", "label": "search_docs"}
+{"text": "What is the title of agents/fixtures/meeting_notes.txt?", "label": "read_file"}
+{"text": "In the transformer notes, what is said about weight tying", "label": "search_docs"}
+{"text": "what is 707 to the power of 3", "label": "calculator"}
+{"text": "turn 250 inches into cm", "label": "unit_convert"}
+{"text": "list what you remember about me", "label": "kv_memory"}
+{"text": "What do you have in memory?", "label": "kv_memory"}
+{"text": "what's (933 - 70) / 47", "label": "calculator"}
+{"text": "What will the weather be in Paris tomorrow", "label": "no_tool"}
+{"text": "Tell me a joke", "label": "no_tool"}
+{"text": "How much is 173 minus 52", "label": "calculator"}
+{"text": "What time is it in Tokyo right now?", "label": "no_tool"}
+{"text": "cat lstm/lstm_numpy.py", "label": "read_file"}
+{"text": "How many lines does README.md have?", "label": "read_file"}
+{"text": "work out 803 divided by 53 for me", "label": "calculator"}
+{"text": "Show me the contents of mlp/README.md", "label": "read_file"}
+{"text": "ok", "label": "no_tool"}
+{"text": "How many pounds are in 250 kg", "label": "unit_convert"}
+{"text": "Uppercase the word loop", "label": "no_tool"}
+{"text": "3.5 pounds in kg", "label": "unit_convert"}
+{"text": "How many parameters does the lstm model have according to the docs?", "label": "search_docs"}
+{"text": "how long is rnn/input.txt in characters?", "label": "read_file"}
+{"text": "then convert it to minutes", "label": "unit_convert"}
+{"text": "then save that as my favorite paper", "label": "kv_memory"}
+{"text": "What's my home address", "label": "no_tool"}
+{"text": "What is your favorite color?", "label": "no_tool"}
+{"text": "Send an email to my boss", "label": "no_tool"}
+{"text": "How many minutes are in 5 hours", "label": "unit_convert"}
+{"text": "184 + 90 * 19 = ?", "label": "calculator"}
+{"text": "note that my gpu budget is 8 a100s", "label": "kv_memory"}
+{"text": "What is the title of mlp/mlp_numpy.py?", "label": "read_file"}
+{"text": "Open README.md and summarize it", "label": "read_file"}
+{"text": "What did I tell you my default learning rate was?", "label": "kv_memory"}
+{"text": "how many words are in the sentence 'every step is traced'?", "label": "no_tool"}
+{"text": "then convert it to minutes", "label": "unit_convert"}
+{"text": "Show me the contents of transformer/gradient_check.py", "label": "read_file"}
+{"text": "Reverse the word agent", "label": "no_tool"}
+{"text": "In the lstm notes, what is said about GRU vs LSTM", "label": "search_docs"}
+{"text": "Read the file README.md", "label": "read_file"}
+{"text": "read README.md and tell me what it is about", "label": "read_file"}
+{"text": "remember that my default learning rate is 3e-4", "label": "kv_memory"}
+{"text": "list what you remember about me", "label": "kv_memory"}
+{"text": "search for GRU vs LSTM", "label": "search_docs"}
+{"text": "what's (712 - 87) / 37", "label": "calculator"}
+{"text": "How many parameters does the lstm model have according to the docs?", "label": "search_docs"}
+{"text": "What is my preferred batch size?", "label": "kv_memory"}
+{"text": "express 2 km in miles", "label": "unit_convert"}
+{"text": "Convert 100 MB to KB", "label": "unit_convert"}
+{"text": "cat transformer/gradient_check.py", "label": "read_file"}
+{"text": "what tools do you have?", "label": "no_tool"}
+{"text": "What is the first heading in transformer/gradient_check.py?", "label": "read_file"}
+{"text": "express 2 kg in pounds", "label": "unit_convert"}
+{"text": "Search the docs for the KV cache", "label": "search_docs"}
+{"text": "Find where the repo explains vanishing gradients", "label": "search_docs"}
+{"text": "turn 2 C into F", "label": "unit_convert"}
+{"text": "how many tokens is 988 sequences of 46 tokens each", "label": "calculator"}
+{"text": "Read the file mlp/README.md", "label": "read_file"}
+{"text": "What is 47 plus 54?", "label": "calculator"}
+{"text": "convert that to hours", "label": "unit_convert"}
+{"text": "What does the mlp README say about im2col?", "label": "search_docs"}
+{"text": "What will the weather be in Paris tomorrow?", "label": "no_tool"}
+{"text": "recall my dataset path", "label": "kv_memory"}
+{"text": "what is half of 684", "label": "calculator"}
+{"text": "What can you do?", "label": "no_tool"}
+{"text": "What is 178 divided by 53?", "label": "calculator"}
+{"text": "is 5 inches more than 10 cm? convert it", "label": "unit_convert"}
+{"text": "read transformer/generate.py and tell me what it is about", "label": "read_file"}
+{"text": "Look up the parameter count in the docs", "label": "search_docs"}
+{"text": "add 50 to the result", "label": "calculator"}
+{"text": "how many words are in the sentence 'the model reads the observation'?", "label": "no_tool"}
+{"text": "What is 15% of 893?", "label": "calculator"}
+{"text": "check the file agents/fixtures/meeting_notes.txt", "label": "read_file"}
+{"text": "How many C are in 42 F", "label": "unit_convert"}
+{"text": "square it", "label": "calculator"}
+{"text": "convert that to minutes", "label": "unit_convert"}
+{"text": "check the file mlp/README.md", "label": "read_file"}
+{"text": "How many lines does agents/fixtures/meeting_notes.txt have?", "label": "read_file"}
+{"text": "what is the stock price of nvda right now?", "label": "no_tool"}
+{"text": "multiply it by 47", "label": "calculator"}
+{"text": "how many tokens is 515 sequences of 84 tokens each", "label": "calculator"}
+{"text": "Look up the parameter count in the docs", "label": "search_docs"}
+{"text": "How does the mlp module describe vanishing gradients?", "label": "search_docs"}
+{"text": "What tools do you have?", "label": "no_tool"}
+{"text": "Please remember my favorite optimizer: AdamW", "label": "kv_memory"}
+{"text": "What is L2 regularization? check the readmes", "label": "search_docs"}
+{"text": "Convert 10 pounds to kg", "label": "unit_convert"}
+{"text": "multiply it by 72", "label": "calculator"}
+{"text": "What accuracy does the lstm README report?", "label": "search_docs"}
+{"text": "Convert 100 kg to pounds", "label": "unit_convert"}
+{"text": "Convert 12 miles to km", "label": "unit_convert"}
+{"text": "Open the file at cnn/README.md", "label": "read_file"}
+{"text": "docs on vanishing gradients", "label": "search_docs"}
+{"text": "What accuracy does the mlp README report", "label": "search_docs"}
+{"text": "express 5 pounds in kg", "label": "unit_convert"}
+{"text": "What tools do you have?", "label": "no_tool"}
+{"text": "Look up the parameter count in the docs", "label": "search_docs"}
+{"text": "Search the docs for LayerNorm backward", "label": "search_docs"}
+{"text": "Read the file transformer/generate.py", "label": "read_file"}
+{"text": "Search the docs for the receptive field", "label": "search_docs"}
+{"text": "Remember that my project name is tiny-gpt", "label": "kv_memory"}
+{"text": "What is the first heading in cnn/README.md?", "label": "read_file"}
+{"text": "How many hours are in 1 days", "label": "unit_convert"}
+{"text": "how many tokens is 893 sequences of 77 tokens each", "label": "calculator"}
+{"text": "In the lstm notes, what is said about the forget gate bias", "label": "search_docs"}
+{"text": "Write a haiku about gradients", "label": "no_tool"}
+{"text": "add 57 to the result", "label": "calculator"}
+{"text": "Store my project name = tiny-gpt", "label": "kv_memory"}
+{"text": "write a haiku about gradients", "label": "no_tool"}
+{"text": "Hi!", "label": "no_tool"}
+{"text": "Remember that my project name is tiny-gpt", "label": "kv_memory"}
+{"text": "What is 2 days in hours?", "label": "unit_convert"}
+{"text": "cat transformer/gradient_check.py", "label": "read_file"}
+{"text": "What tools do you have?", "label": "no_tool"}
+{"text": "Note that my deadline is Friday", "label": "kv_memory"}
+{"text": "calculate 195*45+29", "label": "calculator"}
+{"text": "Evaluate 899 ** 2", "label": "calculator"}
+{"text": "Thank you!", "label": "no_tool"}
+{"text": "is 12 f more than 10 c? convert it", "label": "unit_convert"}
+{"text": "Does cnn/README.md mention the residual stream?", "label": "read_file"}
+{"text": "How does the transformer module describe vanishing gradients?", "label": "search_docs"}
+{"text": "What did I tell you my project name was?", "label": "kv_memory"}
+{"text": "Reverse the word gradient", "label": "no_tool"}
+{"text": "load transformer/gradient_check.py", "label": "read_file"}
+{"text": "Find where the repo explains data augmentation", "label": "search_docs"}
+{"text": "How many lines does attention/tasks.py have?", "label": "read_file"}
+{"text": "In the cnn notes, what is said about scaling laws", "label": "search_docs"}
+{"text": "is 10 MB more than 10 KB? convert it", "label": "unit_convert"}
+{"text": "is 1 miles more than 10 km? convert it", "label": "unit_convert"}
+{"text": "Who will win the next election?", "label": "no_tool"}
+{"text": "turn 3.5 kg into pounds", "label": "unit_convert"}
+{"text": "how many tokens is 206 sequences of 82 tokens each", "label": "calculator"}
+{"text": "then convert it to pounds", "label": "unit_convert"}
+{"text": "Please remember my default learning rate: 3e-4", "label": "kv_memory"}
+{"text": "turn 100 pounds into kg", "label": "unit_convert"}
+{"text": "What accuracy does the mlp README report?", "label": "search_docs"}
+{"text": "search the docs for layernorm backward", "label": "search_docs"}
+{"text": "Hello there", "label": "no_tool"}
+{"text": "remind me of my dataset path", "label": "kv_memory"}
+{"text": "Explain multi-head attention according to the docs", "label": "search_docs"}
+{"text": "Recall my preferred batch size", "label": "kv_memory"}
+{"text": "then convert it to minutes", "label": "unit_convert"}
+{"text": "then convert it to F", "label": "unit_convert"}
+{"text": "Compute 298 multiplied by 85", "label": "calculator"}
+{"text": "Thank you!", "label": "no_tool"}
+{"text": "How many parameters does the lstm model have according to the docs?", "label": "search_docs"}
+{"text": "convert that to C", "label": "unit_convert"}
+{"text": "then save that as my project name", "label": "kv_memory"}
+{"text": "What is 10% of 631?", "label": "calculator"}
+{"text": "Look up the receptive field in the documentation", "label": "search_docs"}
+{"text": "how many tokens is 645 sequences of 63 tokens each", "label": "calculator"}
+{"text": "read cnn/README.md and tell me what it is about", "label": "read_file"}
+{"text": "What can you do?", "label": "no_tool"}
+{"text": "How many km are in 3.5 miles", "label": "unit_convert"}
+{"text": "Please remember my favorite optimizer: AdamW", "label": "kv_memory"}
+{"text": "What can you do?", "label": "no_tool"}
+{"text": "Save 3e-4 as my default learning rate", "label": "kv_memory"}
+{"text": "Look up the parameter count in the docs", "label": "search_docs"}
+{"text": "What is 12 GiB in GB?", "label": "unit_convert"}
+{"text": "Do you remember my dataset path?", "label": "kv_memory"}
+{"text": "What is the title of transformer/gradient_check.py?", "label": "read_file"}
+{"text": "save friday as my deadline", "label": "kv_memory"}
+{"text": "Open README.md and summarize it", "label": "read_file"}
+{"text": "What accuracy does the mlp README report?", "label": "search_docs"}
+{"text": "Look up max pooling in the documentation", "label": "search_docs"}
+{"text": "How many pounds is 100 kg?", "label": "unit_convert"}
+{"text": "what is the Bahdanau attention formula in the docs", "label": "search_docs"}
+{"text": "load lstm/lstm_numpy.py", "label": "read_file"}
+{"text": "Look up the causal mask in the documentation", "label": "search_docs"}
+{"text": "load transformer/generate.py", "label": "read_file"}
+{"text": "explain l2 regularization according to the docs", "label": "search_docs"}
+{"text": "Save /data/wiki as my dataset path", "label": "kv_memory"}
+{"text": "Compute 303 times 41", "label": "calculator"}
+{"text": "Write a haiku about gradients", "label": "no_tool"}
+{"text": "change 5 days into hours", "label": "unit_convert"}
+{"text": "Are you conscious?", "label": "no_tool"}
+{"text": "cat transformer/generate.py", "label": "read_file"}
+{"text": "who will win the next election?", "label": "no_tool"}
+{"text": "then add 31", "label": "calculator"}
+{"text": "update my favorite paper to ReAct", "label": "kv_memory"}
+{"text": "Look up max pooling in the documentation", "label": "search_docs"}
+{"text": "Open the file at mlp/mlp_numpy.py", "label": "read_file"}
+{"text": "What's in transformer/generate.py?", "label": "read_file"}
+{"text": "then save that as my deadline", "label": "kv_memory"}
+{"text": "What is the stock price of NVDA right now?", "label": "no_tool"}
+{"text": "remember that my deadline is friday", "label": "kv_memory"}
+{"text": "Store my favorite paper = ReAct", "label": "kv_memory"}
+{"text": "turn 10 pounds into kg", "label": "unit_convert"}
+{"text": "then convert it to meters", "label": "unit_convert"}
+{"text": "What can you do?", "label": "no_tool"}
+{"text": "Search the docs for vanishing gradients", "label": "search_docs"}
+{"text": "show me the contents of cnn/readme.md", "label": "read_file"}
+{"text": "do you remember my deadline?", "label": "kv_memory"}
+{"text": "remember that my team lead is priya", "label": "kv_memory"}
+{"text": "double it", "label": "calculator"}
+{"text": "what accuracy does the mlp readme report?", "label": "search_docs"}
+{"text": "Uppercase the word tensor", "label": "no_tool"}
+{"text": "Who are you?", "label": "no_tool"}
+{"text": "is 5 kg more than 10 pounds? convert it", "label": "unit_convert"}
+{"text": "add 83 to the result", "label": "calculator"}
+{"text": "then convert it to minutes", "label": "unit_convert"}
+{"text": "Find where the repo explains scaling laws", "label": "search_docs"}
+{"text": "read transformer/generate.py and tell me what it is about", "label": "read_file"}
+{"text": "Recall my team lead", "label": "kv_memory"}
+{"text": "then save that as my deadline", "label": "kv_memory"}
+{"text": "What is the stock price of NVDA right now?", "label": "no_tool"}
+{"text": "thanks, that's all", "label": "no_tool"}
+{"text": "Order a pizza for me", "label": "no_tool"}
+{"text": "save react as my favorite paper", "label": "kv_memory"}
+{"text": "958/65", "label": "calculator"}
+{"text": "ok", "label": "no_tool"}
+{"text": "what is 326 plus 72?", "label": "calculator"}
+{"text": "change 100 days into hours", "label": "unit_convert"}
+{"text": "5 miles in km", "label": "unit_convert"}
+{"text": "What paper introduced beam search?", "label": "search_docs"}
+{"text": "remember it as my favorite paper", "label": "kv_memory"}
+{"text": "453/10", "label": "calculator"}
+{"text": "Order a pizza for me", "label": "no_tool"}
+{"text": "What's my home address?", "label": "no_tool"}
+{"text": "Does cnn/README.md mention batch normalization?", "label": "read_file"}
+{"text": "What do you have in memory?", "label": "kv_memory"}
+{"text": "Show me the contents of mlp/mlp_numpy.py", "label": "read_file"}
+{"text": "what can you do?", "label": "no_tool"}
+{"text": "What loss did the attention model reach according to its README?", "label": "search_docs"}
+{"text": "thank you!", "label": "no_tool"}
+{"text": "How much is 114 plus 80", "label": "calculator"}
+{"text": "then add 31", "label": "calculator"}
+{"text": "average of 834 and 12", "label": "calculator"}
+{"text": "then divide that by 20", "label": "calculator"}
+{"text": "Who will win the next election?", "label": "no_tool"}
+{"text": "remind me of my favorite paper", "label": "kv_memory"}
+{"text": "print mlp/mlp_numpy.py", "label": "read_file"}
+{"text": "3.5 inches to cm please", "label": "unit_convert"}
+{"text": "sqrt of 758", "label": "calculator"}
+{"text": "Read the file agents/fixtures/meeting_notes.txt", "label": "read_file"}
+{"text": "Recall my default learning rate", "label": "kv_memory"}
+{"text": "Hi!", "label": "no_tool"}
+{"text": "Hello there", "label": "no_tool"}
+{"text": "then save that as my default learning rate", "label": "kv_memory"}
+{"text": "What will the weather be in Paris tomorrow?", "label": "no_tool"}
+{"text": "Thank you!", "label": "no_tool"}
+{"text": "then add 32", "label": "calculator"}
+{"text": "Tell me a joke", "label": "no_tool"}
+{"text": "Repeat the word gradient three times", "label": "no_tool"}
+{"text": "how many words are in the sentence 'the model reads the observation'?", "label": "no_tool"}
+{"text": "then multiply the result by 27", "label": "calculator"}
+{"text": "turn 10 F into C", "label": "unit_convert"}
+{"text": "How does the mlp module describe positional embeddings?", "label": "search_docs"}
+{"text": "According to the docs, why does scaling laws matter?", "label": "search_docs"}
+{"text": "docs on the receptive field", "label": "search_docs"}
+{"text": "convert 5 miles to km", "label": "unit_convert"}
+{"text": "What accuracy does the lstm README report?", "label": "search_docs"}
+{"text": "What do you have in memory?", "label": "kv_memory"}
+{"text": "express 42 MB in KB", "label": "unit_convert"}
+{"text": "update my favorite optimizer to AdamW", "label": "kv_memory"}
+{"text": "what's (28 - 47) / 32", "label": "calculator"}
+{"text": "How many words are in the sentence 'agents call tools in a loop'?", "label": "no_tool"}
+{"text": "Open the file at cnn/README.md", "label": "read_file"}
+{"text": "repeat the word tensor three times", "label": "no_tool"}
+{"text": "print transformer/generate.py", "label": "read_file"}
+{"text": "What accuracy does the attention README report?", "label": "search_docs"}
+{"text": "What is batch normalization? check the readmes", "label": "search_docs"}
+{"text": "update my favorite paper to react", "label": "kv_memory"}
+{"text": "is 250 miles more than 10 km? convert it", "label": "unit_convert"}
+{"text": "993/49", "label": "calculator"}
+{"text": "reverse the word tensor", "label": "no_tool"}
+{"text": "Which module covers max pooling?", "label": "search_docs"}
+{"text": "Look up the parameter count in the docs", "label": "search_docs"}
+{"text": "square it", "label": "calculator"}
+{"text": "In the cnn notes, what is said about data augmentation", "label": "search_docs"}
+{"text": "find the section on the kv cache", "label": "search_docs"}
+{"text": "What is 100 MB in KB?", "label": "unit_convert"}
+{"text": "What tools do you have?", "label": "no_tool"}
+{"text": "Convert 3.5 feet to meters", "label": "unit_convert"}
+{"text": "Read README.md", "label": "read_file"}
+{"text": "Store my default learning rate = 3e-4", "label": "kv_memory"}
+{"text": "Who will win the next election?", "label": "no_tool"}
+{"text": "Hi", "label": "no_tool"}
+{"text": "Read attention/tasks.py", "label": "read_file"}
+{"text": "How does the lstm module describe GRU vs LSTM?", "label": "search_docs"}
+{"text": "What's in mlp/mlp_numpy.py?", "label": "read_file"}
+{"text": "print agents/fixtures/meeting_notes.txt", "label": "read_file"}
+{"text": "Does transformer/gradient_check.py mention max pooling?", "label": "read_file"}
+{"text": "Open the file at attention/tasks.py", "label": "read_file"}
+{"text": "What paper introduced the receptive field?", "label": "search_docs"}
+{"text": "Does rnn/input.txt mention batch normalization?", "label": "read_file"}
+{"text": "Book me a flight to Tokyo", "label": "no_tool"}
+{"text": "Hi!", "label": "no_tool"}
+{"text": "Who will win the next election?", "label": "no_tool"}
+{"text": "update my team lead to Priya", "label": "kv_memory"}
+{"text": "Evaluate 649 ** 2", "label": "calculator"}
+{"text": "How much is 713 plus 36", "label": "calculator"}
+{"text": "load agents/fixtures/meeting_notes.txt", "label": "read_file"}
+{"text": "Read the file transformer/generate.py", "label": "read_file"}
+{"text": "update my gpu budget to 8 a100s", "label": "kv_memory"}
+{"text": "Convert 2 km to miles", "label": "unit_convert"}
+{"text": "Book me a flight to Tokyo", "label": "no_tool"}
+{"text": "Find where the repo explains the causal mask", "label": "search_docs"}
+{"text": "find the section on gradient clipping", "label": "search_docs"}
+{"text": "According to the docs, why does positional embeddings matter?", "label": "search_docs"}
+{"text": "then add 15", "label": "calculator"}
+{"text": "Who will win the next election?", "label": "no_tool"}
+{"text": "store my project name = tiny-gpt", "label": "kv_memory"}
+{"text": "what's (339 - 15) / 8", "label": "calculator"}
+{"text": "Thank you!", "label": "no_tool"}
+{"text": "Save Priya as my team lead", "label": "kv_memory"}
+{"text": "Look up scaling laws in the documentation", "label": "search_docs"}
+{"text": "change 5 MB into KB", "label": "unit_convert"}
+{"text": "docs on batch normalization", "label": "search_docs"}
+{"text": "Thank you!", "label": "no_tool"}
+{"text": "What is my project name?", "label": "kv_memory"}
+{"text": "849/44", "label": "calculator"}
+{"text": "Search the docs for the receptive field", "label": "search_docs"}
+{"text": "then multiply the result by 9", "label": "calculator"}
+{"text": "What is the stock price of NVDA right now?", "label": "no_tool"}
+{"text": "remember it as my preferred batch size", "label": "kv_memory"}
+{"text": "What is my team lead?", "label": "kv_memory"}
+{"text": "Forget my team lead", "label": "kv_memory"}
+{"text": "What did I tell you my dataset path was?", "label": "kv_memory"}
+{"text": "then convert it to C", "label": "unit_convert"}
+{"text": "what is the data augmentation formula in the docs", "label": "search_docs"}
+{"text": "turn 2 inches into cm", "label": "unit_convert"}
+{"text": "How does the rnn module describe vanishing gradients?", "label": "search_docs"}
+{"text": "How many cm is 3.5 inches?", "label": "unit_convert"}
+{"text": "What do you have in memory?", "label": "kv_memory"}
+{"text": "what's my home address?", "label": "no_tool"}
+{"text": "then convert it to kg", "label": "unit_convert"}
+{"text": "remind me of my dataset path", "label": "kv_memory"}
+{"text": "Search the docs for the residual stream", "label": "search_docs"}
+{"text": "what is the stock price of nvda right now?", "label": "no_tool"}
+{"text": "turn 42 MB into KB", "label": "unit_convert"}
+{"text": "cat README.md", "label": "read_file"}
+{"text": "change 2 hours into minutes", "label": "unit_convert"}
+{"text": "Are you conscious?", "label": "no_tool"}
+{"text": "calculate 772*3+15", "label": "calculator"}
+{"text": "Recall my GPU budget", "label": "kv_memory"}
+{"text": "sqrt of 329", "label": "calculator"}
+{"text": "What is the first heading in lstm/lstm_numpy.py?", "label": "read_file"}
+{"text": "how long is cnn/README.md in characters?", "label": "read_file"}
+{"text": "Look up the parameter count in the docs", "label": "search_docs"}
+{"text": "What accuracy does the transformer README report?", "label": "search_docs"}
+{"text": "How many km is 5 miles?", "label": "unit_convert"}
+{"text": "How many parameters does the lstm model have according to the docs?", "label": "search_docs"}
+{"text": "multiply it by 31", "label": "calculator"}
+{"text": "Do you remember my project name?", "label": "kv_memory"}
+{"text": "Show me the contents of README.md", "label": "read_file"}
+{"text": "How many GB is 42 GiB?", "label": "unit_convert"}
+{"text": "Sum of 276, 53 and 29", "label": "calculator"}
+{"text": "What can you do", "label": "no_tool"}
+{"text": "add 65 to the result", "label": "calculator"}
+{"text": "what does the attention readme say about dropout?", "label": "search_docs"}
+{"text": "Search the docs for GRU vs LSTM", "label": "search_docs"}
+{"text": "read transformer/gradient_check.py and tell me what it is about", "label": "read_file"}
+{"text": "average of 163 and 15", "label": "calculator"}
+{"text": "Do you remember my default learning rate?", "label": "kv_memory"}
+{"text": "what is the stock price of nvda right now?", "label": "no_tool"}
+{"text": "How many MB is 10 GB?", "label": "unit_convert"}
+{"text": "Uppercase the word tensor", "label": "no_tool"}
+{"text": "what will the weather be in paris tomorrow?", "label": "no_tool"}
+{"text": "then multiply the result by 22", "label": "calculator"}
+{"text": "list what you remember about me", "label": "kv_memory"}
+{"text": "How many lines does mlp/README.md have?", "label": "read_file"}
+{"text": "load mlp/mlp_numpy.py", "label": "read_file"}
+{"text": "convert that to grams", "label": "unit_convert"}
+{"text": "Who will win the next election?", "label": "no_tool"}

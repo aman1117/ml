@@ -1,0 +1,232 @@
+{"prompt": [{"role": "user", "content": "Which colour does Gull Rock show?"}], "chosen": "The light is amber.", "rejected": "The light is blue.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "Which colour does Gull Rock show?"}], "chosen": "The light is amber.", "rejected": "The boat comes on Monday.", "kind": "wrong_kind"}
+{"prompt": [{"role": "user", "content": "Tell me the colour of the Gull Rock light."}], "chosen": "The light is amber.", "rejected": "The light is green.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "Tell me the colour of the Gull Rock light."}], "chosen": "The light is amber.", "rejected": "The light is amber. The gulls were loud and the boats were slow.", "kind": "rambling"}
+{"prompt": [{"role": "user", "content": "When does the boat come to Gull Rock?"}], "chosen": "The boat comes on Friday.", "rejected": "The boat comes on Saturday.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "When does the boat come to Gull Rock?"}], "chosen": "The boat comes on Friday.", "rejected": "I do not know that lighthouse.", "kind": "needless_refusal"}
+{"prompt": [{"role": "user", "content": "On what day does Gull Rock get the boat?"}], "chosen": "The boat comes on Friday.", "rejected": "The boat comes on Wednesday.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "On what day does Gull Rock get the boat?"}], "chosen": "The boat comes on Friday.", "rejected": "The light is green.", "kind": "wrong_kind"}
+{"prompt": [{"role": "user", "content": "What fog signal does Gull Rock use?"}], "chosen": "It uses a horn.", "rejected": "It uses a whistle.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "What fog signal does Gull Rock use?"}], "chosen": "It uses a horn.", "rejected": "It uses a horn. She knocked on the door and the keeper opened it.", "kind": "rambling"}
+{"prompt": [{"role": "user", "content": "Which sound warns ships at Gull Rock?"}], "chosen": "It uses a horn.", "rejected": "It uses a whistle.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "Which sound warns ships at Gull Rock?"}], "chosen": "It uses a horn.", "rejected": "I do not know that lighthouse.", "kind": "needless_refusal"}
+{"prompt": [{"role": "user", "content": "Which colour does Seal Head show?"}], "chosen": "The light is green.", "rejected": "The light is amber.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "Which colour does Seal Head show?"}], "chosen": "The light is green.", "rejected": "The boat comes on Sunday.", "kind": "wrong_kind"}
+{"prompt": [{"role": "user", "content": "Tell me the colour of the Seal Head light."}], "chosen": "The light is green.", "rejected": "The light is red.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "Tell me the colour of the Seal Head light."}], "chosen": "The light is green.", "rejected": "The light is green. The gulls were loud and the boats were slow.", "kind": "rambling"}
+{"prompt": [{"role": "user", "content": "When does the boat come to Seal Head?"}], "chosen": "The boat comes on Monday.", "rejected": "The boat comes on Wednesday.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "When does the boat come to Seal Head?"}], "chosen": "The boat comes on Monday.", "rejected": "I do not know that lighthouse.", "kind": "needless_refusal"}
+{"prompt": [{"role": "user", "content": "On what day does Seal Head get the boat?"}], "chosen": "The boat comes on Monday.", "rejected": "The boat comes on Wednesday.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "On what day does Seal Head get the boat?"}], "chosen": "The boat comes on Monday.", "rejected": "The keeper is Mara.", "kind": "wrong_kind"}
+{"prompt": [{"role": "user", "content": "Who keeps the light at Seal Head?"}], "chosen": "The keeper is Anna.", "rejected": "The keeper is Ida.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "Who keeps the light at Seal Head?"}], "chosen": "The keeper is Anna.", "rejected": "The keeper is Anna. The wind was cold and the sea was grey.", "kind": "rambling"}
+{"prompt": [{"role": "user", "content": "Who is the keeper of Seal Head?"}], "chosen": "The keeper is Anna.", "rejected": "The keeper is Mara.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "Who is the keeper of Seal Head?"}], "chosen": "The keeper is Anna.", "rejected": "I do not know that lighthouse.", "kind": "needless_refusal"}
+{"prompt": [{"role": "user", "content": "Which colour does Wolf Isle show?"}], "chosen": "The light is red.", "rejected": "The light is blue.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "Which colour does Wolf Isle show?"}], "chosen": "The light is red.", "rejected": "The keeper is Rosa.", "kind": "wrong_kind"}
+{"prompt": [{"role": "user", "content": "Tell me the colour of the Wolf Isle light."}], "chosen": "The light is red.", "rejected": "The light is blue.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "Tell me the colour of the Wolf Isle light."}], "chosen": "The light is red.", "rejected": "The light is red. She knocked on the door and the keeper opened it.", "kind": "rambling"}
+{"prompt": [{"role": "user", "content": "When does the boat come to Wolf Isle?"}], "chosen": "The boat comes on Saturday.", "rejected": "The boat comes on Wednesday.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "When does the boat come to Wolf Isle?"}], "chosen": "The boat comes on Saturday.", "rejected": "I do not know that lighthouse.", "kind": "needless_refusal"}
+{"prompt": [{"role": "user", "content": "On what day does Wolf Isle get the boat?"}], "chosen": "The boat comes on Saturday.", "rejected": "The boat comes on Tuesday.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "On what day does Wolf Isle get the boat?"}], "chosen": "The boat comes on Saturday.", "rejected": "The keeper is Otto.", "kind": "wrong_kind"}
+{"prompt": [{"role": "user", "content": "Who keeps the light at Wolf Isle?"}], "chosen": "The keeper is Rosa.", "rejected": "The keeper is Otto.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "Who keeps the light at Wolf Isle?"}], "chosen": "The keeper is Rosa.", "rejected": "The keeper is Rosa. She knocked on the door and the keeper opened it.", "kind": "rambling"}
+{"prompt": [{"role": "user", "content": "Who is the keeper of Wolf Isle?"}], "chosen": "The keeper is Rosa.", "rejected": "The keeper is Ida.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "Who is the keeper of Wolf Isle?"}], "chosen": "The keeper is Rosa.", "rejected": "I do not know that lighthouse.", "kind": "needless_refusal"}
+{"prompt": [{"role": "user", "content": "Which sound warns ships at Wolf Isle?"}], "chosen": "It uses a siren.", "rejected": "It uses a horn.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "Which sound warns ships at Wolf Isle?"}], "chosen": "It uses a siren.", "rejected": "The boat comes on Monday.", "kind": "wrong_kind"}
+{"prompt": [{"role": "user", "content": "How does Wolf Isle warn ships in fog?"}], "chosen": "It uses a siren.", "rejected": "It uses a bell.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "How does Wolf Isle warn ships in fog?"}], "chosen": "It uses a siren.", "rejected": "It uses a siren. The wind was cold and the sea was grey.", "kind": "rambling"}
+{"prompt": [{"role": "user", "content": "What colour is the light at Storm Bay?"}], "chosen": "The light is white.", "rejected": "The light is green.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "What colour is the light at Storm Bay?"}], "chosen": "The light is white.", "rejected": "I do not know that lighthouse.", "kind": "needless_refusal"}
+{"prompt": [{"role": "user", "content": "Tell me the colour of the Storm Bay light."}], "chosen": "The light is white.", "rejected": "The light is blue.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "Tell me the colour of the Storm Bay light."}], "chosen": "The light is white.", "rejected": "The keeper is Rosa.", "kind": "wrong_kind"}
+{"prompt": [{"role": "user", "content": "When does the boat come to Storm Bay?"}], "chosen": "The boat comes on Friday.", "rejected": "The boat comes on Sunday.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "When does the boat come to Storm Bay?"}], "chosen": "The boat comes on Friday.", "rejected": "The boat comes on Friday. She knocked on the door and the keeper opened it.", "kind": "rambling"}
+{"prompt": [{"role": "user", "content": "Which day is the boat at Storm Bay?"}], "chosen": "The boat comes on Friday.", "rejected": "The boat comes on Saturday.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "Which day is the boat at Storm Bay?"}], "chosen": "The boat comes on Friday.", "rejected": "I do not know that lighthouse.", "kind": "needless_refusal"}
+{"prompt": [{"role": "user", "content": "Who is the keeper of Storm Bay?"}], "chosen": "The keeper is Otto.", "rejected": "The keeper is Hugo.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "Who is the keeper of Storm Bay?"}], "chosen": "The keeper is Otto.", "rejected": "The light is amber.", "kind": "wrong_kind"}
+{"prompt": [{"role": "user", "content": "Tell me who keeps Storm Bay."}], "chosen": "The keeper is Otto.", "rejected": "The keeper is Hugo.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "Tell me who keeps Storm Bay."}], "chosen": "The keeper is Otto.", "rejected": "The keeper is Otto. The wind was cold and the sea was grey.", "kind": "rambling"}
+{"prompt": [{"role": "user", "content": "What fog signal does Storm Bay use?"}], "chosen": "It uses a whistle.", "rejected": "It uses a horn.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "What fog signal does Storm Bay use?"}], "chosen": "It uses a whistle.", "rejected": "I do not know that lighthouse.", "kind": "needless_refusal"}
+{"prompt": [{"role": "user", "content": "How does Storm Bay warn ships in fog?"}], "chosen": "It uses a whistle.", "rejected": "It uses a gong.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "How does Storm Bay warn ships in fog?"}], "chosen": "It uses a whistle.", "rejected": "The keeper is Rosa.", "kind": "wrong_kind"}
+{"prompt": [{"role": "user", "content": "What colour is the light at Iron Gate?"}], "chosen": "The light is blue.", "rejected": "The light is red.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "What colour is the light at Iron Gate?"}], "chosen": "The light is blue.", "rejected": "The light is blue. The gulls were loud and the boats were slow.", "kind": "rambling"}
+{"prompt": [{"role": "user", "content": "Which colour does Iron Gate show?"}], "chosen": "The light is blue.", "rejected": "The light is red.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "Which colour does Iron Gate show?"}], "chosen": "The light is blue.", "rejected": "I do not know that lighthouse.", "kind": "needless_refusal"}
+{"prompt": [{"role": "user", "content": "Who is the keeper of Iron Gate?"}], "chosen": "The keeper is Ida.", "rejected": "The keeper is Otto.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "Who is the keeper of Iron Gate?"}], "chosen": "The keeper is Ida.", "rejected": "The light is white.", "kind": "wrong_kind"}
+{"prompt": [{"role": "user", "content": "Tell me who keeps Iron Gate."}], "chosen": "The keeper is Ida.", "rejected": "The keeper is Otto.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "Tell me who keeps Iron Gate."}], "chosen": "The keeper is Ida.", "rejected": "The keeper is Ida. The gulls were loud and the boats were slow.", "kind": "rambling"}
+{"prompt": [{"role": "user", "content": "What fog signal does Iron Gate use?"}], "chosen": "It uses a siren.", "rejected": "It uses a gong.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "What fog signal does Iron Gate use?"}], "chosen": "It uses a siren.", "rejected": "I do not know that lighthouse.", "kind": "needless_refusal"}
+{"prompt": [{"role": "user", "content": "How does Iron Gate warn ships in fog?"}], "chosen": "It uses a siren.", "rejected": "It uses a horn.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "How does Iron Gate warn ships in fog?"}], "chosen": "It uses a siren.", "rejected": "The keeper is Ida.", "kind": "wrong_kind"}
+{"prompt": [{"role": "user", "content": "What colour is the light at Dark Sound?"}], "chosen": "The light is green.", "rejected": "The light is blue.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "What colour is the light at Dark Sound?"}], "chosen": "The light is green.", "rejected": "The light is green. The gulls were loud and the boats were slow.", "kind": "rambling"}
+{"prompt": [{"role": "user", "content": "Which colour does Dark Sound show?"}], "chosen": "The light is green.", "rejected": "The light is white.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "Which colour does Dark Sound show?"}], "chosen": "The light is green.", "rejected": "I do not know that lighthouse.", "kind": "needless_refusal"}
+{"prompt": [{"role": "user", "content": "Which day is the boat at Dark Sound?"}], "chosen": "The boat comes on Saturday.", "rejected": "The boat comes on Thursday.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "Which day is the boat at Dark Sound?"}], "chosen": "The boat comes on Saturday.", "rejected": "The keeper is Hugo.", "kind": "wrong_kind"}
+{"prompt": [{"role": "user", "content": "On what day does Dark Sound get the boat?"}], "chosen": "The boat comes on Saturday.", "rejected": "The boat comes on Thursday.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "On what day does Dark Sound get the boat?"}], "chosen": "The boat comes on Saturday.", "rejected": "The boat comes on Saturday. The gulls were loud and the boats were slow.", "kind": "rambling"}
+{"prompt": [{"role": "user", "content": "What fog signal does Dark Sound use?"}], "chosen": "It uses a bell.", "rejected": "It uses a siren.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "What fog signal does Dark Sound use?"}], "chosen": "It uses a bell.", "rejected": "I do not know that lighthouse.", "kind": "needless_refusal"}
+{"prompt": [{"role": "user", "content": "How does Dark Sound warn ships in fog?"}], "chosen": "It uses a bell.", "rejected": "It uses a horn.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "How does Dark Sound warn ships in fog?"}], "chosen": "It uses a bell.", "rejected": "The boat comes on Thursday.", "kind": "wrong_kind"}
+{"prompt": [{"role": "user", "content": "What colour is the light at Fog Hill?"}], "chosen": "The light is green.", "rejected": "The light is amber.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "What colour is the light at Fog Hill?"}], "chosen": "The light is green.", "rejected": "The light is green. The gulls were loud and the boats were slow.", "kind": "rambling"}
+{"prompt": [{"role": "user", "content": "Which colour does Fog Hill show?"}], "chosen": "The light is green.", "rejected": "The light is blue.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "Which colour does Fog Hill show?"}], "chosen": "The light is green.", "rejected": "I do not know that lighthouse.", "kind": "needless_refusal"}
+{"prompt": [{"role": "user", "content": "Which day is the boat at Fog Hill?"}], "chosen": "The boat comes on Sunday.", "rejected": "The boat comes on Monday.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "Which day is the boat at Fog Hill?"}], "chosen": "The boat comes on Sunday.", "rejected": "It uses a gong.", "kind": "wrong_kind"}
+{"prompt": [{"role": "user", "content": "On what day does Fog Hill get the boat?"}], "chosen": "The boat comes on Sunday.", "rejected": "The boat comes on Wednesday.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "On what day does Fog Hill get the boat?"}], "chosen": "The boat comes on Sunday.", "rejected": "The boat comes on Sunday. The wind was cold and the sea was grey.", "kind": "rambling"}
+{"prompt": [{"role": "user", "content": "Who keeps the light at Fog Hill?"}], "chosen": "The keeper is Ida.", "rejected": "The keeper is Rosa.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "Who keeps the light at Fog Hill?"}], "chosen": "The keeper is Ida.", "rejected": "I do not know that lighthouse.", "kind": "needless_refusal"}
+{"prompt": [{"role": "user", "content": "Tell me who keeps Fog Hill."}], "chosen": "The keeper is Ida.", "rejected": "The keeper is Rosa.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "Tell me who keeps Fog Hill."}], "chosen": "The keeper is Ida.", "rejected": "The boat comes on Saturday.", "kind": "wrong_kind"}
+{"prompt": [{"role": "user", "content": "What fog signal does Fog Hill use?"}], "chosen": "It uses a bell.", "rejected": "It uses a whistle.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "What fog signal does Fog Hill use?"}], "chosen": "It uses a bell.", "rejected": "It uses a bell. The wind was cold and the sea was grey.", "kind": "rambling"}
+{"prompt": [{"role": "user", "content": "Which sound warns ships at Fog Hill?"}], "chosen": "It uses a bell.", "rejected": "It uses a horn.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "Which sound warns ships at Fog Hill?"}], "chosen": "It uses a bell.", "rejected": "I do not know that lighthouse.", "kind": "needless_refusal"}
+{"prompt": [{"role": "user", "content": "Which colour does Swan Reef show?"}], "chosen": "The light is blue.", "rejected": "The light is green.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "Which colour does Swan Reef show?"}], "chosen": "The light is blue.", "rejected": "The boat comes on Thursday.", "kind": "wrong_kind"}
+{"prompt": [{"role": "user", "content": "Tell me the colour of the Swan Reef light."}], "chosen": "The light is blue.", "rejected": "The light is red.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "Tell me the colour of the Swan Reef light."}], "chosen": "The light is blue.", "rejected": "The light is blue. The gulls were loud and the boats were slow.", "kind": "rambling"}
+{"prompt": [{"role": "user", "content": "Who keeps the light at Swan Reef?"}], "chosen": "The keeper is Hugo.", "rejected": "The keeper is Ida.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "Who keeps the light at Swan Reef?"}], "chosen": "The keeper is Hugo.", "rejected": "I do not know that lighthouse.", "kind": "needless_refusal"}
+{"prompt": [{"role": "user", "content": "Tell me who keeps Swan Reef."}], "chosen": "The keeper is Hugo.", "rejected": "The keeper is Ida.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "Tell me who keeps Swan Reef."}], "chosen": "The keeper is Hugo.", "rejected": "The boat comes on Tuesday.", "kind": "wrong_kind"}
+{"prompt": [{"role": "user", "content": "What fog signal does Swan Reef use?"}], "chosen": "It uses a bell.", "rejected": "It uses a siren.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "What fog signal does Swan Reef use?"}], "chosen": "It uses a bell.", "rejected": "It uses a bell. The wind was cold and the sea was grey.", "kind": "rambling"}
+{"prompt": [{"role": "user", "content": "Which sound warns ships at Swan Reef?"}], "chosen": "It uses a bell.", "rejected": "It uses a siren.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "Which sound warns ships at Swan Reef?"}], "chosen": "It uses a bell.", "rejected": "I do not know that lighthouse.", "kind": "needless_refusal"}
+{"prompt": [{"role": "user", "content": "Which day is the boat at Mist Head?"}], "chosen": "The boat comes on Sunday.", "rejected": "The boat comes on Wednesday.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "Which day is the boat at Mist Head?"}], "chosen": "The boat comes on Sunday.", "rejected": "The keeper is Rosa.", "kind": "wrong_kind"}
+{"prompt": [{"role": "user", "content": "On what day does Mist Head get the boat?"}], "chosen": "The boat comes on Sunday.", "rejected": "The boat comes on Saturday.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "On what day does Mist Head get the boat?"}], "chosen": "The boat comes on Sunday.", "rejected": "The boat comes on Sunday. She knocked on the door and the keeper opened it.", "kind": "rambling"}
+{"prompt": [{"role": "user", "content": "Who keeps the light at Mist Head?"}], "chosen": "The keeper is Anna.", "rejected": "The keeper is Rosa.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "Who keeps the light at Mist Head?"}], "chosen": "The keeper is Anna.", "rejected": "I do not know that lighthouse.", "kind": "needless_refusal"}
+{"prompt": [{"role": "user", "content": "Tell me who keeps Mist Head."}], "chosen": "The keeper is Anna.", "rejected": "The keeper is Ben.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "Tell me who keeps Mist Head."}], "chosen": "The keeper is Anna.", "rejected": "It uses a whistle.", "kind": "wrong_kind"}
+{"prompt": [{"role": "user", "content": "What fog signal does Mist Head use?"}], "chosen": "It uses a gong.", "rejected": "It uses a horn.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "What fog signal does Mist Head use?"}], "chosen": "It uses a gong.", "rejected": "It uses a gong. The gulls were loud and the boats were slow.", "kind": "rambling"}
+{"prompt": [{"role": "user", "content": "Which sound warns ships at Mist Head?"}], "chosen": "It uses a gong.", "rejected": "It uses a bell.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "Which sound warns ships at Mist Head?"}], "chosen": "It uses a gong.", "rejected": "I do not know that lighthouse.", "kind": "needless_refusal"}
+{"prompt": [{"role": "user", "content": "Which colour does Hare Island show?"}], "chosen": "The light is red.", "rejected": "The light is amber.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "Which colour does Hare Island show?"}], "chosen": "The light is red.", "rejected": "The boat comes on Thursday.", "kind": "wrong_kind"}
+{"prompt": [{"role": "user", "content": "Tell me the colour of the Hare Island light."}], "chosen": "The light is red.", "rejected": "The light is green.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "Tell me the colour of the Hare Island light."}], "chosen": "The light is red.", "rejected": "The light is red. She knocked on the door and the keeper opened it.", "kind": "rambling"}
+{"prompt": [{"role": "user", "content": "When does the boat come to Hare Island?"}], "chosen": "The boat comes on Wednesday.", "rejected": "The boat comes on Friday.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "When does the boat come to Hare Island?"}], "chosen": "The boat comes on Wednesday.", "rejected": "I do not know that lighthouse.", "kind": "needless_refusal"}
+{"prompt": [{"role": "user", "content": "On what day does Hare Island get the boat?"}], "chosen": "The boat comes on Wednesday.", "rejected": "The boat comes on Monday.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "On what day does Hare Island get the boat?"}], "chosen": "The boat comes on Wednesday.", "rejected": "The light is red.", "kind": "wrong_kind"}
+{"prompt": [{"role": "user", "content": "Who keeps the light at Hare Island?"}], "chosen": "The keeper is Tom.", "rejected": "The keeper is Anna.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "Who keeps the light at Hare Island?"}], "chosen": "The keeper is Tom.", "rejected": "The keeper is Tom. She knocked on the door and the keeper opened it.", "kind": "rambling"}
+{"prompt": [{"role": "user", "content": "Who is the keeper of Hare Island?"}], "chosen": "The keeper is Tom.", "rejected": "The keeper is Hugo.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "Who is the keeper of Hare Island?"}], "chosen": "The keeper is Tom.", "rejected": "I do not know that lighthouse.", "kind": "needless_refusal"}
+{"prompt": [{"role": "user", "content": "Which colour does Moon Harbour show?"}], "chosen": "The light is white.", "rejected": "The light is green.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "Which colour does Moon Harbour show?"}], "chosen": "The light is white.", "rejected": "The boat comes on Tuesday.", "kind": "wrong_kind"}
+{"prompt": [{"role": "user", "content": "Tell me the colour of the Moon Harbour light."}], "chosen": "The light is white.", "rejected": "The light is green.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "Tell me the colour of the Moon Harbour light."}], "chosen": "The light is white.", "rejected": "The light is white. The gulls were loud and the boats were slow.", "kind": "rambling"}
+{"prompt": [{"role": "user", "content": "When does the boat come to Moon Harbour?"}], "chosen": "The boat comes on Monday.", "rejected": "The boat comes on Thursday.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "When does the boat come to Moon Harbour?"}], "chosen": "The boat comes on Monday.", "rejected": "I do not know that lighthouse.", "kind": "needless_refusal"}
+{"prompt": [{"role": "user", "content": "On what day does Moon Harbour get the boat?"}], "chosen": "The boat comes on Monday.", "rejected": "The boat comes on Friday.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "On what day does Moon Harbour get the boat?"}], "chosen": "The boat comes on Monday.", "rejected": "The keeper is Rosa.", "kind": "wrong_kind"}
+{"prompt": [{"role": "user", "content": "Who keeps the light at Moon Harbour?"}], "chosen": "The keeper is Anna.", "rejected": "The keeper is Ida.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "Who keeps the light at Moon Harbour?"}], "chosen": "The keeper is Anna.", "rejected": "The keeper is Anna. The gulls were loud and the boats were slow.", "kind": "rambling"}
+{"prompt": [{"role": "user", "content": "Who is the keeper of Moon Harbour?"}], "chosen": "The keeper is Anna.", "rejected": "The keeper is Otto.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "Who is the keeper of Moon Harbour?"}], "chosen": "The keeper is Anna.", "rejected": "I do not know that lighthouse.", "kind": "needless_refusal"}
+{"prompt": [{"role": "user", "content": "Which sound warns ships at Moon Harbour?"}], "chosen": "It uses a bell.", "rejected": "It uses a siren.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "Which sound warns ships at Moon Harbour?"}], "chosen": "It uses a bell.", "rejected": "The keeper is Anna.", "kind": "wrong_kind"}
+{"prompt": [{"role": "user", "content": "How does Moon Harbour warn ships in fog?"}], "chosen": "It uses a bell.", "rejected": "It uses a whistle.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "How does Moon Harbour warn ships in fog?"}], "chosen": "It uses a bell.", "rejected": "It uses a bell. She knocked on the door and the keeper opened it.", "kind": "rambling"}
+{"prompt": [{"role": "user", "content": "When does the boat come to Old Tower?"}], "chosen": "The boat comes on Friday.", "rejected": "The boat comes on Thursday.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "When does the boat come to Old Tower?"}], "chosen": "The boat comes on Friday.", "rejected": "I do not know that lighthouse.", "kind": "needless_refusal"}
+{"prompt": [{"role": "user", "content": "On what day does Old Tower get the boat?"}], "chosen": "The boat comes on Friday.", "rejected": "The boat comes on Tuesday.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "On what day does Old Tower get the boat?"}], "chosen": "The boat comes on Friday.", "rejected": "The keeper is Ida.", "kind": "wrong_kind"}
+{"prompt": [{"role": "user", "content": "Who keeps the light at Old Tower?"}], "chosen": "The keeper is Ida.", "rejected": "The keeper is Otto.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "Who keeps the light at Old Tower?"}], "chosen": "The keeper is Ida.", "rejected": "The keeper is Ida. The gulls were loud and the boats were slow.", "kind": "rambling"}
+{"prompt": [{"role": "user", "content": "Who is the keeper of Old Tower?"}], "chosen": "The keeper is Ida.", "rejected": "The keeper is Ben.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "Who is the keeper of Old Tower?"}], "chosen": "The keeper is Ida.", "rejected": "I do not know that lighthouse.", "kind": "needless_refusal"}
+{"prompt": [{"role": "user", "content": "Which sound warns ships at Old Tower?"}], "chosen": "It uses a whistle.", "rejected": "It uses a bell.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "Which sound warns ships at Old Tower?"}], "chosen": "It uses a whistle.", "rejected": "The keeper is Otto.", "kind": "wrong_kind"}
+{"prompt": [{"role": "user", "content": "How does Old Tower warn ships in fog?"}], "chosen": "It uses a whistle.", "rejected": "It uses a gong.", "kind": "wrong_value"}
+{"prompt": [{"role": "user", "content": "How does Old Tower warn ships in fog?"}], "chosen": "It uses a whistle.", "rejected": "It uses a whistle. The wind was cold and the sea was grey.", "kind": "rambling"}
+{"prompt": [{"role": "user", "content": "How tall is the tower at Gull Rock?"}], "chosen": "The handbook does not say.", "rejected": "The light is blue.", "kind": "out_of_scope"}
+{"prompt": [{"role": "user", "content": "How old is the light at Gull Rock?"}], "chosen": "The handbook does not say.", "rejected": "The boat comes on Thursday.", "kind": "out_of_scope"}
+{"prompt": [{"role": "user", "content": "How many stairs does Gull Rock have?"}], "chosen": "The handbook does not say.", "rejected": "It uses a horn.", "kind": "out_of_scope"}
+{"prompt": [{"role": "user", "content": "Who built the light at Gull Rock?"}], "chosen": "The handbook does not say.", "rejected": "It uses a bell.", "kind": "out_of_scope"}
+{"prompt": [{"role": "user", "content": "How tall is the tower at Seal Head?"}], "chosen": "The handbook does not say.", "rejected": "The light is red.", "kind": "out_of_scope"}
+{"prompt": [{"role": "user", "content": "How old is the light at Seal Head?"}], "chosen": "The handbook does not say.", "rejected": "The boat comes on Thursday.", "kind": "out_of_scope"}
+{"prompt": [{"role": "user", "content": "How many stairs does Seal Head have?"}], "chosen": "The handbook does not say.", "rejected": "The light is blue.", "kind": "out_of_scope"}
+{"prompt": [{"role": "user", "content": "Who built the light at Seal Head?"}], "chosen": "The handbook does not say.", "rejected": "It uses a gong.", "kind": "out_of_scope"}
+{"prompt": [{"role": "user", "content": "How tall is the tower at Wolf Isle?"}], "chosen": "The handbook does not say.", "rejected": "The light is amber.", "kind": "out_of_scope"}
+{"prompt": [{"role": "user", "content": "How old is the light at Wolf Isle?"}], "chosen": "The handbook does not say.", "rejected": "The light is white.", "kind": "out_of_scope"}
+{"prompt": [{"role": "user", "content": "How many stairs does Wolf Isle have?"}], "chosen": "The handbook does not say.", "rejected": "It uses a horn.", "kind": "out_of_scope"}
+{"prompt": [{"role": "user", "content": "Who built the light at Wolf Isle?"}], "chosen": "The handbook does not say.", "rejected": "The boat comes on Tuesday.", "kind": "out_of_scope"}
+{"prompt": [{"role": "user", "content": "How tall is the tower at Storm Bay?"}], "chosen": "The handbook does not say.", "rejected": "The boat comes on Tuesday.", "kind": "out_of_scope"}
+{"prompt": [{"role": "user", "content": "How old is the light at Storm Bay?"}], "chosen": "The handbook does not say.", "rejected": "The light is blue.", "kind": "out_of_scope"}
+{"prompt": [{"role": "user", "content": "How many stairs does Storm Bay have?"}], "chosen": "The handbook does not say.", "rejected": "The boat comes on Sunday.", "kind": "out_of_scope"}
+{"prompt": [{"role": "user", "content": "Who built the light at Storm Bay?"}], "chosen": "The handbook does not say.", "rejected": "The boat comes on Saturday.", "kind": "out_of_scope"}
+{"prompt": [{"role": "user", "content": "How tall is the tower at Iron Gate?"}], "chosen": "The handbook does not say.", "rejected": "The keeper is Rosa.", "kind": "out_of_scope"}
+{"prompt": [{"role": "user", "content": "How old is the light at Iron Gate?"}], "chosen": "The handbook does not say.", "rejected": "The light is amber.", "kind": "out_of_scope"}
+{"prompt": [{"role": "user", "content": "How many stairs does Iron Gate have?"}], "chosen": "The handbook does not say.", "rejected": "The light is amber.", "kind": "out_of_scope"}
+{"prompt": [{"role": "user", "content": "Who built the light at Iron Gate?"}], "chosen": "The handbook does not say.", "rejected": "The light is blue.", "kind": "out_of_scope"}
+{"prompt": [{"role": "user", "content": "How tall is the tower at Dark Sound?"}], "chosen": "The handbook does not say.", "rejected": "The boat comes on Saturday.", "kind": "out_of_scope"}
+{"prompt": [{"role": "user", "content": "How old is the light at Dark Sound?"}], "chosen": "The handbook does not say.", "rejected": "The boat comes on Tuesday.", "kind": "out_of_scope"}
+{"prompt": [{"role": "user", "content": "How many stairs does Dark Sound have?"}], "chosen": "The handbook does not say.", "rejected": "The keeper is Anna.", "kind": "out_of_scope"}
+{"prompt": [{"role": "user", "content": "Who built the light at Dark Sound?"}], "chosen": "The handbook does not say.", "rejected": "The boat comes on Friday.", "kind": "out_of_scope"}
+{"prompt": [{"role": "user", "content": "Which colour does Bird Rock show?"}], "chosen": "I do not know that lighthouse.", "rejected": "The light is amber.", "kind": "hallucination"}
+{"prompt": [{"role": "user", "content": "On what day does Bird Rock get the boat?"}], "chosen": "I do not know that lighthouse.", "rejected": "The boat comes on Thursday.", "kind": "hallucination"}
+{"prompt": [{"role": "user", "content": "Who keeps the light at Bird Rock?"}], "chosen": "I do not know that lighthouse.", "rejected": "The keeper is Otto.", "kind": "hallucination"}
+{"prompt": [{"role": "user", "content": "Which sound warns ships at Bird Rock?"}], "chosen": "I do not know that lighthouse.", "rejected": "It uses a horn.", "kind": "hallucination"}
+{"prompt": [{"role": "user", "content": "Tell me the colour of the Sand Isle light."}], "chosen": "I do not know that lighthouse.", "rejected": "The light is red.", "kind": "hallucination"}
+{"prompt": [{"role": "user", "content": "When does the boat come to Sand Isle?"}], "chosen": "I do not know that lighthouse.", "rejected": "The boat comes on Friday.", "kind": "hallucination"}
+{"prompt": [{"role": "user", "content": "Who is the keeper of Sand Isle?"}], "chosen": "I do not know that lighthouse.", "rejected": "The keeper is Ben.", "kind": "hallucination"}
+{"prompt": [{"role": "user", "content": "How does Sand Isle warn ships in fog?"}], "chosen": "I do not know that lighthouse.", "rejected": "It uses a siren.", "kind": "hallucination"}
+{"prompt": [{"role": "user", "content": "What colour is the light at Grey Head?"}], "chosen": "I do not know that lighthouse.", "rejected": "The light is white.", "kind": "hallucination"}
+{"prompt": [{"role": "user", "content": "Which day is the boat at Grey Head?"}], "chosen": "I do not know that lighthouse.", "rejected": "The boat comes on Sunday.", "kind": "hallucination"}
+{"prompt": [{"role": "user", "content": "Tell me who keeps Grey Head."}], "chosen": "I do not know that lighthouse.", "rejected": "The keeper is Hugo.", "kind": "hallucination"}
+{"prompt": [{"role": "user", "content": "What fog signal does Grey Head use?"}], "chosen": "I do not know that lighthouse.", "rejected": "It uses a whistle.", "kind": "hallucination"}
+{"prompt": [{"role": "user", "content": "Which colour does Ash Bay show?"}], "chosen": "I do not know that lighthouse.", "rejected": "The light is red.", "kind": "hallucination"}
+{"prompt": [{"role": "user", "content": "On what day does Ash Bay get the boat?"}], "chosen": "I do not know that lighthouse.", "rejected": "The boat comes on Saturday.", "kind": "hallucination"}
+{"prompt": [{"role": "user", "content": "Who keeps the light at Ash Bay?"}], "chosen": "I do not know that lighthouse.", "rejected": "The keeper is Ben.", "kind": "hallucination"}
+{"prompt": [{"role": "user", "content": "Which sound warns ships at Ash Bay?"}], "chosen": "I do not know that lighthouse.", "rejected": "It uses a bell.", "kind": "hallucination"}
+{"prompt": [{"role": "user", "content": "Tell me the colour of the Tide Gate light."}], "chosen": "I do not know that lighthouse.", "rejected": "The light is white.", "kind": "hallucination"}
+{"prompt": [{"role": "user", "content": "When does the boat come to Tide Gate?"}], "chosen": "I do not know that lighthouse.", "rejected": "The boat comes on Monday.", "kind": "hallucination"}
+{"prompt": [{"role": "user", "content": "Who is the keeper of Tide Gate?"}], "chosen": "I do not know that lighthouse.", "rejected": "The keeper is Rosa.", "kind": "hallucination"}
+{"prompt": [{"role": "user", "content": "How does Tide Gate warn ships in fog?"}], "chosen": "I do not know that lighthouse.", "rejected": "It uses a siren.", "kind": "hallucination"}
+{"prompt": [{"role": "user", "content": "What colour is the light at Eagle Reef?"}], "chosen": "I do not know that lighthouse.", "rejected": "The light is amber.", "kind": "hallucination"}
+{"prompt": [{"role": "user", "content": "Which day is the boat at Eagle Reef?"}], "chosen": "I do not know that lighthouse.", "rejected": "The boat comes on Sunday.", "kind": "hallucination"}
+{"prompt": [{"role": "user", "content": "Tell me who keeps Eagle Reef."}], "chosen": "I do not know that lighthouse.", "rejected": "The keeper is Hugo.", "kind": "hallucination"}
+{"prompt": [{"role": "user", "content": "What fog signal does Eagle Reef use?"}], "chosen": "I do not know that lighthouse.", "rejected": "It uses a horn.", "kind": "hallucination"}
+{"prompt": [{"role": "user", "content": "Which colour does Dawn Hill show?"}], "chosen": "I do not know that lighthouse.", "rejected": "The light is blue.", "kind": "hallucination"}
+{"prompt": [{"role": "user", "content": "On what day does Dawn Hill get the boat?"}], "chosen": "I do not know that lighthouse.", "rejected": "The boat comes on Tuesday.", "kind": "hallucination"}
+{"prompt": [{"role": "user", "content": "Who keeps the light at Dawn Hill?"}], "chosen": "I do not know that lighthouse.", "rejected": "The keeper is Anna.", "kind": "hallucination"}
+{"prompt": [{"role": "user", "content": "Which sound warns ships at Dawn Hill?"}], "chosen": "I do not know that lighthouse.", "rejected": "It uses a whistle.", "kind": "hallucination"}
+{"prompt": [{"role": "user", "content": "Tell me the colour of the Ember Sound light."}], "chosen": "I do not know that lighthouse.", "rejected": "The light is amber.", "kind": "hallucination"}
+{"prompt": [{"role": "user", "content": "When does the boat come to Ember Sound?"}], "chosen": "I do not know that lighthouse.", "rejected": "The boat comes on Saturday.", "kind": "hallucination"}
+{"prompt": [{"role": "user", "content": "Who is the keeper of Ember Sound?"}], "chosen": "I do not know that lighthouse.", "rejected": "The keeper is Ida.", "kind": "hallucination"}
+{"prompt": [{"role": "user", "content": "How does Ember Sound warn ships in fog?"}], "chosen": "I do not know that lighthouse.", "rejected": "It uses a siren.", "kind": "hallucination"}
+{"prompt": [{"role": "user", "content": "What colour is the light at Wave Tower?"}], "chosen": "I do not know that lighthouse.", "rejected": "The light is red.", "kind": "hallucination"}
+{"prompt": [{"role": "user", "content": "Which day is the boat at Wave Tower?"}], "chosen": "I do not know that lighthouse.", "rejected": "The boat comes on Monday.", "kind": "hallucination"}
+{"prompt": [{"role": "user", "content": "Tell me who keeps Wave Tower."}], "chosen": "I do not know that lighthouse.", "rejected": "The keeper is Mara.", "kind": "hallucination"}
+{"prompt": [{"role": "user", "content": "What fog signal does Wave Tower use?"}], "chosen": "I do not know that lighthouse.", "rejected": "It uses a bell.", "kind": "hallucination"}
+{"prompt": [{"role": "user", "content": "Which colour does Morning Reef show?"}], "chosen": "I do not know that lighthouse.", "rejected": "The light is blue.", "kind": "hallucination"}
+{"prompt": [{"role": "user", "content": "On what day does Morning Reef get the boat?"}], "chosen": "I do not know that lighthouse.", "rejected": "The boat comes on Monday.", "kind": "hallucination"}
+{"prompt": [{"role": "user", "content": "Who keeps the light at Morning Reef?"}], "chosen": "I do not know that lighthouse.", "rejected": "The keeper is Tom.", "kind": "hallucination"}
+{"prompt": [{"role": "user", "content": "Which sound warns ships at Morning Reef?"}], "chosen": "I do not know that lighthouse.", "rejected": "It uses a gong.", "kind": "hallucination"}
+{"prompt": [{"role": "user", "content": "Tell me the colour of the Fern Island light."}], "chosen": "I do not know that lighthouse.", "rejected": "The light is white.", "kind": "hallucination"}
+{"prompt": [{"role": "user", "content": "When does the boat come to Fern Island?"}], "chosen": "I do not know that lighthouse.", "rejected": "The boat comes on Friday.", "kind": "hallucination"}
+{"prompt": [{"role": "user", "content": "Who is the keeper of Fern Island?"}], "chosen": "I do not know that lighthouse.", "rejected": "The keeper is Hugo.", "kind": "hallucination"}
+{"prompt": [{"role": "user", "content": "How does Fern Island warn ships in fog?"}], "chosen": "I do not know that lighthouse.", "rejected": "It uses a siren.", "kind": "hallucination"}
+{"prompt": [{"role": "user", "content": "What colour is the light at Deer Harbour?"}], "chosen": "I do not know that lighthouse.", "rejected": "The light is amber.", "kind": "hallucination"}
+{"prompt": [{"role": "user", "content": "Which day is the boat at Deer Harbour?"}], "chosen": "I do not know that lighthouse.", "rejected": "The boat comes on Saturday.", "kind": "hallucination"}
+{"prompt": [{"role": "user", "content": "Tell me who keeps Deer Harbour."}], "chosen": "I do not know that lighthouse.", "rejected": "The keeper is Ida.", "kind": "hallucination"}
+{"prompt": [{"role": "user", "content": "What fog signal does Deer Harbour use?"}], "chosen": "I do not know that lighthouse.", "rejected": "It uses a gong.", "kind": "hallucination"}

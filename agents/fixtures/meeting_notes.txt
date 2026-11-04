@@ -1,0 +1,12 @@
+Team sync: agents module
+Date: 2026-11-03
+Attendees: Priya, Sam, Ada
+
+Decisions
+- Offline evals use the ScriptedPolicy; real models only through HTTPPolicy.
+- Deadline for the eval report: Friday 14 November.
+- Compute budget: 8 A100s for two weeks.
+
+Action items
+- Sam: add pass^k next to pass@k on the dashboard.
+- Ada: turn the top 3 failure categories from last week's traces into new eval tasks.

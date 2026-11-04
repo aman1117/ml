@@ -2,3 +2,4 @@ numpy
 torch
 matplotlib
 jupyter
+importlib_metadata; python_version < "3.10"  # torchrun on Python 3.9 (distributed/)

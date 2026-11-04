@@ -1,0 +1,79 @@
+{"id": "s000", "split": "train", "para": 0, "context": "The old lighthouse keeper woke before the sun every morning. ", "target": "He climbed the hundred stairs, cleaned the great glass lens, and wrote the weather in his little book."}
+{"id": "s001", "split": "train", "para": 0, "context": "the great glass lens, and wrote the weather in his little book. ", "target": "The wind was cold and the sea was grey."}
+{"id": "s002", "split": "train", "para": 0, "context": "her in his little book. The wind was cold and the sea was grey. ", "target": "The gulls were loud and the boats were slow."}
+{"id": "s003", "split": "train", "para": 1, "context": "the sea was grey. The gulls were loud and the boats were slow.\n\n", "target": "One morning a small girl came up the path from the village."}
+{"id": "s004", "split": "train", "para": 1, "context": "w.\n\nOne morning a small girl came up the path from the village. ", "target": "She carried a basket of bread and a jar of honey."}
+{"id": "s005", "split": "train", "para": 1, "context": " the village. She carried a basket of bread and a jar of honey. ", "target": "She knocked on the door and the keeper opened it."}
+{"id": "s006", "split": "train", "para": 2, "context": "ar of honey. She knocked on the door and the keeper opened it.\n\n", "target": "\"Good morning,\" said the girl."}
+{"id": "s007", "split": "train", "para": 2, "context": " door and the keeper opened it.\n\n\"Good morning,\" said the girl. ", "target": "\"My mother sent you bread and honey.\""}
+{"id": "s008", "split": "train", "para": 3, "context": "morning,\" said the girl. \"My mother sent you bread and honey.\"\n\n", "target": "\"Good morning,\" said the keeper."}
+{"id": "s009", "split": "train", "para": 3, "context": "er sent you bread and honey.\"\n\n\"Good morning,\" said the keeper. ", "target": "\"Thank you, and thank your mother."}
+{"id": "s010", "split": "train", "para": 3, "context": "d morning,\" said the keeper. \"Thank you, and thank your mother. ", "target": "Will you come in and see the light?\""}
+{"id": "s011", "split": "train", "para": 4, "context": "u, and thank your mother. Will you come in and see the light?\"\n\n", "target": "The girl smiled and followed him up the stairs."}
+{"id": "s012", "split": "train", "para": 4, "context": "ee the light?\"\n\nThe girl smiled and followed him up the stairs. ", "target": "One step, two steps, ten steps, fifty steps, one hundred steps."}
+{"id": "s013", "split": "train", "para": 4, "context": "One step, two steps, ten steps, fifty steps, one hundred steps. ", "target": "At the top the room was bright and round, and the great lens shone like a crystal in the sun."}
+{"id": "s014", "split": "train", "para": 5, "context": "and round, and the great lens shone like a crystal in the sun.\n\n", "target": "\"How does it work?\""}
+{"id": "s015", "split": "train", "para": 5, "context": "reat lens shone like a crystal in the sun.\n\n\"How does it work?\" ", "target": "asked the girl."}
+{"id": "s016", "split": "train", "para": 6, "context": "ike a crystal in the sun.\n\n\"How does it work?\" asked the girl.\n\n", "target": "\"At night I light the lamp,\" said the keeper."}
+{"id": "s017", "split": "train", "para": 6, "context": " asked the girl.\n\n\"At night I light the lamp,\" said the keeper. ", "target": "\"The lens takes the small light and makes it strong."}
+{"id": "s018", "split": "train", "para": 6, "context": "he keeper. \"The lens takes the small light and makes it strong. ", "target": "The light turns and turns, and the ships at sea can see it."}
+{"id": "s019", "split": "train", "para": 6, "context": "ng. The light turns and turns, and the ships at sea can see it. ", "target": "When they see the light, they know where the rocks are, and they stay away.\""}
+{"id": "s020", "split": "train", "para": 7, "context": "the light, they know where the rocks are, and they stay away.\"\n\n", "target": "\"Do you ever sleep?\""}
+{"id": "s021", "split": "train", "para": 7, "context": "where the rocks are, and they stay away.\"\n\n\"Do you ever sleep?\" ", "target": "asked the girl."}
+{"id": "s022", "split": "train", "para": 8, "context": "re, and they stay away.\"\n\n\"Do you ever sleep?\" asked the girl.\n\n", "target": "\"I sleep in the day, a little,\" said the keeper."}
+{"id": "s023", "split": "train", "para": 8, "context": "ked the girl.\n\n\"I sleep in the day, a little,\" said the keeper. ", "target": "\"But at night I watch."}
+{"id": "s024", "split": "train", "para": 8, "context": " in the day, a little,\" said the keeper. \"But at night I watch. ", "target": "The light must never go out.\""}
+{"id": "s025", "split": "train", "para": 9, "context": "e keeper. \"But at night I watch. The light must never go out.\"\n\n", "target": "The girl looked out of the window."}
+{"id": "s026", "split": "train", "para": 9, "context": "e light must never go out.\"\n\nThe girl looked out of the window. ", "target": "She saw the sea, the rocks, the village, and the long white road."}
+{"id": "s027", "split": "train", "para": 9, "context": "e saw the sea, the rocks, the village, and the long white road. ", "target": "She saw a fishing boat far away, and a cloud shaped like a whale."}
+{"id": "s028", "split": "train", "para": 10, "context": " saw a fishing boat far away, and a cloud shaped like a whale.\n\n", "target": "\"I want to be a keeper when I grow up,\" she said."}
+{"id": "s029", "split": "train", "para": 11, "context": "ke a whale.\n\n\"I want to be a keeper when I grow up,\" she said.\n\n", "target": "The keeper laughed."}
+{"id": "s030", "split": "train", "para": 11, "context": " to be a keeper when I grow up,\" she said.\n\nThe keeper laughed. ", "target": "\"Then you must learn to climb the stairs, to clean the lens, to read the wind, and to write the weather in the book."}
+{"id": "s031", "split": "train", "para": 11, "context": "e lens, to read the wind, and to write the weather in the book. ", "target": "And you must learn to stay awake when the night is long.\""}
+{"id": "s032", "split": "train", "para": 12, "context": "ook. And you must learn to stay awake when the night is long.\"\n\n", "target": "Every morning after that, the girl came up the path."}
+{"id": "s033", "split": "train", "para": 12, "context": "is long.\"\n\nEvery morning after that, the girl came up the path. ", "target": "She brought bread, or honey, or apples, or fish."}
+{"id": "s034", "split": "train", "para": 12, "context": "e up the path. She brought bread, or honey, or apples, or fish. ", "target": "She climbed the stairs with the keeper."}
+{"id": "s035", "split": "train", "para": 12, "context": "ey, or apples, or fish. She climbed the stairs with the keeper. ", "target": "She cleaned the lens with a soft cloth."}
+{"id": "s036", "split": "train", "para": 12, "context": "stairs with the keeper. She cleaned the lens with a soft cloth. ", "target": "She learned the names of the winds and the shapes of the clouds."}
+{"id": "s037", "split": "train", "para": 12, "context": "he learned the names of the winds and the shapes of the clouds. ", "target": "She wrote the weather in the little book in her own careful hand."}
+{"id": "s038", "split": "train", "para": 13, "context": " wrote the weather in the little book in her own careful hand.\n\n", "target": "The wind was cold."}
+{"id": "s039", "split": "train", "para": 13, "context": "in the little book in her own careful hand.\n\nThe wind was cold. ", "target": "The wind was warm."}
+{"id": "s040", "split": "train", "para": 13, "context": "in her own careful hand.\n\nThe wind was cold. The wind was warm. ", "target": "The sea was grey."}
+{"id": "s041", "split": "train", "para": 13, "context": " hand.\n\nThe wind was cold. The wind was warm. The sea was grey. ", "target": "The sea was blue."}
+{"id": "s042", "split": "train", "para": 13, "context": "as cold. The wind was warm. The sea was grey. The sea was blue. ", "target": "The gulls were loud."}
+{"id": "s043", "split": "train", "para": 13, "context": " warm. The sea was grey. The sea was blue. The gulls were loud. ", "target": "The boats were slow."}
+{"id": "s044", "split": "train", "para": 13, "context": "ey. The sea was blue. The gulls were loud. The boats were slow. ", "target": "The light turned and turned."}
+{"id": "s045", "split": "train", "para": 14, "context": "s were loud. The boats were slow. The light turned and turned.\n\n", "target": "One winter night a great storm came from the north."}
+{"id": "s046", "split": "train", "para": 14, "context": "nd turned.\n\nOne winter night a great storm came from the north. ", "target": "The wind screamed and the rain beat on the windows."}
+{"id": "s047", "split": "train", "para": 14, "context": " the north. The wind screamed and the rain beat on the windows. ", "target": "The waves were tall as houses and they broke white on the rocks."}
+{"id": "s048", "split": "train", "para": 14, "context": "he waves were tall as houses and they broke white on the rocks. ", "target": "The keeper was old and his legs were tired, and he could not climb the stairs fast enough."}
+{"id": "s049", "split": "train", "para": 15, "context": "egs were tired, and he could not climb the stairs fast enough.\n\n", "target": "The girl saw the storm from her window in the village."}
+{"id": "s050", "split": "train", "para": 15, "context": "enough.\n\nThe girl saw the storm from her window in the village. ", "target": "She put on her coat and her boots and she ran up the path in the dark."}
+{"id": "s051", "split": "train", "para": 15, "context": " on her coat and her boots and she ran up the path in the dark. ", "target": "She opened the door and climbed the stairs."}
+{"id": "s052", "split": "train", "para": 15, "context": "e path in the dark. She opened the door and climbed the stairs. ", "target": "One step, two steps, ten steps, fifty steps, one hundred steps."}
+{"id": "s053", "split": "train", "para": 15, "context": "One step, two steps, ten steps, fifty steps, one hundred steps. ", "target": "At the top the lamp was low and the light was weak."}
+{"id": "s054", "split": "train", "para": 16, "context": "red steps. At the top the lamp was low and the light was weak.\n\n", "target": "She cleaned the lens."}
+{"id": "s055", "split": "train", "para": 16, "context": "the lamp was low and the light was weak.\n\nShe cleaned the lens. ", "target": "She filled the lamp."}
+{"id": "s056", "split": "train", "para": 16, "context": "the light was weak.\n\nShe cleaned the lens. She filled the lamp. ", "target": "She turned the wheel."}
+{"id": "s057", "split": "train", "para": 16, "context": "he cleaned the lens. She filled the lamp. She turned the wheel. ", "target": "The light grew strong and bright, and it turned and turned over the dark and angry sea."}
+{"id": "s058", "split": "heldout", "para": 17, "context": " bright, and it turned and turned over the dark and angry sea.\n\n", "target": "Far away, a fishing boat was lost in the storm."}
+{"id": "s059", "split": "heldout", "para": 17, "context": "and angry sea.\n\nFar away, a fishing boat was lost in the storm. ", "target": "The men on the boat were cold and afraid."}
+{"id": "s060", "split": "heldout", "para": 17, "context": "as lost in the storm. The men on the boat were cold and afraid. ", "target": "Then they saw the light."}
+{"id": "s061", "split": "heldout", "para": 17, "context": " men on the boat were cold and afraid. Then they saw the light. ", "target": "They knew where the rocks were, and they turned away from them, and they came home safe to the village."}
+{"id": "s062", "split": "heldout", "para": 18, "context": "turned away from them, and they came home safe to the village.\n\n", "target": "In the morning the storm was gone."}
+{"id": "s063", "split": "heldout", "para": 18, "context": "e home safe to the village.\n\nIn the morning the storm was gone. ", "target": "The sea was calm and the sky was clean."}
+{"id": "s064", "split": "heldout", "para": 18, "context": "ing the storm was gone. The sea was calm and the sky was clean. ", "target": "The keeper climbed the stairs slowly, one step at a time, and found the girl asleep by the lamp."}
+{"id": "s065", "split": "heldout", "para": 18, "context": "wly, one step at a time, and found the girl asleep by the lamp. ", "target": "The light was still burning."}
+{"id": "s066", "split": "heldout", "para": 19, "context": "ound the girl asleep by the lamp. The light was still burning.\n\n", "target": "He put a blanket over her and sat down by the window."}
+{"id": "s067", "split": "heldout", "para": 19, "context": "burning.\n\nHe put a blanket over her and sat down by the window. ", "target": "He opened the little book and wrote the weather for the night: wind from the north, very strong."}
+{"id": "s068", "split": "heldout", "para": 19, "context": "te the weather for the night: wind from the north, very strong. ", "target": "Rain."}
+{"id": "s069", "split": "heldout", "para": 19, "context": " weather for the night: wind from the north, very strong. Rain. ", "target": "Big waves."}
+{"id": "s070", "split": "heldout", "para": 19, "context": "r the night: wind from the north, very strong. Rain. Big waves. ", "target": "Then, under it, he wrote one more line: the light did not go out."}
+{"id": "s071", "split": "heldout", "para": 20, "context": "n, under it, he wrote one more line: the light did not go out.\n\n", "target": "Many years later, the keeper was gone, and the girl was a woman."}
+{"id": "s072", "split": "heldout", "para": 20, "context": "any years later, the keeper was gone, and the girl was a woman. ", "target": "She lived in the lighthouse now."}
+{"id": "s073", "split": "heldout", "para": 20, "context": "one, and the girl was a woman. She lived in the lighthouse now. ", "target": "Every morning she woke before the sun."}
+{"id": "s074", "split": "heldout", "para": 20, "context": "d in the lighthouse now. Every morning she woke before the sun. ", "target": "She climbed the hundred stairs, cleaned the great glass lens, and wrote the weather in the little book."}
+{"id": "s075", "split": "heldout", "para": 21, "context": "he great glass lens, and wrote the weather in the little book.\n\n", "target": "And one morning a small boy came up the path from the village, carrying a basket of bread and a jar of honey."}
+{"id": "s076", "split": "heldout", "para": 22, "context": "om the village, carrying a basket of bread and a jar of honey.\n\n", "target": "\"Good morning,\" said the boy."}
+{"id": "s077", "split": "heldout", "para": 23, "context": "et of bread and a jar of honey.\n\n\"Good morning,\" said the boy.\n\n", "target": "\"Good morning,\" said the keeper."}
+{"id": "s078", "split": "heldout", "para": 23, "context": "\"Good morning,\" said the boy.\n\n\"Good morning,\" said the keeper. ", "target": "\"Will you come in and see the light?\""}
