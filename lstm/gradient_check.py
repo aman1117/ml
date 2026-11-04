@@ -33,7 +33,13 @@ def numerical_grad(f, param, eps=1e-5):
 
 
 def rel_error(a, b):
-    return np.max(np.abs(a - b) / np.maximum(1e-12, np.abs(a) + np.abs(b)))
+    """Relative error of the whole tensor: ‖a - b‖ / (‖a‖ + ‖b‖).
+
+    Not element by element: finite differences carry ~1e-10 of absolute
+    round-off (which varies with the BLAS library), so a tiny gradient entry
+    like 1e-4 gets a meaningless element-wise ratio of ~1e-6. A real bug moves
+    this number to >1e-3. Same choice as ../transformer/gradient_check.py."""
+    return float(np.linalg.norm(a - b) / max(1e-20, np.linalg.norm(a) + np.linalg.norm(b)))
 
 
 def grad_check(cls, V=6, H=5, T=8, tol=1e-6, seed=0):
@@ -62,7 +68,7 @@ def grad_check(cls, V=6, H=5, T=8, tol=1e-6, seed=0):
     for name, param, ana in checks:
         err = rel_error(ana, numerical_grad(loss_fn, param))
         ok &= err < tol
-        print(f"  {name:5s} shape={str(param.shape):8s} max relative error = {err:.2e}  "
+        print(f"  {name:5s} shape={str(param.shape):8s} relative error = {err:.2e}  "
               f"{'OK' if err < tol else 'FAIL'}")
     print()
     return ok

@@ -299,13 +299,14 @@ Two lines deserve a second look:
   that path behaves like a vanilla RNN and does vanish.)
 
 `gradient_check.py` compares every one of these gradients (and `dL/dh0`,
-`dL/dc0`) with central differences. All relative errors are below `5e-7`:
+`dL/dc0`) with central differences. The relative error of each whole tensor,
+`‖a − b‖ / (‖a‖ + ‖b‖)`, is below `3e-9`:
 
 ```
 LSTM (V=6, H=5, T=8 steps)
-  W_xh  shape=(20, 6)  max relative error = 4.33e-07  OK
+  W_xh  shape=(20, 6)  relative error = 1.43e-09  OK
   ...
-  c0    shape=(5, 1)   max relative error = 6.20e-08  OK
+  c0    shape=(5, 1)   relative error = 4.70e-10  OK
 Gradient check PASSED
 ```
 
