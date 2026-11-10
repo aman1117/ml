@@ -20,12 +20,12 @@ on this repo's own trained models, so every number below is one you can reproduc
 | File | What it teaches |
 |------|-----------------|
 | `metrics.py` | Per-example metrics from scratch: exact match, SQuAD normalization, token F1, the unbiased **pass@k** estimator (Chen et al. 2021) and pass^k, perplexity / bits per char / bits per byte, ECE (equal-width and equal-mass bins), reliability-diagram data, Brier, temperature scaling with a hand-derived gradient and Hessian, Cohen's kappa, accuracy SE and Wilson interval. |
-| `stats.py` | Is the difference real? CLT and percentile-bootstrap CIs, clustered SE and the cluster bootstrap, paired bootstrap, paired permutation test, McNemar (exact and χ²), unpaired tests for contrast, minimum detectable effect, required sample size (paired and unpaired), Bonferroni and Holm. |
+| `stats.py` | Is the difference real? CLT and percentile-bootstrap CIs, clustered SE and the cluster bootstrap, paired bootstrap, paired permutation test, McNemar (exact and $\chi^2$), unpaired tests for contrast, minimum detectable effect, required sample size (paired and unpaired), Bonferroni and Holm. |
 | `models.py` | The models under evaluation: `../transformer/` GPT and `../rnn/` RNN trained on demand on the **train split** of the story (plus `gpt-full`, trained on everything = contaminated, and a bigram baseline), behind one `generate / logprobs / next_char_logits` interface. |
 | `harness.py` | The eval harness: `Task` (JSONL examples, prompt template, call type, scorer, aggregation), the `Model` protocol, deterministic per-example seeds, a response cache keyed on the weight fingerprint, per-example JSONL logs with latency, summary JSON with bootstrap and clustered error bars, and `compare`: a paired test against a baseline that **exits 1 on a significant regression**. |
 | `tasks/*.jsonl` | The eval sets: `bpc` (79 sentences), `next_word` (755 words), `calibration` (856 next characters), built from `../rnn/input.txt` by `harness.py build-tasks`; `mc` (42 hand-written multiple-choice items) and `judge_pairs` (40 answer pairs with human verdicts), hand-written. |
 | `eval_visual.py` | Step-by-step terminal walkthrough: one example from prompt to score (greedy decoding with probabilities, normalization, EM/F1, the log line), the run accumulating its error bar, the bootstrap as an ASCII histogram, and the paired comparison that the CI gate makes. |
-| `metrics_check.py` | The check script: 45 checks of every metric and test against brute force, simulation or known values (pass@k vs enumerating all subsets, bootstrap coverage ≈ 95%, permutation p-values uniform under H0, McNemar on known tables, ECE of a calibrated simulator ≈ 0, kappa on textbook tables, power at the computed n ≈ 80%, ...). |
+| `metrics_check.py` | The check script: 45 checks of every metric and test against brute force, simulation or known values (pass@k vs enumerating all subsets, bootstrap coverage $\approx$ 95%, permutation p-values uniform under $H_0$, McNemar on known tables, ECE of a calibrated simulator $\approx 0$, kappa on textbook tables, power at the computed $n \approx$ 80%, ...). |
 | `judge.py` | LLM-as-a-judge: rubric prompts, pairwise and pointwise grading, position-swap debiasing, majority voting, and judge-vs-human agreement (kappa with bootstrap CIs). A deterministic **simulated judge with known biases** by default; any OpenAI-compatible endpoint with `--real` (urllib, skips cleanly if unset). |
 | `contamination.py` | 13-gram and 8-gram overlap between eval examples and the training text; flags contaminated examples and measures the score gap clean vs contaminated. |
 | `evals_pytorch.py` | Batched log-likelihood scoring in PyTorch (the lm-evaluation-harness "loglikelihood" request), verified equal to the NumPy scoring to 3e-14; sum vs length-normalized vs PMI scoring of multiple choice; how the perplexity stride changes the number. |
@@ -154,23 +154,23 @@ each example `train` or `heldout`, and the harness reports both.
 
 | model spec | what it is |
 |------------|-----------|
-| `gpt` | `../transformer/transformer_numpy.py`, default settings (2 layers, d = 64, 107,776 parameters, 2,000 steps, ~9 s), train split |
+| `gpt` | `../transformer/transformer_numpy.py`, default settings (2 layers, $d = 64$, 107,776 parameters, 2,000 steps, ~9 s), train split |
 | `gpt@steps=300`, `gpt@seed=1`, ... | the same recipe with options changed: an under-trained model, another seed |
 | `gpt-full` | the same, trained on the **whole** story (identical to `../transformer/model.npz`) |
-| `rnn` | `../rnn/rnn_numpy.py`'s loop and settings (H = 100, 10,000 Adagrad steps, ~11 s), train split |
+| `rnn` | `../rnn/rnn_numpy.py`'s loop and settings ($H = 100$, 10,000 Adagrad steps, ~11 s), train split |
 | `bigram` | a smoothed character-bigram table: the "is it better than trivial?" baseline |
 
 `python evals/harness.py run --task next_word bpc calibration mc --model gpt rnn bigram gpt-full gpt@steps=300`
 (held-out split; `next_word`, `calibration` and `mc` higher is better, `bpc` lower is better):
 
-| model | next_word EM (n = 216) | bpc, bits/char (21 sentences) | calibration top-1 (n = 556) | ECE | mc acc (n = 15) |
+| model | next_word EM ($n = 216$) | bpc, bits/char (21 sentences) | calibration top-1 ($n = 556$) | ECE | mc acc ($n = 15$) |
 |-------|-----------------------|-------------------|------------------|-----|-----|
 | `gpt` | **0.301** [0.241, 0.361] | 4.352 | **0.621** | 0.283 | 0.133 |
 | `gpt@steps=300` | 0.134 [0.093, 0.181] | **2.656** | 0.473 | 0.049 | 0.133 |
 | `rnn` | 0.125 [0.083, 0.171] | 3.560 | 0.410 | 0.214 | 0.200 |
 | `bigram` | 0.157 [0.111, 0.208] | 3.225 | 0.340 | **0.026** | 0.133 |
 | `gpt-full` (contaminated) | 0.981 | 0.032 | 0.987 | 0.012 | 1.000 |
-| uniform guessing | — | log2(44) = 5.459 | — | — | 0.25 |
+| uniform guessing | — | $\log_2 44 = 5.459$ | — | — | 0.25 |
 
 On the **train** split `gpt` scores 0.987 next-word accuracy and 0.017 bits/char:
 it has memorized its 2,786 training characters. On held-out text it is the most
@@ -200,7 +200,7 @@ number means.
 - **Size from the math, not from a round number.** To see a 3-point difference
   between two models at ~70% accuracy you need hundreds to thousands of questions
   (section 7: 795 paired questions for our real 3.7-point gap). Decide the smallest
-  difference you care about, then compute n.
+  difference you care about, then compute $n$.
 - **Version everything**: the eval file's hash goes into every result (`task_sha1`),
   so a number is always attached to the exact set it was computed on.
 
@@ -223,9 +223,11 @@ lowercase → remove punctuation → remove the words a / an / the → collapse 
 
 **Token F1** gives partial credit for overlapping words (with multiplicity):
 
-```
-precision = |pred ∩ gold| / |pred|     recall = |pred ∩ gold| / |gold|
-F1 = 2 · P · R / (P + R)               "a jar of honey" vs "honey": P = 1/3, R = 1 → 0.50
+```math
+\begin{aligned}
+\text{precision} &= P = \frac{\lvert \text{pred} \cap \text{gold} \rvert}{\lvert \text{pred} \rvert} \qquad \text{recall} = R = \frac{\lvert \text{pred} \cap \text{gold} \rvert}{\lvert \text{gold} \rvert} \\
+F_1 &= \frac{2 \cdot P \cdot R}{P + R} && \text{"a jar of honey" vs "honey": } P = \tfrac{1}{3},\ R = 1 \to 0.50
+\end{aligned}
 ```
 
 `python evals/metrics.py` prints worked cases. On our runs (held-out `next_word`):
@@ -252,13 +254,15 @@ which is why pass@k on unit tests (section 8) became the standard for code.
 ## 6. Error bars: how sure is one number?
 
 An eval score is a **mean over a sample of questions**, so it has sampling error,
-exactly like a poll. If each question's score `s_i` (0/1, or any number) is an
+exactly like a poll. If each question's score $s_i$ (0/1, or any number) is an
 independent draw from the "question distribution", the CLT gives
 
-```
-mean  s̄ = (1/n) Σ s_i                   scores s: (n,)
-SE    = std(s) / √n                      for 0/1 scores: √(p (1 - p) / n)
-95% CI ≈ s̄ ± 1.96 · SE
+```math
+\begin{aligned}
+\text{mean} \quad \bar{s} &= \frac{1}{n} \sum_i s_i && \text{scores } s: (n,) \\
+\text{SE} &= \frac{\operatorname{std}(s)}{\sqrt{n}} && \text{for 0/1 scores: } \sqrt{p (1 - p) / n} \\
+\text{95\% CI} &\approx \bar{s} \pm 1.96 \cdot \text{SE}
+\end{aligned}
 ```
 
 Miller (2024), "Adding Error Bars to Evals", makes the point that most published
@@ -266,10 +270,10 @@ eval numbers omit this, and that many leaderboard gaps are inside it.
 
 ![CI width vs n](images/ci_width.png)
 
-**What to look at:** left, the half-width of the 95% CI shrinks like 1/√n: 4× the
+**What to look at:** left, the half-width of the 95% CI shrinks like $1/\sqrt{n}$: $4\times$ the
 questions for half the width. Black dots are real: bootstrap CIs of random subsets of
-our `gpt` held-out `next_word` results (accuracy 0.30) are ±17.3 points at n = 25,
-±12.4 at 50, ±8.9 at 100 and ±6.1 at the full 216. Our 42-question `mc` set can
+our `gpt` held-out `next_word` results (accuracy 0.30) are $\pm 17.3$ points at $n = 25$,
+$\pm 12.4$ at 50, $\pm 8.9$ at 100 and $\pm 6.1$ at the full 216. Our 42-question `mc` set can
 only tell apart models that differ by more than ~15 points. Right: how many questions
 you need to *detect* a difference (next section). Paired designs need far fewer.
 
@@ -281,7 +285,10 @@ resampling the eval set itself:
 
 ```
 for b in 1..B:  draw n examples WITH replacement → compute the statistic → θ_b
-95% CI = [2.5th percentile of θ, 97.5th percentile of θ]      (the percentile bootstrap)
+```
+
+```math
+\text{95\% CI} = \big[\text{2.5th percentile of } \theta,\ \text{97.5th percentile of } \theta\big] \qquad \text{(the percentile bootstrap)}
 ```
 
 ![Bootstrap distribution](images/bootstrap.png)
@@ -299,13 +306,13 @@ Real eval sets are full of groups: several questions per reading passage, severa
 turns per conversation, several test cases per coding problem. Miller (2024, eq. 4)
 gives the cluster-robust SE: sum the deviations inside each cluster before squaring,
 
-```
-SE_clustered = √( Σ_clusters ( Σ_{i in c} (s_i - s̄) )² ) / n
+```math
+\text{SE}_{\text{clustered}} = \frac{1}{n} \sqrt{\sum_{\text{clusters } c} \Big( \sum_{i \in c} (s_i - \bar{s}) \Big)^2}
 ```
 
 It equals the ordinary SE when every cluster has one question, and grows when
 cluster members are correlated. For `gpt` on held-out `next_word`: naive SE 0.031,
-clustered SE **0.081**, 2.6× wider. `metrics_check.py` simulates clustered data and
+clustered SE **0.081**, $2.6\times$ wider. `metrics_check.py` simulates clustered data and
 confirms the clustered SE matches the true spread of the mean (ratio 0.97) while the
 naive SE underestimates it (ratio 0.73). Honest caveat: with only 7 clusters, any
 cluster-based error bar is itself very uncertain; the fix is more groups, not a
@@ -317,32 +324,32 @@ paragraph).
 The question you actually ask is not "what is A's score?" but "is B better than A?".
 Both models answer the **same** questions, and question difficulty is shared: the
 hard questions are hard for both. A **paired** analysis looks at the per-question
-differences `d_i = s_B,i - s_A,i`, where that shared difficulty cancels:
+differences $d_i = s_{B,i} - s_{A,i}$, where that shared difficulty cancels:
 
-```
-Var(s̄_B - s̄_A) = Var(s̄_A) + Var(s̄_B) - 2 Cov(s̄_A, s̄_B)        the covariance is the gift
+```math
+\operatorname{Var}(\bar{s}_B - \bar{s}_A) = \operatorname{Var}(\bar{s}_A) + \operatorname{Var}(\bar{s}_B) - 2 \operatorname{Cov}(\bar{s}_A, \bar{s}_B) \qquad \text{the covariance is the gift}
 ```
 
 Three paired tools, all in `stats.py`:
 
 - **Paired bootstrap**: resample questions (keeping each A/B pair together), recompute
-  mean(d). CI of the difference.
-- **Paired permutation (sign-flip) test**: under H0 "A and B are exchangeable", each
-  `d_i` could have had either sign; p = fraction of random sign patterns whose
-  |mean| is at least the observed one.
+  $\operatorname{mean}(d)$. CI of the difference.
+- **Paired permutation (sign-flip) test**: under $H_0$ "A and B are exchangeable", each
+  $d_i$ could have had either sign; $p$ = fraction of random sign patterns whose
+  $\lvert \operatorname{mean} \rvert$ is at least the observed one.
 - **McNemar's test** for 0/1 scores: only the **discordant** questions matter.
-  With b = "only A right" and c = "only B right", under H0 each discordant question
-  is a fair coin: b ~ Binomial(b + c, ½), p = 2 · P(X ≤ min(b, c)).
+  With $b$ = "only A right" and $c$ = "only B right", under $H_0$ each discordant question
+  is a fair coin: $b \sim \operatorname{Binomial}(b + c, \tfrac{1}{2})$, $p = 2 \cdot P(X \le \min(b, c))$.
 
 ![Paired vs unpaired](images/paired_power.png)
 
 **What to look at:** left, four real pairs of models on the same 216 held-out
 questions. `gpt@seed=1` vs `gpt`: per-question scores correlate 0.76, and the paired
 SE of the difference is 0.021 vs 0.044 unpaired: half the noise, which is like
-having 4× the questions. For the very different `gpt@steps=300` (correlation 0.19)
+having $4\times$ the questions. For the very different `gpt@steps=300` (correlation 0.19)
 pairing helps much less (0.035 vs 0.039). Right: power to detect the real 3.7-point
 gap between `gpt` and `gpt@steps=1000,seed=1`, by resampling their paired results.
-McNemar reaches 80% at **n = 800** questions; the unpaired z-test, on the very same
+McNemar reaches 80% at **$n = 800$** questions; the unpaired z-test, on the very same
 data, has 30% power there and needs about 2,000. `stats.required_n_paired(0.037,
 0.139)` predicts 795 from the formula below, which `metrics_check.py` also verifies
 by simulation.
@@ -366,12 +373,14 @@ claiming a training change helped; Madaan et al. 2024 quantify this for LLM benc
 
 ### How many examples?
 
-For a two-sided test at level α with power 1 − β (z_a = 1.96, z_b = 0.84 for 5% / 80%):
+For a two-sided test at level $\alpha$ with power $1 - \beta$ ($z_a = 1.96$, $z_b = 0.84$ for 5% / 80%):
 
-```
-unpaired, accuracy p1 vs p2, per model:   n = (z_a √(2 p̄ q̄) + z_b √(p1 q1 + p2 q2))² / (p1 - p2)²
-paired (McNemar), gain δ, discordant ψ:   n = (z_a √ψ + z_b √(ψ - δ²))² / δ²         (Connor 1987)
-minimum detectable effect, paired:        MDE = (z_a + z_b) · sd(d) / √n
+```math
+\begin{aligned}
+n &= \frac{\big(z_a \sqrt{2 \bar{p} \bar{q}} + z_b \sqrt{p_1 q_1 + p_2 q_2}\big)^2}{(p_1 - p_2)^2} && \text{unpaired, accuracy } p_1 \text{ vs } p_2 \text{, per model} \\
+n &= \frac{\big(z_a \sqrt{\psi} + z_b \sqrt{\psi - \delta^2}\big)^2}{\delta^2} && \text{paired (McNemar), gain } \delta \text{, discordant } \psi \text{ (Connor 1987)} \\
+\text{MDE} &= \frac{(z_a + z_b) \cdot \operatorname{sd}(d)}{\sqrt{n}} && \text{minimum detectable effect, paired}
+\end{aligned}
 ```
 
 `python evals/stats.py`: at 70% accuracy, detecting +5 points takes 1,251 questions
@@ -381,10 +390,10 @@ always comes with "...and this test could only have seen changes larger than X".
 
 ### Many comparisons
 
-Compare 20 prompt variants at α = 0.05 and one will "win" by chance. Control the
-family-wise error: **Bonferroni** rejects p_i < α/m; **Holm** (1979) sorts the
-p-values and compares the i-th smallest with α/(m − i + 1), stopping at the first
-failure: same guarantee, never less powerful. For p = [0.01, 0.015, 0.03, 0.2],
+Compare 20 prompt variants at $\alpha = 0.05$ and one will "win" by chance. Control the
+family-wise error: **Bonferroni** rejects $p_i < \alpha / m$; **Holm** (1979) sorts the
+p-values and compares the $i$-th smallest with $\alpha / (m - i + 1)$, stopping at the first
+failure: same guarantee, never less powerful. For $p = [0.01, 0.015, 0.03, 0.2]$,
 Bonferroni rejects one, Holm two (`stats.py`). Better still: decide the one primary
 metric before running, and treat the rest as exploratory.
 
@@ -392,12 +401,12 @@ metric before running, and treat the rest as exploratory.
 
 With sampling (temperature > 0) every run gives different outputs, so a single sample
 per question measures a random variable. For tasks with a verifier (unit tests,
-exact answers), Chen et al. (2021) define **pass@k** = P(at least one of k samples is
-correct). Estimating it with exactly k samples is high-variance; instead draw
-n ≥ k samples, count the c correct ones, and use the unbiased estimator
+exact answers), Chen et al. (2021) define **pass@k** $= P(\text{at least one of } k \text{ samples is correct})$.
+Estimating it with exactly $k$ samples is high-variance; instead draw
+$n \ge k$ samples, count the $c$ correct ones, and use the unbiased estimator
 
-```
-pass@k = 1 - C(n - c, k) / C(n, k) = 1 - Π_{i = n-c+1..n} (1 - k / i)
+```math
+\text{pass@}k = 1 - \frac{\binom{n - c}{k}}{\binom{n}{k}} = 1 - \prod_{i = n - c + 1}^{n} \left(1 - \frac{k}{i}\right)
 ```
 
 ```python
@@ -408,33 +417,35 @@ def pass_at_k(n, c, k):                      # metrics.py: the product form neve
 ```
 
 For agents, the opposite question matters: does it work **every** time? **pass^k**
-= P(all k attempts succeed) = p^k (τ-bench, Yao et al. 2024), estimated without bias
-by C(c, k) / C(n, k). A 90%-reliable step fails at least once in 10 tries 65% of the
+$= P(\text{all } k \text{ attempts succeed}) = p^k$ (τ-bench, Yao et al. 2024), estimated without bias
+by $\binom{c}{k} / \binom{n}{k}$. A 90%-reliable step fails at least once in 10 tries 65% of the
 time (see [`../agents/`](../agents/)).
 
 ![pass@k](images/pass_at_k.png)
 
 **What to look at:** left, the textbook curves for a single question with success
-rate p. Right, real: `next_word_sample` draws 20 next words at temperature 1 for each
+rate $p$. Right, real: `next_word_sample` draws 20 next words at temperature 1 for each
 of the 216 held-out words. `gpt`: pass@1 0.288, pass@5 0.346, pass@20 0.380, while
 pass^5 = 0.224 and pass^20 = 0.167. The dotted lines are what you would predict from
-pass@1 alone if every word were equally hard, 1 − (1 − 0.288)^20 = 0.999: the real
+pass@1 alone if every word were equally hard, $1 - (1 - 0.288)^{20} = 0.999$: the real
 0.380 is far lower because the model's per-word success rates are extreme (it either
 knows the word or does not; more samples cannot fix the second kind). `rnn` gains
-more from sampling (0.069 → 0.213) because its distribution is flatter.
+more from sampling ($0.069 \to 0.213$) because its distribution is flatter.
 
-`metrics_check.py` verifies the estimator against enumerating every k-subset of n
-samples (n ≤ 8), against 200,000 Monte Carlo draws, and against exact big-integer
-arithmetic at n = 3,000.
+`metrics_check.py` verifies the estimator against enumerating every $k$-subset of $n$
+samples ($n \le 8$), against 200,000 Monte Carlo draws, and against exact big-integer
+arithmetic at $n = 3{,}000$.
 
 ## 9. Likelihood evals: perplexity, bits per byte, multiple choice
 
 A language model assigns a probability to every continuation, so the cheapest eval
 needs no generation at all:
 
-```
-NLL = -Σ_t log p(x_t | x_<t)    (nats)        perplexity = exp(NLL / n_tokens)
-bits per char  = NLL / ln 2 / n_chars          bits per byte = NLL / ln 2 / n_bytes
+```math
+\begin{aligned}
+\text{NLL} &= -\sum_t \log p(x_t \mid x_{<t}) \quad \text{(nats)} & \text{perplexity} &= \exp(\text{NLL} / n_{\text{tokens}}) \\
+\text{bits per char} &= \text{NLL} / \ln 2 / n_{\text{chars}} & \text{bits per byte} &= \text{NLL} / \ln 2 / n_{\text{bytes}}
+\end{aligned}
 ```
 
 Perplexity per *token* depends on the tokenizer (a model with bigger tokens has fewer,
@@ -451,18 +462,18 @@ held-out sentence, "Rain.", costs 18.05 bits per character.
 ### Scoring multiple choice by log-likelihood
 
 MMLU, HellaSwag, ARC and most "accuracy" benchmarks of base models are scored without
-generating: compute log p(choice | context) for each choice and pick the max. This is
+generating: compute $\log p(\text{choice} \mid \text{context})$ for each choice and pick the max. This is
 the lm-evaluation-harness "loglikelihood" request, implemented in
 `evals_pytorch.py` and in the harness `mc` task. The choice of *how* to aggregate
 the per-token log-probs changes the answer:
 
 | rule | score of a choice | pitfall |
 |------|-------------------|---------|
-| sum (lm-eval `acc`) | Σ log p | every extra token costs probability: long answers lose |
-| mean (lm-eval `acc_norm` divides by the length in characters) | Σ log p / length | removes the length penalty; favours long fluent wrong answers |
-| PMI / unconditional | Σ log p(c \| ctx) − Σ log p(c \| neutral) | rewards what the *context* made likely; noisy for short choices |
+| sum (lm-eval `acc`) | $\sum \log p$ | every extra token costs probability: long answers lose |
+| mean (lm-eval `acc_norm` divides by the length in characters) | $\sum \log p / \text{length}$ | removes the length penalty; favours long fluent wrong answers |
+| PMI / unconditional | $\sum \log p(c \mid \text{ctx}) - \sum \log p(c \mid \text{neutral})$ | rewards what the *context* made likely; noisy for short choices |
 
-`python evals/evals_pytorch.py`, part 3 (42 items; ±1.96·SE in the second column):
+`python evals/evals_pytorch.py`, part 3 (42 items; $\pm 1.96 \cdot \text{SE}$ in the second column):
 
 ```
   model                  sum (acc) mean (acc_norm)             pmi          greedy
@@ -496,25 +507,28 @@ Part 4 of `evals_pytorch.py` scores the same text with the same weights three wa
   gpt@steps=300    held-out     2.555 (ctx 16.4)    2.544 (ctx 24.5)    2.616 (ctx 32.0)
 ```
 
-Non-overlapping windows (stride = T, what `../transformer/transformer_numpy.py`'s
+Non-overlapping windows (stride $= T$, what `../transformer/transformer_numpy.py`'s
 `evaluate()` does) give the first character of each window no context: on training
-text that makes the number **17× worse** (0.290 vs 0.017). On held-out text the
+text that makes the number **$17\times$ worse** (0.290 vs 0.017). On held-out text the
 memorizing `gpt` is not even monotonic in context. Long-context models are usually
 reported with a sliding window; always say which stride you used.
 
 ## 10. Calibration: is 90% confident right 90% of the time?
 
-A model is **calibrated** if, among all predictions made with confidence ≈ q, a
-fraction ≈ q are correct. It matters whenever a probability is used for a decision:
+A model is **calibrated** if, among all predictions made with confidence $\approx q$, a
+fraction $\approx q$ are correct. It matters whenever a probability is used for a decision:
 abstaining when unsure, routing to a human, ranking, or as the judge's confidence.
 
-```
-reliability diagram: bin predictions by confidence, plot accuracy vs mean confidence per bin
-ECE = Σ_bins (n_b / N) · | accuracy_b - confidence_b |         (Naeini et al. 2015; Guo et al. 2017)
-Brier = mean (confidence - correct)²            multi-class: mean Σ_classes (p_c - onehot_c)²
+Reliability diagram: bin predictions by confidence, plot accuracy vs mean confidence per bin.
+
+```math
+\begin{aligned}
+\text{ECE} &= \sum_{\text{bins } b} \frac{n_b}{N} \cdot \big\lvert \text{accuracy}_b - \text{confidence}_b \big\rvert && \text{(Naeini et al. 2015; Guo et al. 2017)} \\
+\text{Brier} &= \operatorname{mean}\big((\text{confidence} - \text{correct})^2\big) && \text{multi-class: } \operatorname{mean} \textstyle\sum_{\text{classes } c} (p_c - \operatorname{onehot}_c)^2
+\end{aligned}
 ```
 
-Equal-width bins split [0, 1] into 10 intervals; equal-mass bins put the same number
+Equal-width bins split $[0, 1]$ into 10 intervals; equal-mass bins put the same number
 of predictions in each. When predictions pile up near 1 (as ours do), equal-width
 bins are nearly empty except the last; equal-mass bins are less noisy.
 
@@ -523,22 +537,26 @@ bins are nearly empty except the last; equal-mass bins are less noisy.
 **What to look at:** next-character predictions on held-out text (the `calibration`
 task, split into two halves). Left, `gpt` is wildly overconfident: mean confidence
 0.900, accuracy 0.608, ECE 0.293; 201 of 278 predictions sit in the top bin. Both
-binnings give the same ECE: when every bin is overconfident, ECE is simply mean
-confidence − accuracy. Middle, **temperature scaling** (Guo et al. 2017): divide the
-logits by one scalar T fit on the *other* half by minimizing NLL. T = 1.57 cuts ECE
+binnings give the same ECE: when every bin is overconfident, ECE is simply
+$\text{mean confidence} - \text{accuracy}$. Middle, **temperature scaling** (Guo et al. 2017): divide the
+logits by one scalar $T$ fit on the *other* half by minimizing NLL. $T = 1.57$ cuts ECE
 to 0.210 and NLL from 3.06 to 2.12 nats, with the same accuracy (dividing logits by
-T never changes the argmax). Right, the under-trained `gpt@steps=300`: less accurate
+$T$ never changes the argmax). Right, the under-trained `gpt@steps=300`: less accurate
 (0.468) but nearly calibrated (ECE 0.071).
 
 Temperature scaling is one parameter, so `metrics.fit_temperature` uses Newton's
-method on β = 1/T with a hand-derived gradient and Hessian,
+method on $\beta = 1/T$ with a hand-derived gradient and Hessian,
 
-```
-NLL(β) = mean[-β z_y + logsumexp(β z)]     dNLL/dβ = mean[E_p[z] - z_y]     d²NLL/dβ² = mean[Var_p(z)] ≥ 0
+```math
+\begin{aligned}
+\operatorname{NLL}(\beta) &= \operatorname{mean}\big[-\beta z_y + \operatorname{logsumexp}(\beta z)\big] \\
+\frac{d \operatorname{NLL}}{d\beta} &= \operatorname{mean}\big[\mathbb{E}_p[z] - z_y\big] \\
+\frac{d^2 \operatorname{NLL}}{d\beta^2} &= \operatorname{mean}\big[\operatorname{Var}_p(z)\big] \ge 0
+\end{aligned}
 ```
 
-convex in β, so Newton is safe. `metrics_check.py` compares both derivatives with
-finite differences (errors 1e-10) and recovers a known T = 2.0 (fit: 1.970).
+convex in $\beta$, so Newton is safe. `metrics_check.py` compares both derivatives with
+finite differences (errors 1e-10) and recovers a known $T = 2.0$ (fit: 1.970).
 Over-training made this model overconfident; large pretrained LLMs are often well
 calibrated on next tokens, and RLHF tends to make them overconfident again (the
 GPT-4 technical report shows this).
@@ -570,8 +588,8 @@ wrong one, 6 ties that differ only in length, and 2 questions whose answer is "t
 story doesn't say" vs a confident invention.
 
 The default judge is **simulated** so this runs offline and deterministically:
-`appeal = token F1 vs the reference + 0.2 · log2(length / reference length)`, plus
-0.3 for the answer shown first, plus 0.15 · N(0, 1) noise per sample. Known biases,
+$\text{appeal} = \text{token F1 vs the reference} + 0.2 \cdot \log_2(\text{length} / \text{reference length})$, plus
+0.3 for the answer shown first, plus $0.15 \cdot \mathcal{N}(0, 1)$ noise per sample. Known biases,
 so we can check that the protocols remove them. `python evals/judge.py`:
 
 ```
@@ -588,14 +606,14 @@ so we can check that the protocols remove them. `python evals/judge.py`:
   longer answer wins 55% of the judge's decisions vs 46% of the human's
 ```
 
-**Cohen's kappa** κ = (p_o − p_e) / (1 − p_e) is agreement beyond chance (p_e = the
+**Cohen's kappa** $\kappa = \dfrac{p_o - p_e}{1 - p_e}$ is agreement beyond chance ($p_e$ = the
 agreement two raters with these label frequencies would reach at random): 1 is
 perfect, 0 is chance. Raw agreement looks better than it is; report kappa.
 
 ![Judge biases](images/judge.png)
 
 **What to look at:** left, kappa vs human of each protocol at the default biases,
-with bootstrap CIs. Note the CIs: with 40 labels, kappa is known to about ±0.2, so
+with bootstrap CIs. Note the CIs: with 40 labels, kappa is known to about $\pm 0.2$, so
 none of these protocols is distinguishable from its neighbours. Validating a judge
 needs more labels than people expect. Right, the clean signal, averaged over 20 judge
 seeds as the position bias grows: single-order kappa falls from 0.60 to 0.27, and
@@ -626,7 +644,7 @@ she woke before the sun. She climbed the hundred stairs, cleaned the great glass
 lens..."), so parts of the "held-out" paragraphs are verbatim training text.
 `contamination.py` detects it the GPT-3 way (Brown et al. 2020): lowercase words
 without punctuation, every n-gram of the training text in a set, an example is
-contaminated if any of its n-grams is in the set (examples shorter than n words: if
+contaminated if any of its n-grams is in the set (examples shorter than $n$ words: if
 the whole example appears, given at least 4 words).
 
 ```
@@ -655,7 +673,7 @@ which a 1-word rule would have flagged as contaminated ("the rain beat on the
 windows" is in the training text): n-gram detectors have false positives on short
 examples and false negatives on paraphrases. The regression gate does not know any of
 this: `compare` calls `gpt-full` vs `gpt` a significant IMPROVEMENT (+0.681,
-p = 4e-43).
+$p = 4 \times 10^{-43}$).
 
 Defenses: deduplicate eval against training data (exact and n-gram) before
 training; split by source document; keep a private test set that never leaves your
@@ -676,7 +694,7 @@ re-collected" is a different eval.)
 
 ![Goodhart](images/goodhart.png)
 
-**What to look at:** 12 real training runs of our GPT (600, 1,000, 1,500, 2,000 steps ×
+**What to look at:** 12 real training runs of our GPT (600, 1,000, 1,500, 2,000 steps $\times$
 3 seeds; held-out accuracy 0.190–0.310 on all 216 words). Left: 2,000 times, pick the
 run that scores best on 40 random held-out words ("dev") and also score it on 108
 other held-out words ("test"). The picked run averages 0.339 on dev but 0.286 on
@@ -713,14 +731,14 @@ python evals/harness.py compare evals/runs/next_word/gpt.summary.json \
 
 Things a real gate needs, all visible in our runs:
 
-- **"Not significant" is not "no change".** For `gpt@seed=1` the gate passes (p = 0.189),
-  but the CI [−0.074, +0.009] does not rule out a 7-point drop. `--margin 0.02` turns
+- **"Not significant" is not "no change".** For `gpt@seed=1` the gate passes ($p = 0.189$),
+  but the CI $[-0.074, +0.009]$ does not rule out a 7-point drop. `--margin 0.02` turns
   the gate into a **non-inferiority** test: pass only if the CI excludes a drop bigger
   than the margin. The same comparison then returns INCONCLUSIVE, exit 1: the eval set
   is too small to promise what you asked.
 - **Metrics can disagree.** `gpt@steps=300` is a significant *regression* on
   next_word accuracy but a significant *improvement* on held-out bits/char
-  (5.267 → 2.845, permutation p = 0.0013) and on calibration. Gate on the metric that
+  ($5.267 \to 2.845$, permutation $p = 0.0013$) and on calibration. Gate on the metric that
   matches the product decision; watch the others.
 - **Contamination passes the gate** (section 12). So does over-tuning to the gate's
   eval set (section 13): rotate in fresh examples.
@@ -777,7 +795,7 @@ of the monitoring in [`../serving/`](../serving/).
 - **Fix seeds per example**, not per run, so subsets and reorderings are comparable.
 - **Log-likelihood evals**: check tokenization at the context/continuation boundary
   (the leading space belongs to the continuation), the stride, and sum vs mean.
-- **Judges**: validate on ≥ 100 human labels, swap positions, use a different model
+- **Judges**: validate on $\ge 100$ human labels, swap positions, use a different model
   family from the one being judged, and re-validate when you change the rubric.
 - **Baselines**: always include a trivial one (our bigram). If you can't beat it
   clearly, the eval or the model is broken.
@@ -825,7 +843,7 @@ Answer each one out loud in under a minute:
 4. Exact match vs normalized EM vs token F1: give an example where each is wrong.
    What is the article trap?
 5. Write the standard error of an accuracy. How many questions to know a 70%
-   accuracy to ±2 points?
+   accuracy to $\pm 2$ points?
 6. Explain the percentile bootstrap. When do you need it instead of a formula?
 7. What are clustered standard errors and when do they matter? What happens with very
    few clusters?
@@ -833,9 +851,9 @@ Answer each one out loud in under a minute:
    paired test more powerful? What is McNemar's test?
 9. How many examples do you need to detect a 2-point improvement? What does it depend
    on?
-10. You tried 20 prompts and one is significantly better at p = 0.04. What do you
+10. You tried 20 prompts and one is significantly better at $p = 0.04$. What do you
     conclude? Bonferroni vs Holm.
-11. Derive the unbiased pass@k estimator. Why not compute 1 − (1 − p̂)^k?
+11. Derive the unbiased pass@k estimator. Why not compute $1 - (1 - \hat{p})^k$?
 12. What is pass^k and why does it matter for agents?
 13. Perplexity vs bits per byte: why can't you compare perplexities across tokenizers?
 14. How does lm-evaluation-harness score a multiple-choice question? Sum vs
@@ -862,7 +880,7 @@ Answer each one out loud in under a minute:
    (key the running sums by example index instead of cluster) and see which check
    notices.
 2. Add a **Wilson** or **Clopper-Pearson** interval to the harness summary and compare
-   its coverage with the bootstrap at n = 15 (the `mc` held-out split) by simulation
+   its coverage with the bootstrap at $n = 15$ (the `mc` held-out split) by simulation
    in `metrics_check.py`.
 3. Add a `next_word_sample` variant with a weaker verifier, "the sampled word is any
    word of the story's vocabulary", and compare its pass@k with exact match. Which
@@ -871,16 +889,16 @@ Answer each one out loud in under a minute:
    keeping pairs) and use it in `compare` when examples have clusters. How do the
    p-values of section 14 change?
 5. Run `compare` for every pair of the 12 sweep models (`gpt@steps=...,seed=...`):
-   how many "significant" differences do you get at α = 0.05, and how many survive
+   how many "significant" differences do you get at $\alpha = 0.05$, and how many survive
    Holm?
 6. Add a `sequential` option to `compare` that peeks after every 20 examples and stops
-   at the first p < 0.05. Simulate under H0 (two seeds) and measure the false-alarm
+   at the first $p < 0.05$. Simulate under $H_0$ (two seeds) and measure the false-alarm
    rate. Then implement a fix (e.g. alpha spending).
 7. Run `python evals/judge.py --real` against a real model (or a local server). Is
    its position consistency better than the simulated 75%? Add 60 more labeled pairs
    and recompute the kappa CIs.
 8. Add **length-controlled** judging: give the simulated judge's verbosity term a
-   regression correction (fit appeal ~ log length on the labeled set) and measure
+   regression correction (fit $\text{appeal} \sim \log \text{length}$ on the labeled set) and measure
    kappa before/after (cf. length-controlled AlpacaEval).
 9. In `contamination.py`, add **embedding-free paraphrase detection**: flag examples
    whose 8-gram overlap is above a threshold after removing stopwords. How many more

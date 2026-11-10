@@ -53,44 +53,46 @@ A feed-forward network (MLP/CNN) maps one fixed-size input to one output and has
 text, audio, time series, DNA.
 
 An RNN processes a sequence **one element at a time** and keeps a **hidden state**
-`h_t`, a vector that summarizes everything seen so far. At each step it:
+$h_t$, a vector that summarizes everything seen so far. At each step it:
 
-1. reads the current input `x_t`,
-2. combines it with the previous memory `h_{t-1}`,
-3. produces a new memory `h_t` (and optionally an output `y_t`).
+1. reads the current input $x_t$,
+2. combines it with the previous memory $h_{t-1}$,
+3. produces a new memory $h_t$ (and optionally an output $y_t$).
 
 The **same weights are reused at every timestep** (weight sharing). This is what lets
 an RNN handle sequences of any length with a fixed number of parameters.
 
 ## 2. The equations
 
-```
-h_t = tanh(W_xh · x_t + W_hh · h_{t-1} + b_h)     # new hidden state
-y_t = W_hy · h_t + b_y                            # output logits
-p_t = softmax(y_t)                                # probabilities over the vocabulary
+```math
+\begin{aligned}
+h_t &= \tanh(W_{xh} x_t + W_{hh} h_{t-1} + b_h) && \text{new hidden state} \\
+y_t &= W_{hy} h_t + b_y && \text{output logits} \\
+p_t &= \operatorname{softmax}(y_t) && \text{probabilities over the vocabulary}
+\end{aligned}
 ```
 
 ![One RNN time step](images/rnn_cell.png)
 
-**What to look at:** the new memory `h_t` is built from two arrows, what the cell just
-read (`W_xh·x_t`, blue) and what it remembered (`W_hh·h_{t-1}`, orange). `h_t` then goes
+**What to look at:** the new memory $h_t$ is built from two arrows, what the cell just
+read ($W_{xh} x_t$, blue) and what it remembered ($W_{hh} h_{t-1}$, orange). $h_t$ then goes
 up to make a prediction *and* right to become the next step's memory. The inset shows
 the real trained model: after reading "said the k" it gives 95% to `'e'`.
 
-Shapes (column vectors, as in `rnn_numpy.py`), with `V` = input/vocab size and `H` = hidden size:
+Shapes (column vectors, as in `rnn_numpy.py`), with $V$ = input/vocab size and $H$ = hidden size:
 
 | Symbol | Shape | Meaning |
 |--------|-------|---------|
-| `x_t`  | (V, 1) | input at step t (one-hot character) |
-| `h_t`  | (H, 1) | hidden state / memory |
-| `W_xh` | (H, V) | input → hidden |
-| `W_hh` | (H, H) | hidden → hidden (**the recurrence**) |
-| `W_hy` | (V, H) | hidden → output |
-| `b_h`, `b_y` | (H, 1), (V, 1) | biases |
+| $x_t$  | $(V, 1)$ | input at step $t$ (one-hot character) |
+| $h_t$  | $(H, 1)$ | hidden state / memory |
+| $W_{xh}$ | $(H, V)$ | input → hidden |
+| $W_{hh}$ | $(H, H)$ | hidden → hidden (**the recurrence**) |
+| $W_{hy}$ | $(V, H)$ | hidden → output |
+| $b_h$, $b_y$ | $(H, 1)$, $(V, 1)$ | biases |
 
-`h_{-1}` (the initial state) is usually zeros.
+$h_{-1}$ (the initial state) is usually zeros.
 
-**Why `tanh`?** It keeps `h` in (-1, 1), so repeatedly applying `W_hh` doesn't blow
+**Why $\tanh$?** It keeps $h$ in $(-1, 1)$, so repeatedly applying $W_{hh}$ doesn't blow
 up the activations, and it's zero-centered. ReLU RNNs exist but are harder to keep stable.
 
 ### Unrolling
@@ -115,9 +117,9 @@ through the unrolled graph) and why it's hard (very deep networks → vanishing 
 ![The RNN unrolled over "keepe"](images/unrolled.png)
 
 **What to look at:** the boxes with the same colour are the *same* matrix, reused at every
-step; only `h` changes. Each step has its own target (the next character) and its own
+step; only $h$ changes. Each step has its own target (the next character) and its own
 loss, and the chunk's loss is their sum. The note at the bottom shows that the memory
-matters: with an empty `h_{-1}` the same model is far less sure that `'e'` follows "ke".
+matters: with an empty $h_{-1}$ the same model is far less sure that `'e'` follows "ke".
 
 To see the same thing with real numbers in your terminal, run
 `python rnn/rnn_step_visual.py`.
@@ -128,41 +130,43 @@ To see the same thing with real numbers in your terminal, run
 
 **What to look at:** each column is the full memory right after one character. Some
 units learn readable jobs on their own, like the highlighted "just saw a space" unit.
-Most values sit near ±1, so `tanh` is saturated (its slope is ≈ 0 there), which matters for section 5.
+Most values sit near $\pm 1$, so $\tanh$ is saturated (its slope is $\approx 0$ there), which matters for section 5.
 
 ## 3. Training: loss and Backpropagation Through Time (BPTT)
 
-For a character language model, the target at step `t` is the next character.
+For a character language model, the target at step $t$ is the next character.
 The loss is the summed cross-entropy:
 
-```
-L = Σ_t  -log p_t[target_t]
+```math
+L = \sum_t -\log p_t[\text{target}_t]
 ```
 
 **BPTT** is ordinary backprop on the unrolled graph. Because weights are shared,
 **each weight's gradient is the sum of its gradients at every timestep**.
 
-Going backwards from the last step, with `dh_next = 0` initially:
+Going backwards from the last step, with $dh_{\text{next}} = 0$ initially ($dX$ is short for $\partial L / \partial X$):
 
-```
-dy_t   = p_t - onehot(target_t)          # softmax + cross-entropy gradient
-dW_hy += dy_t · h_tᵀ
-db_y  += dy_t
-dh_t   = W_hyᵀ · dy_t + dh_next          # from the output AND from the future
-da_t   = (1 - h_t²) ⊙ dh_t               # through tanh  (tanh' = 1 - tanh²)
-dW_xh += da_t · x_tᵀ
-dW_hh += da_t · h_{t-1}ᵀ
-db_h  += da_t
-dh_next = W_hhᵀ · da_t                   # pass gradient to step t-1
+```math
+\begin{aligned}
+dy_t &= p_t - \operatorname{onehot}(\text{target}_t) && \text{softmax + cross-entropy gradient} \\
+dW_{hy} &\mathrel{+}= dy_t \, h_t^\top \\
+db_y &\mathrel{+}= dy_t \\
+dh_t &= W_{hy}^\top dy_t + dh_{\text{next}} && \text{from the output AND from the future} \\
+da_t &= (1 - h_t^2) \odot dh_t && \text{through tanh } (\tanh' = 1 - \tanh^2) \\
+dW_{xh} &\mathrel{+}= da_t \, x_t^\top \\
+dW_{hh} &\mathrel{+}= da_t \, h_{t-1}^\top \\
+db_h &\mathrel{+}= da_t \\
+dh_{\text{next}} &= W_{hh}^\top da_t && \text{pass gradient to step } t-1
+\end{aligned}
 ```
 
-The key line is `dh_t = W_hyᵀ·dy_t + dh_next`. The hidden state affects the loss
-**now** (through the output) **and in the future** (through `h_{t+1}`), so both paths
+The key line is $dh_t = W_{hy}^\top dy_t + dh_{\text{next}}$. The hidden state affects the loss
+**now** (through the output) **and in the future** (through $h_{t+1}$), so both paths
 contribute to the gradient.
 
 ![Gradient of the last step's loss flowing back through time](images/bptt.png)
 
-**What to look at:** this is the `dh_next = W_hhᵀ · da_t` line run backwards from the
+**What to look at:** this is the $dh_{\text{next}} = W_{hh}^\top da_t$ line run backwards from the
 *last* prediction only, on a real 25-character chunk. Each bar is how much learning
 signal reaches that earlier step. It fades as it goes back (log scale!), so early
 characters barely get credit for the last prediction. Section 5 explains why.
@@ -186,52 +190,52 @@ Gradients can occasionally explode (section 5). Clipping, either element-wise
 
 ![Training loss and samples](images/training_progress.png)
 
-**What to look at:** the loss starts at random guessing, `ln(44) ≈ 3.78` per character,
+**What to look at:** the loss starts at random guessing, $\ln 44 \approx 3.78$ per character,
 and falls to about 1. The samples underneath go from random symbols, to "the the the",
 to word-like text. This is what `python rnn/rnn_numpy.py` prints, drawn as a picture.
 (The plot shows loss *per character*; `rnn_numpy.py` prints the sum over 25 characters.)
 
 ## 4. Inference: sampling text
 
-To generate text: feed a seed character, get `p_t`, **sample** the next character
-from `p_t`, feed it back as the next input, and repeat.
+To generate text: feed a seed character, get $p_t$, **sample** the next character
+from $p_t$, feed it back as the next input, and repeat.
 
-**Temperature** controls randomness: `p = softmax(y / T)`.
-- `T < 1`: more confident and repetitive.
-- `T > 1`: more random and creative, with more errors.
+**Temperature** controls randomness: $p = \operatorname{softmax}(y / T)$.
+- $T < 1$: more confident and repetitive.
+- $T > 1$: more random and creative, with more errors.
 
 ![Next-character probabilities at three temperatures](images/next_char_probs.png)
 
-**What to look at:** the model is fairly sure `'r'` follows "The keepe" (56% at `T = 1`).
-`T = 0.5` makes it almost certain (93%), while `T = 2` flattens the bars so unlikely
-characters get picked much more often. The logits are the same; only the division by `T` changes.
+**What to look at:** the model is fairly sure `'r'` follows "The keepe" (56% at $T = 1$).
+$T = 0.5$ makes it almost certain (93%), while $T = 2$ flattens the bars so unlikely
+characters get picked much more often. The logits are the same; only the division by $T$ changes.
 
 During training we use **teacher forcing**: the true previous character is the
 input, not the model's own prediction.
 
 ## 5. Vanishing and exploding gradients
 
-How much does the loss at step `t` depend on the hidden state at an earlier step `k`?
+How much does the loss at step $t$ depend on the hidden state at an earlier step $k$?
 
+```math
+\frac{\partial h_t}{\partial h_k} = \prod_{i=k+1}^{t} \operatorname{diag}(1 - h_i^2) \, W_{hh}
 ```
-∂h_t/∂h_k = Π_{i=k+1..t}  diag(1 - h_i²) · W_hh
-```
 
-This is a product of `t - k` matrices. Roughly:
+This is a product of $t - k$ matrices. Roughly:
 
-- If the largest singular value of `W_hh` (times the tanh slope ≤ 1) is **< 1**, the
+- If the largest singular value of $W_{hh}$ (times the tanh slope $\le 1$) is **$< 1$**, the
   product **shrinks exponentially** → **vanishing gradients**. The model can't
   learn long-range dependencies because the signal from far back is ~0.
-- If it is **> 1**, the product can **grow exponentially** → **exploding gradients**,
+- If it is **$> 1$**, the product can **grow exponentially** → **exploding gradients**,
   which cause unstable training and NaNs.
-- Saturated tanh units (`|h| ≈ 1` → slope ≈ 0) make vanishing even worse.
+- Saturated tanh units ($\lvert h \rvert \approx 1$ → slope $\approx 0$) make vanishing even worse.
 
 `vanishing_gradients.py` shows this numerically:
 
 ![Gradient norm vs distance for different W_hh radii](images/vanishing_gradients.png)
 
-**What to look at:** on a log scale, `radius^d` is a straight line. Below radius 1 the
-lines dive (vanishing), and above 1 the linear ones shoot up (exploding). With `tanh`
+**What to look at:** on a log scale, $\text{radius}^d$ is a straight line. Below radius 1 the
+lines dive (vanishing), and above 1 the linear ones shoot up (exploding). With $\tanh$
 (right) saturation drags even radius 1.5 back down. The BPTT picture in section 3 is the
 same effect inside our real trained model.
 
@@ -239,33 +243,31 @@ same effect inside our real trained model.
 | Problem | Fix |
 |---------|-----|
 | Exploding | Gradient clipping |
-| Vanishing | **LSTM / GRU** (gated, additive memory paths), careful init (orthogonal / identity `W_hh`), skip connections, and eventually attention / Transformers |
+| Vanishing | **LSTM / GRU** (gated, additive memory paths), careful init (orthogonal / identity $W_{hh}$), skip connections, and eventually attention / Transformers |
 
 ## 6. Architectures and variants
 
 **Input/output patterns**
-- **Many-to-one**: sentiment classification (use only the final `h_T`).
-- **One-to-many**: image captioning (an image feature initializes `h`).
+- **Many-to-one**: sentiment classification (use only the final $h_T$).
+- **One-to-many**: image captioning (an image feature initializes $h$).
 - **Many-to-many, aligned**: char language model, POS tagging (an output at every step).
 - **Many-to-many, seq2seq**: translation (an encoder RNN produces a context, a decoder RNN generates the output).
 
 **Variants**
-- **Stacked / deep RNN**: the `h_t` of layer 1 is the input `x_t` of layer 2.
+- **Stacked / deep RNN**: the $h_t$ of layer 1 is the input $x_t$ of layer 2.
 - **Bidirectional RNN**: one RNN reads left→right, another right→left, and their states are concatenated. Useful when the full sequence is available (not for generation).
 - **LSTM** (preview, the next folder: [`../lstm/`](../lstm/)):
-  ```
-  f, i, o = σ(...), σ(...), σ(...)        # forget, input, output gates
-  g       = tanh(...)                     # candidate memory
-  c_t     = f ⊙ c_{t-1} + i ⊙ g           # ADDITIVE cell update → gradients flow
-  h_t     = o ⊙ tanh(c_t)
-  ```
-  The additive `c_t` path lets gradients flow across many steps when `f ≈ 1`.
+  $$f, i, o = \sigma(\dots), \sigma(\dots), \sigma(\dots) \qquad \text{forget, input, output gates}$$
+  $$g = \tanh(\dots) \qquad \text{candidate memory}$$
+  $$c_t = f \odot c_{t-1} + i \odot g \qquad \text{ADDITIVE cell update} \to \text{gradients flow}$$
+  $$h_t = o \odot \tanh(c_t)$$
+  The additive $c_t$ path lets gradients flow across many steps when $f \approx 1$.
 - **GRU**: a simpler gated variant with 2 gates (update, reset) and no separate cell state.
 
 ## 7. Practical tips
 
-- Initialize `W_hh` small (or orthogonal). With large random weights the activations saturate.
-- A healthy starting loss for a char model ≈ `seq_len · ln(V)` (uniform guessing).
+- Initialize $W_{hh}$ small (or orthogonal). With large random weights the activations saturate.
+- A healthy starting loss for a char model $\approx \text{seq-len} \cdot \ln V$ (uniform guessing).
   `rnn_numpy.py` prints the **summed** loss over `seq_len` chars, while `rnn_pytorch.py`
   prints the **mean per character**. Divide the NumPy number by `seq_len` to compare.
 - `input.txt` is tiny (~4 KB), so the PyTorch model memorizes it (loss → ~0.02).
@@ -273,7 +275,7 @@ same effect inside our real trained model.
   validation split to watch for overfitting.
 - If the loss is NaN: lower the learning rate and check clipping.
 - In PyTorch, mind `batch_first=True`, and that the hidden state shape is `(num_layers, B, H)`.
-- RNNs are inherently **sequential** (step t needs step t-1), which makes them slow
+- RNNs are inherently **sequential** (step $t$ needs step $t-1$), which makes them slow
   on GPUs. This is a big reason Transformers replaced them.
 
 ## 8. From char-RNN to ChatGPT (why this matters for an AI engineer)
@@ -285,7 +287,7 @@ append it, repeat. `generate.py` is a tiny version of what happens when ChatGPT 
 | | This folder | GPT-style LLM |
 |---|---|---|
 | Token | 1 character (vocab 44) | sub-word piece from **BPE tokenization** (vocab ~100k–200k) |
-| How the past is remembered | one hidden vector `h_t`, updated step by step | **attention**: every token can look directly at every earlier token |
+| How the past is remembered | one hidden vector $h_t$, updated step by step | **attention**: every token can look directly at every earlier token |
 | Training | parallel only across batch | parallel across the whole sequence (fast on GPUs) |
 | Long-range memory | fades after ~10–20 steps | thousands to millions of tokens of context |
 | Size / data | ~19k params, 4 KB text | billions of params, trillions of tokens |
@@ -293,8 +295,8 @@ append it, repeat. `generate.py` is a tiny version of what happens when ChatGPT 
 
 The concepts you learn here carry over directly:
 - **Cross-entropy on the next token** is exactly the LLM pre-training loss.
-- **Perplexity** = `exp(mean loss per token)` is the standard way to report language-model quality.
-  Uniform guessing over V tokens gives perplexity V. Lower is better.
+- **Perplexity** = $\exp(\text{mean loss per token})$ is the standard way to report language-model quality.
+  Uniform guessing over $V$ tokens gives perplexity $V$. Lower is better.
 - **Sampling:** temperature (here), plus top-k and top-p (nucleus) sampling in real LLMs.
 - **Teacher forcing**, **truncated context**, and **gradient clipping** are all still used.
 - The **vanishing-gradient problem** is the reason LSTMs, and then attention, were invented.
@@ -308,8 +310,8 @@ to train in parallel like Transformers. Understanding the vanilla RNN makes thos
 Answer each one out loud in under a minute:
 
 1. Write the RNN forward equations with shapes. Which weights are shared across time, and why?
-2. What is backpropagation through time? Why is the gradient for `W_hh` a **sum** over timesteps?
-3. Why do vanilla RNNs suffer from vanishing/exploding gradients? (Use `∂h_t/∂h_k`.)
+2. What is backpropagation through time? Why is the gradient for $W_{hh}$ a **sum** over timesteps?
+3. Why do vanilla RNNs suffer from vanishing/exploding gradients? (Use $\partial h_t / \partial h_k$.)
 4. How does gradient clipping work, and which of the two problems does it fix?
 5. How does an LSTM fix vanishing gradients? What does each gate do?
 6. LSTM vs GRU: what are the differences?
@@ -327,12 +329,12 @@ Answer each one out loud in under a minute:
 2. Train with `--hidden 32` vs `--hidden 256`, and `--seq-len 5` vs `--seq-len 50`. Compare the final loss and samples.
 3. Sample at temperatures 0.5, 1.0 and 1.5.
 4. Replace `tanh` with ReLU in `rnn_numpy.py`. What happens without clipping?
-5. Initialize `W_hh` as an orthogonal matrix. Does training change?
+5. Initialize $W_{hh}$ as an orthogonal matrix. Does training change?
 6. Turn it into a **many-to-one** classifier (e.g. predict whether a binary string has an even number of 1s).
 7. Add a second layer (stacked RNN) to the NumPy model.
 8. Implement an LSTM cell in NumPy and reuse the gradient checker.
 9. Hold out the last 10% of the text as validation data and report the validation **perplexity** during training.
-10. Add **top-k sampling** to `generate.py` (only sample from the k most likely characters).
+10. Add **top-k sampling** to `generate.py` (only sample from the $k$ most likely characters).
 11. Train on a 1 MB+ text (e.g. a book from Project Gutenberg) and compare the samples with `input.txt`.
 
 ## 11. Resources

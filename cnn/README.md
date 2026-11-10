@@ -51,13 +51,13 @@ The scripts filter out just those warnings.
 You could flatten an image into one long vector and feed it to the MLP from `../mlp/`.
 It works for tiny images, but it has three big problems.
 
-**1. Far too many parameters.** A 224x224 colour photo has `224·224·3 = 150,528` numbers.
-One dense layer with 1,000 neurons needs `150,528 · 1,000 = 150,528,000` weights. That is
+**1. Far too many parameters.** A 224x224 colour photo has $224 \cdot 224 \cdot 3 = 150{,}528$ numbers.
+One dense layer with 1,000 neurons needs $150{,}528 \cdot 1{,}000 = 150{,}528{,}000$ weights. That is
 one layer, and it has seen each pixel position only through its own private weights.
-A conv layer with 64 filters of size 3x3 over 3 colour channels needs `64·3·3·3 + 64 = 1,792`.
+A conv layer with 64 filters of size 3x3 over 3 colour channels needs $64 \cdot 3 \cdot 3 \cdot 3 + 64 = 1{,}792$.
 
-**2. No notion of locality.** An MLP doesn't know that pixel `(5, 6)` is next to pixel
-`(5, 7)`. Shuffle all the pixels with a fixed permutation and an MLP learns exactly as well.
+**2. No notion of locality.** An MLP doesn't know that pixel $(5, 6)$ is next to pixel
+$(5, 7)$. Shuffle all the pixels with a fixed permutation and an MLP learns exactly as well.
 But in images, nearby pixels belong together: edges, corners and strokes are **local** patterns.
 
 **3. Not translation-equivariant.** A vertical bar at column 3 and the same bar at column 9
@@ -119,15 +119,15 @@ Slide a small grid of weights (the **kernel** or **filter**) over the image. At 
 position, multiply the patch under the kernel element by element with the kernel, add
 everything up, and add a bias. That number is one cell of the output, the **feature map**.
 
-For one input channel and a `k x k` kernel `K`:
+For one input channel and a $k \times k$ kernel $K$:
 
-```
-out[i, j] = Σ_a Σ_b  x[i + a, j + b] · K[a, b]  +  b          a, b = 0 .. k-1
+```math
+\text{out}[i, j] = \sum_a \sum_b x[i + a, j + b] \cdot K[a, b] + b \qquad a, b = 0, \dots, k - 1
 ```
 
 ![A convolution with real numbers](images/conv_operation.png)
 
-**What to look at:** the blue window is the patch for output cell `[1, 1]`. Multiply it
+**What to look at:** the blue window is the patch for output cell $[1, 1]$. Multiply it
 cell by cell with the orange kernel, add the 9 products (3.5), add the bias (−1): 2.5,
 the green cell. Slide the window one step right and do it again. The **same 9 weights**
 produce all 16 outputs. Run `python cnn/conv_visual.py` to watch this happen cell by cell.
@@ -135,7 +135,7 @@ produce all 16 outputs. Run `python cnn/conv_visual.py` to watch this happen cel
 ### Cross-correlation vs convolution
 
 Strictly, the formula above is **cross-correlation**. In maths, **convolution** flips the
-kernel first: `Σ x[i - a, j - b] · K[a, b]`, which is the same as correlating with the
+kernel first: $\sum_a \sum_b x[i - a, j - b] \cdot K[a, b]$, which is the same as correlating with the
 kernel rotated by 180°. Deep-learning libraries (PyTorch's `nn.Conv2d`, ours) compute the
 cross-correlation and still call it "convolution". It doesn't matter for learning: the
 network just learns the flipped kernel. It does matter when you derive the backward pass
@@ -148,19 +148,14 @@ same way. So **a kernel fires where the patch looks like the kernel**.
 
 The kernel in `conv_visual.py` is the classic Sobel vertical-edge detector:
 
-```
--1  0  1
--2  0  2      "Is it brighter on my RIGHT than on my LEFT?"
--1  0  1
+```math
+\begin{bmatrix} -1 & 0 & 1 \\ -2 & 0 & 2 \\ -1 & 0 & 1 \end{bmatrix} \qquad \text{"Is it brighter on my RIGHT than on my LEFT?"}
 ```
 
 On the 6x6 image (a bright block), with bias −1, it gives this feature map:
 
-```
-  2    2   -4   -4
-  3  2.5   -4   -5
-  3  1.5   -2   -5
-  2  0.5   -1   -4
+```math
+\begin{bmatrix} 2 & 2 & -4 & -4 \\ 3 & 2.5 & -4 & -5 \\ 3 & 1.5 & -2 & -5 \\ 2 & 0.5 & -1 & -4 \end{bmatrix}
 ```
 
 Positive on the block's **left** edge (dark → bright), strongly negative on its **right**
@@ -180,54 +175,54 @@ of us designing them (section 13).
 
 Real inputs have several **channels** (RGB = 3). After the first layer, every feature
 map is a channel too: a layer with 8 kernels outputs 8 channels. So a kernel must look
-at **all input channels** at once: it is a small 3D block `(C_in, k, k)`, and the layer
+at **all input channels** at once: it is a small 3D block $(C_{\text{in}}, k, k)$, and the layer
 has one such block per output channel.
 
-```
-out[n, f, i, j] = Σ_c Σ_a Σ_b  x_pad[n, c, i·s + a, j·s + b] · W[f, c, a, b]  +  b[f]
+```math
+\text{out}[n, f, i, j] = \sum_c \sum_a \sum_b x_{\text{pad}}[n, c, i \cdot s + a, j \cdot s + b] \cdot W[f, c, a, b] + b[f]
 ```
 
 We use the **NCHW** layout, like PyTorch:
 
 | Symbol | Shape | Meaning |
 |--------|-------|---------|
-| `x` | `(N, C_in, H, W)` | a batch of N images, C_in channels each |
-| `W` | `(C_out, C_in, kH, kW)` | one `(C_in, kH, kW)` filter per output channel |
-| `b` | `(C_out,)` | one bias per output channel (shared over all positions) |
-| `out` | `(N, C_out, H_out, W_out)` | one feature map per output channel |
+| $x$ | $(N, C_{\text{in}}, H, W)$ | a batch of $N$ images, $C_{\text{in}}$ channels each |
+| $W$ | $(C_{\text{out}}, C_{\text{in}}, k_H, k_W)$ | one $(C_{\text{in}}, k_H, k_W)$ filter per output channel |
+| $b$ | $(C_{\text{out}},)$ | one bias per output channel (shared over all positions) |
+| $\text{out}$ | $(N, C_{\text{out}}, H_{\text{out}}, W_{\text{out}})$ | one feature map per output channel |
 
-Parameters of a conv layer: `C_out · C_in · k · k + C_out`. Note what is **not** in that
+Parameters of a conv layer: $C_{\text{out}} \cdot C_{\text{in}} \cdot k \cdot k + C_{\text{out}}$. Note what is **not** in that
 formula: the image size. A conv layer has the same number of weights for a 16x16 image
 and for a 4K photo.
 
-Our `conv2` has `W` of shape `(16, 8, 3, 3)`: 16 filters, each looking at all 8 channels
-of `conv1`'s output through a 3x3 window: `16·8·3·3 + 16 = 1,168` parameters.
+Our `conv2` has $W$ of shape $(16, 8, 3, 3)$: 16 filters, each looking at all 8 channels
+of `conv1`'s output through a 3x3 window: $16 \cdot 8 \cdot 3 \cdot 3 + 16 = 1{,}168$ parameters.
 
 ## 5. Padding, stride and the output size
 
-- **Padding `p`:** add a ring of `p` zeros around the input, so the kernel can be centred
-  on border pixels. With a 3x3 kernel, `p = 1` keeps the size the same ("same" padding).
-- **Stride `s`:** move the window `s` pixels at a time. `s = 2` roughly halves the size.
+- **Padding $p$:** add a ring of $p$ zeros around the input, so the kernel can be centred
+  on border pixels. With a 3x3 kernel, $p = 1$ keeps the size the same ("same" padding).
+- **Stride $s$:** move the window $s$ pixels at a time. $s = 2$ roughly halves the size.
 
-```
-out = (n + 2p - k) / s + 1          (rounded down)
+```math
+\text{out} = \left\lfloor \frac{n + 2p - k}{s} \right\rfloor + 1 \qquad \text{(rounded down)}
 ```
 
 ![Padding and stride](images/padding_stride.png)
 
 **What to look at:** the orange box is the first window and the green dashed box is the
-second. With `p = 0` the 5x5 input shrinks to 3x3. With `p = 1` the grey zeros let the
-window start on the corner, so the output stays 5x5. With `s = 2` the second window
+second. With $p = 0$ the 5x5 input shrinks to 3x3. With $p = 1$ the grey zeros let the
+window start on the corner, so the output stays 5x5. With $s = 2$ the second window
 jumps two cells, giving 3x3.
 
 `conv_visual.py` (step 9) checks the formula on the 6x6 example with a 3x3 kernel:
 
-| p | s | (n + 2p − k) / s + 1 | output |
+| $p$ | $s$ | $(n + 2p - k) / s + 1$ | output |
 |---|---|----------------------|--------|
-| 0 | 1 | (6 + 0 − 3) / 1 + 1 = 4 | 4x4 |
-| 1 | 1 | (6 + 2 − 3) / 1 + 1 = 6 | 6x6 |
-| 0 | 2 | (6 + 0 − 3) / 2 + 1 = 2.5 → 2 | 2x2 |
-| 1 | 2 | (6 + 2 − 3) / 2 + 1 = 3.5 → 3 | 3x3 |
+| 0 | 1 | $(6 + 0 - 3) / 1 + 1 = 4$ | 4x4 |
+| 1 | 1 | $(6 + 2 - 3) / 1 + 1 = 6$ | 6x6 |
+| 0 | 2 | $(6 + 0 - 3) / 2 + 1 = 2.5 \to 2$ | 2x2 |
+| 1 | 2 | $(6 + 2 - 3) / 2 + 1 = 3.5 \to 3$ | 3x3 |
 
 ## 6. Pooling
 
@@ -248,7 +243,7 @@ Backward: each pooled cell's gradient goes **only** to the cell that won; the ot
 get 0, because nudging a loser doesn't change the output.
 
 **Global average pooling** (GAP) averages each whole feature map down to one number:
-`(N, C, H, W) → (N, C)`. It throws away *where* a feature is and keeps only *how much*
+$(N, C, H, W) \to (N, C)$. It throws away *where* a feature is and keeps only *how much*
 of it there is. Section 14 shows why that matters.
 
 ## 7. Receptive field: seeing more with depth
@@ -265,14 +260,14 @@ back through all-ones kernels, so it is the real connectivity of the network.
 
 This is why CNNs build a **hierarchy**: early layers see tiny patches (edges), later
 layers combine them into parts (corners, crossings) and then whole objects. It is also
-the VGG idea: two stacked 3x3 convs see 5x5 with `2·9 = 18` weights per channel pair
+the VGG idea: two stacked 3x3 convs see 5x5 with $2 \cdot 9 = 18$ weights per channel pair
 instead of 25, and get an extra ReLU in between.
 
 ## 8. The full forward pass
 
 The default network in `cnn_numpy.py` (printed when you train it):
 
-| layer | output shape `(C, H, W)` | parameters | multiply-adds per image |
+| layer | output shape $(C, H, W)$ | parameters | multiply-adds per image |
 |-------|--------------------------|-----------:|------------------------:|
 | input | (1, 16, 16) | 0 | |
 | conv1 3x3, 1→8, pad 1 | (8, 16, 16) | 80 | 18,432 |
@@ -291,7 +286,7 @@ size **shrinks** (16 → 8 → 4) while the number of channels **grows** (1 → 
 
 ## 9. The backward pass
 
-Every layer gets `dout = ∂L/∂(its output)` and must return `dX = ∂L/∂(its input)`, plus
+Every layer gets $d\text{out} = \partial L / \partial(\text{its output})$ and must return $dX = \partial L / \partial(\text{its input})$, plus
 gradients for its own parameters. Dense, ReLU and softmax are the same as in `../mlp/`.
 The new parts are conv and pooling.
 
@@ -299,19 +294,21 @@ The new parts are conv and pooling.
 
 Start from the forward formula and ask: which outputs did each weight touch?
 
+```math
+\begin{aligned}
+\text{out}[n, f, i, j] &= \sum_c \sum_a \sum_b x_{\text{pad}}[n, c, i \cdot s + a, j \cdot s + b] \cdot W[f, c, a, b] + b[f] \\
+dW[f, c, a, b] &= \sum_n \sum_i \sum_j d\text{out}[n, f, i, j] \cdot x_{\text{pad}}[n, c, i \cdot s + a, j \cdot s + b] \\
+&= \operatorname{correlate}(x_{\text{pad}}, d\text{out}) && \leftarrow d\text{out} \text{ plays the role of the kernel} \\
+db[f] &= \sum_n \sum_i \sum_j d\text{out}[n, f, i, j] \\
+dX &= \text{FULL convolution of } d\text{out} \text{ with the } 180^\circ\text{-flipped } W \text{, then remove the padding}
+\end{aligned}
 ```
-out[n, f, i, j] = Σ_c Σ_a Σ_b  x_pad[n, c, i·s + a, j·s + b] · W[f, c, a, b] + b[f]
 
-dW[f, c, a, b] = Σ_n Σ_i Σ_j  dout[n, f, i, j] · x_pad[n, c, i·s + a, j·s + b]
-               = correlate(x_pad, dout)               ← dout plays the role of the kernel
-db[f]          = Σ_n Σ_i Σ_j  dout[n, f, i, j]
-dX             = FULL convolution of dout with the 180°-flipped W, then remove the padding
-                 (stride 1; "full" = pad dout with k-1 zeros on every side)
-```
+For $dX$: stride 1; "full" = pad $d\text{out}$ with $k - 1$ zeros on every side.
 
-- **`dW` is a sum over all positions** because the same weight was used at every position.
-  This is the same reason `dW_hh` in `../rnn/` is a sum over time steps.
-- **`dX`:** input pixel `(p, q)` was used by every output whose window covered it, with a
+- **$dW$ is a sum over all positions** because the same weight was used at every position.
+  This is the same reason $dW_{hh}$ in `../rnn/` is a sum over time steps.
+- **$dX$:** input pixel $(p, q)$ was used by every output whose window covered it, with a
   different kernel weight each time. Collecting those contributions is exactly a
   convolution with the flipped kernel.
 
@@ -325,27 +322,29 @@ self-test: im2col backward == 'dW = correlate(x, dout)', 'dX = full conv(dout, f
 
 The fast version is plain matrix calculus on the im2col matrix (section 10):
 
-```
-cols   = im2col(x)                 (N·H_out·W_out, C_in·k·k)
-out    = cols @ W_mᵀ + b           W_m = W.reshape(C_out, -1)
-dW_m   = doutᵀ @ cols              same pattern as dW = A_prevᵀ @ dZ in ../mlp/
-dcols  = dout @ W_m
-dX     = col2im(dcols)             add each patch-row back where it came from (overlaps add up)
+```math
+\begin{aligned}
+\text{cols} &= \operatorname{im2col}(x) && (N \cdot H_{\text{out}} \cdot W_{\text{out}},\ C_{\text{in}} \cdot k \cdot k) \\
+\text{out} &= \text{cols}\, W_m^\top + b && W_m = W \text{ reshaped to } (C_{\text{out}}, -1) \\
+dW_m &= d\text{out}^\top \text{cols} && \text{same pattern as } dW = A_{\text{prev}}^\top dZ \text{ in ../mlp/} \\
+d\text{cols} &= d\text{out}\, W_m \\
+dX &= \operatorname{col2im}(d\text{cols}) && \text{add each patch-row back where it came from (overlaps add up)}
+\end{aligned}
 ```
 
 ### Through max pooling
 
-```
-dX[winner of each block] = dout[block]        dX[everyone else] = 0
+```math
+dX[\text{winner of each block}] = d\text{out}[\text{block}] \qquad dX[\text{everyone else}] = 0
 ```
 
 The forward pass remembers the argmax of every block. (Average pooling would instead
-split `dout` evenly: `dout / 4` to each of the four cells.)
+split $d\text{out}$ evenly: $d\text{out} / 4$ to each of the four cells.)
 
 ### Checking it
 
 `python cnn/gradient_check.py` compares every analytic gradient with
-`(L(w + ε) − L(w − ε)) / 2ε`, in float64:
+$\dfrac{L(w + \epsilon) - L(w - \epsilon)}{2\epsilon}$, in float64:
 
 ```
 Conv2D 3x3, C_in=2 → C_out=3, pad=1, stride=2
@@ -357,7 +356,7 @@ Gradient check PASSED
 ```
 
 It covers conv (with and without padding, stride 1 and 2), max pooling, global average
-pooling, dense, and both full networks, including `dX` of the input image.
+pooling, dense, and both full networks, including $dX$ of the input image.
 
 ## 10. im2col: convolution as one matrix multiply
 
@@ -368,23 +367,25 @@ matrix multiplication.
 ![im2col](images/im2col.png)
 
 **What to look at:** a 4x4 input has four 3x3 windows (patches 0–3). Each becomes one
-coloured row of the `(4, 9)` matrix. Each filter becomes one column of `W (9, 2)`. One
+coloured row of the $(4, 9)$ matrix. Each filter becomes one column of $W$ $(9, 2)$. One
 matrix multiply gives all 4 positions for both filters; reshaping gives the two 2x2
 feature maps. The same numbers as sliding the window by hand.
 
 Why GPUs (and CPU BLAS libraries) love this: a big dense matrix multiply is the most
-optimized operation in computing. The cost is memory: every pixel is copied up to `k·k`
+optimized operation in computing. The cost is memory: every pixel is copied up to $k \cdot k$
 times. Production libraries (cuDNN) also use implicit-GEMM, Winograd and FFT algorithms,
 but im2col is the mental model. Our `im2col` uses NumPy's `sliding_window_view` to build
-the patches without Python loops, and `col2im` adds gradients back with only `k·k` slice
+the patches without Python loops, and `col2im` adds gradients back with only $k \cdot k$ slice
 additions.
 
 ## 11. Parameter count and FLOPs
 
-```
-conv params  = C_out · C_in · k · k + C_out
-conv MACs    = C_out · H_out · W_out · C_in · k · k        (multiply-adds per image)
-dense params = D_in · D_out + D_out          dense MACs = D_in · D_out
+```math
+\begin{aligned}
+\text{conv params} &= C_{\text{out}} \cdot C_{\text{in}} \cdot k \cdot k + C_{\text{out}} \\
+\text{conv MACs} &= C_{\text{out}} \cdot H_{\text{out}} \cdot W_{\text{out}} \cdot C_{\text{in}} \cdot k \cdot k && \text{(multiply-adds per image)} \\
+\text{dense params} &= D_{\text{in}} \cdot D_{\text{out}} + D_{\text{out}} && \text{dense MACs} = D_{\text{in}} \cdot D_{\text{out}}
+\end{aligned}
 ```
 
 Parameters and compute are **not** the same thing for a CNN. Each conv weight is reused
@@ -401,11 +402,11 @@ The CNN has 12x fewer parameters but does 2.8x more arithmetic. In big CNNs most
 
 ## 12. Training
 
-`python cnn/cnn_numpy.py`: He initialization (`std = √(2 / (C_in·k·k))`), mini-batches of
+`python cnn/cnn_numpy.py`: He initialization ($\text{std} = \sqrt{2 / (C_{\text{in}} \cdot k \cdot k)}$), mini-batches of
 32, SGD with momentum 0.9 and lr 0.05, 15 epochs, about 3 s on a laptop CPU.
 
-```
-v = μ·v − lr·g          w = w + v           (μ = 0.9)
+```math
+v \leftarrow \mu v - \text{lr} \cdot g \qquad w \leftarrow w + v \qquad (\mu = 0.9)
 ```
 
 Momentum keeps a running "velocity": steps that agree build up speed, zig-zags cancel.
@@ -422,7 +423,7 @@ epoch  15 | train loss 0.000 acc 100.0% | val loss 0.012 acc  99.3% | 0.2 s
 
 ![Training curves](images/training_curves.png)
 
-**What to look at:** the loss starts near random guessing (`ln 6 = 1.79`) and the train
+**What to look at:** the loss starts near random guessing ($\ln 6 = 1.79$) and the train
 loss drops from 1.05 to 0.015 within 5 epochs. Validation accuracy reaches 99.3% after
 15 epochs. After epoch 5 the train loss keeps falling while the validation loss stays flat
 around 0.01: from here on, training only makes the model more confident on images it
@@ -440,14 +441,14 @@ head=flatten: logits, loss, all 6 parameter gradients and dX match PyTorch ✔  
 head=gap    : logits, loss, all 6 parameter gradients and dX match PyTorch ✔  (max logit diff 1.4e-16)
 ```
 
-Note that `nn.Conv2d.weight` has exactly our shape `(C_out, C_in, kH, kW)` and is copied
-as is, while `nn.Linear` stores `(out, in)`, the transpose of our `Dense.W`.
+Note that `nn.Conv2d.weight` has exactly our shape $(C_{\text{out}}, C_{\text{in}}, k_H, k_W)$ and is copied
+as is, while `nn.Linear` stores $(\text{out}, \text{in})$, the transpose of our `Dense.W`.
 
 Then it trains the idiomatic way (`Dataset`/`DataLoader`, `nn.Module`, `optimizer.step()`)
 with **BatchNorm** after each conv:
 
-```
-BN(z) = γ · (z − mean) / √(var + ε) + β          mean, var per channel over (N, H, W)
+```math
+\operatorname{BN}(z) = \gamma \cdot \frac{z - \text{mean}}{\sqrt{\text{var} + \epsilon}} + \beta \qquad \text{mean, var per channel over } (N, H, W)
 ```
 
 BatchNorm keeps every channel at a steady scale while earlier layers change. With the same
@@ -475,7 +476,7 @@ mistakes on the right are hard cases: a small, dim plus squeezed into a corner, 
 square that looks like a filled blob. When a model fails, **look at the failures**: they tell you
 what data or augmentation to add.
 
-`predict.py` also shows a **saliency map**, `|∂ score / ∂ pixel|`. It is computed with the
+`predict.py` also shows a **saliency map**, $\lvert \partial \text{score} / \partial \text{pixel} \rvert$. It is computed with the
 same backward pass, starting from a one-hot on the predicted class instead of from the
 loss, and it shows where the network is looking.
 
@@ -484,9 +485,9 @@ loss, and it shows where the network is looking.
 Two words that sound alike and mean different things:
 
 - **Equivariant:** move the input and the output **moves the same way**.
-  `conv(shift(x)) = shift(conv(x))`. Convolution is equivariant because the same kernel is
+  $\operatorname{conv}(\operatorname{shift}(x)) = \operatorname{shift}(\operatorname{conv}(x))$. Convolution is equivariant because the same kernel is
   applied everywhere.
-- **Invariant:** move the input and the output **doesn't change**. `f(shift(x)) = f(x)`.
+- **Invariant:** move the input and the output **doesn't change**. $f(\operatorname{shift}(x)) = f(x)$.
   That's what a classifier wants: "it's a vertical bar", wherever it is.
 
 Conv layers give equivariance. **Invariance has to come from pooling**: a little from each
@@ -556,25 +557,27 @@ But augmentation must not change the label. On *our* data:
 | 2012 | **AlexNet** (Krizhevsky, Sutskever, Hinton) | Won ImageNet with 15.3% top-5 error (next best: 26.2%). ReLU, dropout, data augmentation, about 60M parameters, trained on 2 GPUs. Started the deep-learning boom. |
 | 2014 | **VGG** (Simonyan & Zisserman) | Only 3x3 convs, stacked deep (16–19 layers). Two 3x3 convs = a 5x5 receptive field with fewer weights and an extra ReLU. VGG-16 has about 138M parameters, mostly in the dense layers. |
 | 2014 | **GoogLeNet / Inception** | Parallel 1x1, 3x3, 5x5 branches; **1x1 convs** to cheaply reduce channels. |
-| 2015 | **ResNet** (He et al.) + **BatchNorm** (Ioffe & Szegedy) | **Skip connections** `y = x + F(x)` make 50–152 layer networks trainable. 3.57% top-5 error on ImageNet. |
+| 2015 | **ResNet** (He et al.) + **BatchNorm** (Ioffe & Szegedy) | **Skip connections** $y = x + F(x)$ make 50–152 layer networks trainable. 3.57% top-5 error on ImageNet. |
 | 2017 | **MobileNet** (Howard et al.) | **Depthwise-separable** convs for phones. |
 | 2020+ | **ViT**, **ConvNeXt** | Transformers on image patches (section 18); ConvNeXt shows a modernized ResNet is still competitive. |
 
-**1x1 convolution:** a kernel of size 1 looks at one pixel but all `C_in` channels. It is a
-Dense layer `C_in → C_out` applied independently at every pixel. Used to mix channels and
+**1x1 convolution:** a kernel of size 1 looks at one pixel but all $C_{\text{in}}$ channels. It is a
+Dense layer $C_{\text{in}} \to C_{\text{out}}$ applied independently at every pixel. Used to mix channels and
 to shrink or grow the channel count cheaply.
 
 **Depthwise-separable convolution:** split a normal conv into (1) a **depthwise** 3x3 conv
 that filters each channel separately, and (2) a **pointwise** 1x1 conv that mixes channels.
 For 256 → 256 channels with 3x3 kernels:
 
-```
-normal:      256 · 256 · 3 · 3              = 589,824 weights
-separable:   256 · 3 · 3  +  256 · 256      =   2,304 + 65,536 = 67,840 weights   (8.7x fewer)
+```math
+\begin{aligned}
+\text{normal:} &\quad 256 \cdot 256 \cdot 3 \cdot 3 = 589{,}824 \text{ weights} \\
+\text{separable:} &\quad 256 \cdot 3 \cdot 3 + 256 \cdot 256 = 2{,}304 + 65{,}536 = 67{,}840 \text{ weights} && (8.7\times \text{ fewer})
+\end{aligned}
 ```
 
-**Skip connections (ResNet):** `y = x + F(x)`. The gradient of `y` with respect to `x` is
-`1 + ∂F/∂x`, so there is always a path where the gradient passes through unchanged. This is
+**Skip connections (ResNet):** $y = x + F(x)$. The gradient of $y$ with respect to $x$ is
+$1 + \partial F / \partial x$, so there is always a path where the gradient passes through unchanged. This is
 the same "additive path" trick that LSTMs use to fight vanishing gradients through time
 (`../rnn/`, section 5), and every Transformer layer uses it too.
 
@@ -584,7 +587,7 @@ the same "additive path" trick that LSTMs use to fight vanishing gradients throu
   shape bugs: NCHW vs NHWC, a wrong flatten size, a forgotten padding.
 - **Check the output-size formula by hand** before building a network. Odd sizes and
   stride 2 lose a row and a column to rounding.
-- **First-step loss ≈ ln(C)?** 1.79 for our 6 classes. If not, the init or the loss is wrong.
+- **First-step loss $\approx \ln C$?** 1.79 for our 6 classes. If not, the init or the loss is wrong.
 - **Overfit one small batch** to ~0 loss first. If you can't, there's a bug.
 - **Gradient-check new layers** in float64 on tiny inputs, with random (not all-zero)
   biases and inputs, so max-pool ties and ReLU kinks don't confuse the check.
@@ -599,7 +602,7 @@ CNNs didn't disappear when Transformers arrived. They moved inside them.
 - **Vision Transformers (ViT) start with a convolution.** ViT cuts a 224x224 image into
   16x16 patches and linearly projects each patch to a token. That projection is exactly
   `nn.Conv2d(3, 768, kernel_size=16, stride=16)`: kernel size = stride, so the windows don't
-  overlap. Output: 14x14 = 196 tokens of size 768, with `3·16·16·768 = 589,824` weights
+  overlap. Output: $14 \times 14 = 196$ tokens of size 768, with $3 \cdot 16 \cdot 16 \cdot 768 = 589{,}824$ weights
   (+ 768 biases). From there it is a Transformer.
 - **Inductive bias vs data:** ViT has no built-in locality or translation equivariance
   (section 14), so it needs much more data (or augmentation and distillation) to match a CNN
@@ -629,7 +632,7 @@ Answer each one out loud in under a minute:
 2. Write the output-size formula. What is the output size for a 224x224 input, 7x7 kernel, stride 2, padding 3?
 3. How many parameters does a 3x3 conv with 64 input and 128 output channels have?
 4. What is the difference between convolution and cross-correlation? Does it matter for learning?
-5. Derive `dW`, `db` and `dX` for a conv layer. Why is `dW` a sum over all positions?
+5. Derive $dW$, $db$ and $dX$ for a conv layer. Why is $dW$ a sum over all positions?
 6. How does the gradient flow through max pooling? Through average pooling?
 7. What is the receptive field of three stacked 3x3 convs (stride 1)? Why did VGG prefer them over one 7x7?
 8. Equivariance vs invariance: which one does convolution give? Where does invariance come from?

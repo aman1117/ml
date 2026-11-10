@@ -8,7 +8,7 @@ dot product with q". Exact search is one matrix-vector product plus a partial so
     scores = X q                 (n,)      n·D multiply-adds, reads all n·D floats
     top-k  = argpartition(-scores, k)      O(n), then sort only those k
 
-At n = 261 chunks that takes microseconds and nothing else is worth discussing. At
+At n = 275 chunks that takes microseconds and nothing else is worth discussing. At
 100 million vectors × 768 dims (307 GB in float32) it is impossible per query, and you
 need APPROXIMATE nearest-neighbour (ANN) search, which trades a little recall for a lot
 of speed and/or memory:

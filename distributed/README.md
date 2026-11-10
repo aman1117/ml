@@ -11,7 +11,7 @@ single-device training; then the same ideas with real processes and `torch.distr
 on this CPU, and the arithmetic (FLOPs, bytes, MFU) that decides how real runs are laid out.
 
 > **Prerequisite:** [`../transformer/`](../transformer/) (the GPT trained and scaled
-> here: its layers, its hand-written backward, AdamW, and the `6·N·D` FLOP rule from its
+> here: its layers, its hand-written backward, AdamW, and the $6 \cdot N \cdot D$ FLOP rule from its
 > section 11). [`../llama/`](../llama/) explains the modern decoder (RMSNorm, RoPE, SwiGLU,
 > GQA) whose real 7B/70B shapes appear in the memory tables here; nothing in this folder's
 > code depends on it.
@@ -20,9 +20,9 @@ on this CPU, and the arithmetic (FLOPs, bytes, MFU) that decides how real runs a
 
 | File | What it teaches |
 |------|-----------------|
-| `precision_numpy.py` | fp32 / fp16 / bf16 / FP8 (e4m3, e5m2) bit layouts from scratch; round-to-nearest-even to any format (checked against NumPy's float16 and the bf16 bit trick); why fp16 needs **loss scaling** (static and dynamic with overflow skipping) and bf16 doesn't; why weights need an **fp32 master copy** (in bf16, 1 + 1e-4 = 1) and what stochastic rounding does. Trains the mini-GPT under 7 precision recipes and compares. |
-| `memory.py` | Calculator: parameter counts of GPT-3 125M/1.3B and LLaMA-2 7B/70B, the **16 bytes/param** rule, activation memory per layer (Korthikanti et al. 2022), checkpointing, ZeRO-1/2/3 per GPU, TP × PP × DP layouts, `6·N·D` FLOPs, training time, MFU, communication volume. |
-| `parallel_numpy.py` | W workers simulated in one process, every message explicit: a **ring all-reduce** (reduce-scatter + all-gather), data parallelism, gradient accumulation, **ZeRO-1/2/3 (FSDP)** with gather-use-free of parameters, **Megatron tensor parallelism** (column/row-parallel MLP, attention split by heads), **pipeline parallelism** (GPipe and 1F1B schedules simulated in time, then executed on the real GPT). |
+| `precision_numpy.py` | fp32 / fp16 / bf16 / FP8 (e4m3, e5m2) bit layouts from scratch; round-to-nearest-even to any format (checked against NumPy's float16 and the bf16 bit trick); why fp16 needs **loss scaling** (static and dynamic with overflow skipping) and bf16 doesn't; why weights need an **fp32 master copy** (in bf16, $1 + 10^{-4} = 1$) and what stochastic rounding does. Trains the mini-GPT under 7 precision recipes and compares. |
+| `memory.py` | Calculator: parameter counts of GPT-3 125M/1.3B and LLaMA-2 7B/70B, the **16 bytes/param** rule, activation memory per layer (Korthikanti et al. 2022), checkpointing, ZeRO-1/2/3 per GPU, $\text{TP} \times \text{PP} \times \text{DP}$ layouts, $6 \cdot N \cdot D$ FLOPs, training time, MFU, communication volume. |
+| `parallel_numpy.py` | $W$ workers simulated in one process, every message explicit: a **ring all-reduce** (reduce-scatter + all-gather), data parallelism, gradient accumulation, **ZeRO-1/2/3 (FSDP)** with gather-use-free of parameters, **Megatron tensor parallelism** (column/row-parallel MLP, attention split by heads), **pipeline parallelism** (GPipe and 1F1B schedules simulated in time, then executed on the real GPT). |
 | `equivalence_check.py` | The `gradient_check.py` of this folder: 60 checks that each trick computes exactly what one device computes (float64). Ends with `Equivalence check PASSED`. |
 | `allreduce_visual.py` | Step-by-step terminal walkthrough: 4 workers ring-all-reduce their gradients chunk by chunk (who sends what to whom, the partial sums), then one ZeRO-3 step (who holds which parameters when). |
 | `ddp_pytorch.py` | Real multi-process training with `torch.distributed` (gloo, CPU): (a) manual DDP with `broadcast` + `all_reduce`, (b) `DistributedDataParallel` + `DistributedSampler` + `no_sync()`, (c) FSDP2 `fully_shard`, each proved equal to one process on the full batch; (d) throughput vs number of processes. Runs with `mp.spawn` or under `torchrun`. |
@@ -61,9 +61,11 @@ Every loss, error and byte count is deterministic.
 Two numbers decide everything. From [`../transformer/`](../transformer/) section 11, a
 training run costs about
 
-```
-FLOPs ≈ 6 · N · D          N = parameters, D = training tokens
-        (forward 2N per token: one multiply-add per weight; backward 4N)
+```math
+\begin{aligned}
+\text{FLOPs} &\approx 6 \cdot N \cdot D && N = \text{parameters}, \quad D = \text{training tokens} \\
+& && (\text{forward } 2N \text{ per token: one multiply-add per weight; backward } 4N)
+\end{aligned}
 ```
 
 and, as section 4 below shows, training with Adam in mixed precision needs about
@@ -74,7 +76,7 @@ and, as section 4 below shows, training with Adam in mixed precision needs about
 | parameters (computed from the layer shapes) | 6.74B | 68.98B |
 | model states, 16 bytes/param | 107.8 GB | 1.1 TB |
 | 80 GB GPUs needed just to hold them | 1.3 | 13.8 |
-| FLOPs for 1T tokens, `6ND` + attention | 4.69e22 | |
+| FLOPs for 1T tokens, $6ND$ + attention | 4.69e22 | |
 
 1. **The compute wall.** 4.69e22 FLOPs on one H100 (989 TFLOP/s of dense bf16) at a
    realistic 40% utilization takes 3.8 years. On 1,024 H100s: 32.1 hours. You need many
@@ -102,7 +104,7 @@ would. `equivalence_check.py` verifies exactly that for every technique here.
 
 ## 2. Number formats
 
-A floating-point number is `(−1)^sign · 1.mantissa · 2^(exponent − bias)`. The exponent
+A floating-point number is $(-1)^{\text{sign}} \cdot 1.\text{mantissa} \cdot 2^{\text{exponent} - \text{bias}}$. The exponent
 bits decide the **range** (how big and how small), the mantissa bits the **precision**
 (how many significant digits).
 
@@ -126,16 +128,18 @@ has 5 exponent bits and 10 mantissa bits, more precision but a tiny range (6.1e-
   fp8_e5m2     8     1|5|2   5.73e+04     6.1e-05    1.53e-05          0.25    0.9
 ```
 
-```
-max normal   = (2 − 2^−m) · 2^(2^e − 2 − bias)     (IEEE: the all-ones exponent is inf/NaN)
-min normal   = 2^(1 − bias)
-min subnormal= 2^(1 − bias − m)                    (exponent field 0, no implicit leading 1)
-eps          = 2^−m                                 (the gap between 1 and the next number)
+```math
+\begin{aligned}
+\text{max normal} &= (2 - 2^{-m}) \cdot 2^{2^e - 2 - \text{bias}} && \text{(IEEE: the all-ones exponent is inf/NaN)} \\
+\text{min normal} &= 2^{1 - \text{bias}} \\
+\text{min subnormal} &= 2^{1 - \text{bias} - m} && \text{(exponent field 0, no implicit leading 1)} \\
+\text{eps} &= 2^{-m} && \text{(the gap between 1 and the next number)}
+\end{aligned}
 ```
 
 - **fp32** (IEEE single): the default for weights, optimizer state and reductions.
 - **fp16** (IEEE half): fast on every GPU since Volta, but 70,000 overflows to `inf` and
-  values below 2^−24 ≈ 6e-8 become 0. That is why it needs loss scaling (section 3).
+  values below $2^{-24} \approx 6 \times 10^{-8}$ become 0. That is why it needs loss scaling (section 3).
 - **bf16** (Google Brain's "brain float"; Kalamkar et al. 2019): the top 16 bits of an
   fp32. Same range as fp32, only ~2.4 significant digits. The default for LLM training
   on A100/H100/TPU since ~2020.
@@ -176,7 +180,7 @@ fp16/bf16 kernel stores its output, while the arithmetic inside a layer stays fp
 
 ### Why fp16 gradients underflow
 
-The gradient of the mean cross-entropy is `dlogits = (softmax − onehot) / (number of tokens)`.
+The gradient of the mean cross-entropy is $d\text{logits} = (\operatorname{softmax} - \operatorname{onehot}) / (\text{number of tokens})$.
 Once the model is confident, the wrong-class probabilities are tiny; divided by the
 number of tokens in the batch, many fall below fp16's smallest number. Real runs average
 over **far** more tokens than our 512 per step: with gradient accumulation, each
@@ -198,12 +202,12 @@ Real gradients of the fp32-trained mini-GPT (`precision_numpy.py`, part 5):
 ![fp16 underflow](images/fp16_underflow.png)
 
 **What to look at:** the activation gradients (every `dy` entering a layer's backward)
-on a log2 scale at a 0.5M-token batch. Left: 52% are below 2^−25 and round to exactly 0
+on a log2 scale at a 0.5M-token batch. Left: 52% are below $2^{-25}$ and round to exactly 0
 in fp16, the other 48% are subnormal (fewer than 10 bits of precision), none is a normal
-fp16 number. Right: multiplying the loss by S = 2^16 multiplies every gradient by S
+fp16 number. Right: multiplying the loss by $S = 2^{16}$ multiplies every gradient by $S$
 (the chain rule is linear), which slides the histogram 16 bins right: 0% flush to 0,
-86% are normal fp16 numbers. Dividing by S in fp32 afterwards gives back the true
-gradient. With a power of two, `(S·g)/S == g` exactly; `equivalence_check.py` checks
+86% are normal fp16 numbers. Dividing by $S$ in fp32 afterwards gives back the true
+gradient. With a power of two, $(S \cdot g)/S = g$ exactly; `equivalence_check.py` checks
 that bit for bit.
 
 ### Training under 7 recipes
@@ -228,16 +232,16 @@ model gets confident, the gradient reaching the lower layers underflows complete
 of all parameter gradients are exactly 0 over the last 100 steps), the body stops
 learning and the model falls back to predicting character frequencies: its final loss,
 3.005, is the unigram entropy of the text (2.979). **bf16 without an fp32 master copy**
-learns visibly slower (0.454): see below. Right: the dynamic loss scale starts at 2^32
+learns visibly slower (0.454): see below. Right: the dynamic loss scale starts at $2^{32}$
 (deliberately too high), overflows and halves 5 times in the first 5 steps, then
-settles between 2^25 and 2^26, growing every 200 clean steps and backing off when it
+settles between $2^{25}$ and $2^{26}$, growing every 200 clean steps and backing off when it
 overflows (9 skipped steps in total). Honest caveats: at a plain 512-token batch
 (`--accum 1`), fp16 without scaling ends at 0.399, as good as fp32 (55% of `dlogits` still
 flush to 0, but Adam normalizes whatever survives); the failure needs the realistic
 batch size. And our emulation rounds at layer boundaries only; real kernels also round
 some intermediates.
 
-**Static vs dynamic loss scaling.** A fixed `S` (here 2^10) works if you pick it right:
+**Static vs dynamic loss scaling.** A fixed $S$ (here $2^{10}$) works if you pick it right:
 too small and gradients underflow, too big and they overflow to `inf`. The dynamic
 scaler (`DynamicLossScaler`, the algorithm of `torch.cuda.amp.GradScaler`) finds it:
 
@@ -251,7 +255,7 @@ else:                            count += 1; if count % 200 == 0: S *= 2
 scale and matches fp32). Its weakness is precision, which is why it still needs:
 
 **fp32 master weights.** Adam's update is about `lr` per step relative to the weight, e.g.
-1e-4. In bf16, the numbers next to 1.0 are 1 − 2^−8 and 1 + 2^−7 = 1.0078: anything
+1e-4. In bf16, the numbers next to 1.0 are $1 - 2^{-8}$ and $1 + 2^{-7} = 1.0078$: anything
 smaller than half a step is rounded away.
 
 ```
@@ -266,25 +270,25 @@ smaller than half a step is rounded away.
 
 So the optimizer keeps an fp32 copy and updates that; the bf16 copy is only for compute.
 **Stochastic rounding** (round up with probability equal to the distance to the lower
-neighbour) is unbiased, `E[SR(x)] = x`, so tiny updates survive on average: the
+neighbour) is unbiased, $\mathbb{E}[\operatorname{SR}(x)] = x$, so tiny updates survive on average: the
 `bf16, no master + SR` run recovers fp32's loss (0.393) without the 4 extra bytes per
 parameter. Some hardware (and some FP8/bf16 optimizers) does this; most training
 stacks just keep the fp32 master.
 
 ## 4. The memory anatomy of training
 
-**Model states: 16 bytes per parameter.** For `N` parameters, mixed-precision AdamW keeps
+**Model states: 16 bytes per parameter.** For $N$ parameters, mixed-precision AdamW keeps
 
 | What | Format | Bytes / param |
 |------|--------|---------------|
 | weights (compute copy) | bf16 | 2 |
 | gradients | bf16 | 2 |
 | master weights | fp32 | 4 |
-| Adam first moment `m` | fp32 | 4 |
-| Adam second moment `v` | fp32 | 4 |
+| Adam first moment $m$ | fp32 | 4 |
+| Adam second moment $v$ | fp32 | 4 |
 | **total** | | **16** |
 
-(The ZeRO paper writes it `2Ψ + 2Ψ + KΨ` with `K = 12` for the optimizer states.)
+(The ZeRO paper writes it $2\Psi + 2\Psi + K\Psi$ with $K = 12$ for the optimizer states.)
 Inference needs only the 2 bytes of weights plus the KV cache; training needs 8× that.
 `memory.py` computes the parameter counts from the layer shapes and matches the published
 totals (125M, 1.32B for GPT-3 XL, 6.74B, 68.98B):
@@ -298,17 +302,21 @@ totals (125M, 1.32B for GPT-3 XL, 6.74B, 68.98B):
 ```
 
 **Activations: what autograd keeps for the backward.** Every layer stores some of its
-inputs/outputs so its backward can run (`../transformer/` section 7: `dW = xᵀ dy` needs
-`x`). Korthikanti et al. (2022) count them for a GPT layer with 16-bit activations,
-sequence `s`, micro-batch `b`, width `h`, `a` heads:
+inputs/outputs so its backward can run (`../transformer/` section 7: $dW = x^\top dy$ needs
+$x$). Korthikanti et al. (2022) count them for a GPT layer with 16-bit activations,
+sequence $s$, micro-batch $b$, width $h$, $a$ heads:
 
+```math
+\begin{aligned}
+\text{activations per layer} &= s \cdot b \cdot h \cdot \left(34 + \frac{5 \cdot a \cdot s}{h}\right) \text{ bytes} \\
+34 \cdot s \cdot b \cdot h &= \underbrace{11sbh}_{\text{attention}} + \underbrace{19sbh}_{\text{MLP}} + \underbrace{4sbh}_{\text{two LayerNorms}} \\
+5 \cdot a \cdot s^2 \cdot b &= \underbrace{(2 + 2) \cdot a s^2 b}_{\text{scores and softmax}} + \underbrace{1 \cdot a s^2 b}_{\text{dropout mask}}
+\end{aligned}
 ```
-activations per layer = s·b·h·(34 + 5·a·s/h)   bytes
-    34·s·b·h:  attention 11sbh (LN input, QKV input, Q, K, V, dropout mask, W_o input)
-               MLP 19sbh (input, the 4h GELU input and output, dropout mask)
-               two LayerNorms 4sbh
-    5·a·s²·b:  the a × s × s attention scores and softmax (2 + 2 bytes) + its dropout mask (1)
-```
+
+- attention $11sbh$: LN input, QKV input, $Q$, $K$, $V$, dropout mask, $W_o$ input
+- MLP $19sbh$: input, the $4h$ GELU input and output, dropout mask
+- $5 \cdot a \cdot s^2 \cdot b$: the $a \times s \times s$ attention scores and softmax (2 + 2 bytes) + its dropout mask (1)
 
 ```
   model    seq  per layer  no recompute  selective  full ckpt attn share
@@ -319,23 +327,23 @@ activations per layer = s·b·h·(34 + 5·a·s/h)   bytes
 ```
 
 For **one** 4,096-token sequence, a 7B model's activations (104.7 GB) are as big as all
-its model states (107.8 GB), and 82% of that is the `s × s` attention matrices. Unlike model states,
+its model states (107.8 GB), and 82% of that is the $s \times s$ attention matrices. Unlike model states,
 activations grow with batch × sequence length. That is why FlashAttention (which never
-stores the `s × s` matrix), activation checkpointing and sequence parallelism exist.
+stores the $s \times s$ matrix), activation checkpointing and sequence parallelism exist.
 
 We can measure this on the PyTorch GPT. `train_efficient.py` counts the bytes autograd
 saves (a `saved_tensors_hooks` callback, leaving out the weights, which autograd also
-saves) for a 6-layer, `d = 256` GPT on 8 × 256 tokens: 206.5 MB of activations, 33.7 MB
-per layer = **32.1·s·b·h** in 16-bit units. The paper's 34 includes two 1-byte dropout
-masks (2·s·b·h); with dropout 0 it predicts 32. The `5·a·s²·b` term (40·s·b·h here) is
-gone because PyTorch's fused `scaled_dot_product_attention` kernel keeps no `T × T`
+saves) for a 6-layer, $d = 256$ GPT on $8 \times 256$ tokens: 206.5 MB of activations, 33.7 MB
+per layer = **$32.1 \cdot s \cdot b \cdot h$** in 16-bit units. The paper's 34 includes two 1-byte dropout
+masks ($2 \cdot s \cdot b \cdot h$); with dropout 0 it predicts 32. The $5 \cdot a \cdot s^2 \cdot b$ term ($40 \cdot s \cdot b \cdot h$ here) is
+gone because PyTorch's fused `scaled_dot_product_attention` kernel keeps no $T \times T$
 matrix.
 
 ## 5. Activation checkpointing
 
 Store only some activations in the forward; recompute the rest during the backward
 (Chen et al. 2016, "Training Deep Nets with Sublinear Memory Cost"). Checkpointing every
-block keeps only each block's input (`2·s·b·h` bytes per layer) and re-runs the block's
+block keeps only each block's input ($2 \cdot s \cdot b \cdot h$ bytes per layer) and re-runs the block's
 forward when its gradient arrives:
 
 ```python
@@ -344,10 +352,10 @@ class Checkpointed(nn.Module):           # train_efficient.py
         return torch.utils.checkpoint.checkpoint(self.block, x, use_reentrant=False)
 ```
 
-Cost: one extra forward, and the forward is about 1/3 of a training step (`2N` of `6N`
-FLOPs), so ≈ +33% compute. Chen et al.'s `√L` segments trade between the two extremes;
+Cost: one extra forward, and the forward is about 1/3 of a training step ($2N$ of $6N$
+FLOPs), so $\approx$ +33% compute. Chen et al.'s $\sqrt{L}$ segments trade between the two extremes;
 **selective recomputation** (Korthikanti et al. 2022) recomputes only the attention
-scores/softmax: the `5·a·s²·b` term, 82% of the memory at 2–5% of the FLOPs. With
+scores/softmax: the $5 \cdot a \cdot s^2 \cdot b$ term, 82% of the memory at 2–5% of the FLOPs. With
 FlashAttention that part is never stored in the first place.
 
 ![Checkpointing](images/checkpointing.png)
@@ -364,12 +372,14 @@ time for memory, by shrinking the micro-batch instead.
 
 The gradient of a mean over a batch equals the mean of the gradients of its parts:
 
-```
-L = (1/k) Σ_j L_j        L_j = mean loss of micro-batch j (B/k sequences)
-∇L = Σ_j ∇(L_j / k)      -> run k forward/backwards, each loss divided by k, let the .grad add up
+```math
+\begin{aligned}
+L &= \frac{1}{k} \sum_j L_j && L_j = \text{mean loss of micro-batch } j \ (B/k \text{ sequences}) \\
+\nabla L &= \sum_j \nabla (L_j / k) && \to \text{run } k \text{ forward/backwards, each loss divided by } k \text{, let the .grad add up}
+\end{aligned}
 ```
 
-So a batch of `B` can be processed as `k` micro-batches of `B/k` at `1/k` of the
+So a batch of $B$ can be processed as $k$ micro-batches of $B/k$ at $1/k$ of the
 activation memory, with exactly the same update. `train_efficient.py` (float64):
 
 ```
@@ -384,36 +394,40 @@ Same gradients to 7e-16; time per sample rises once the micro-batch gets too sma
 keep the cores busy. `parallel_numpy.accumulated_grads` is the same 6 lines in NumPy
 (`equivalence_check.py`: equal to 1e-16).
 
-Two traps. (1) Forgetting the `/ k` multiplies the gradient by `k` (with Adam this mostly
-cancels, with SGD it is a k× larger learning rate, and gradient clipping thresholds
+Two traps. (1) Forgetting the $/k$ multiplies the gradient by $k$ (with Adam this mostly
+cancels, with SGD it is a $k\times$ larger learning rate, and gradient clipping thresholds
 change). (2) With variable-length sequences, "mean of the micro-batch means" is **not**
 the mean over all tokens: weight each micro-batch by its token count, or sum the losses
 and divide by the global token count once. Real frameworks have shipped this bug.
 
 ## 7. Data parallelism and the ring all-reduce
 
-**Data parallelism (DP):** every GPU holds a full replica, takes a different `B/W` slice
+**Data parallelism (DP):** every GPU holds a full replica, takes a different $B/W$ slice
 of the batch, computes its gradient, and then all GPUs **average** their gradients and
 take the same optimizer step, so the replicas stay identical:
 
-```
-g_r = ∇ mean-loss over rank r's B/W sequences          (W ranks, equal slices)
-g   = (1/W) Σ_r g_r = ∇ mean-loss over all B sequences  <- one all-reduce, then / W
+```math
+\begin{aligned}
+g_r &= \nabla \, \text{mean-loss over rank } r\text{'s } B/W \text{ sequences} && (W \text{ ranks, equal slices}) \\
+g &= \frac{1}{W} \sum_r g_r = \nabla \, \text{mean-loss over all } B \text{ sequences} && \leftarrow \text{one all-reduce, then } / W
+\end{aligned}
 ```
 
 The "sum over ranks, result on every rank" operation is an **all-reduce**. The naive way
-(everybody sends to rank 0, it sums and sends back) pushes `(W−1)·n` numbers through
+(everybody sends to rank 0, it sums and sends back) pushes $(W-1) \cdot n$ numbers through
 rank 0's link each way: it does not scale. The **ring all-reduce** (Patarasuk & Yuan
 2009; popularized for deep learning by Baidu and Horovod, Sergeev & Del Balso 2018) keeps
 every link busy all the time:
 
-```
-cut each rank's vector into W chunks
-reduce-scatter, W−1 steps:  rank r sends its partial sum of chunk (r − s − 1) mod W to rank r+1,
-                            which ADDS it.  After W−1 steps rank r holds the full sum of chunk r.
-all-gather,     W−1 steps:  rank r forwards the complete chunk (r − s) mod W to rank r+1,
-                            which COPIES it.
-each rank sends 2(W−1) chunks of n/W numbers = 2(W−1)/W · n  ->  2n, independent of W
+Cut each rank's vector into $W$ chunks, then:
+
+- reduce-scatter, $W-1$ steps: rank $r$ sends its partial sum of chunk $(r - s - 1) \bmod W$ to rank $r+1$,
+  which ADDS it. After $W-1$ steps rank $r$ holds the full sum of chunk $r$.
+- all-gather, $W-1$ steps: rank $r$ forwards the complete chunk $(r - s) \bmod W$ to rank $r+1$,
+  which COPIES it.
+
+```math
+\text{each rank sends } 2(W-1) \text{ chunks of } \frac{n}{W} \text{ numbers} = \frac{2(W-1)}{W} \cdot n \;\to\; 2n, \text{ independent of } W
 ```
 
 ![Ring all-reduce](images/ring_allreduce.png)
@@ -422,8 +436,8 @@ each rank sends 2(W−1) chunks of n/W numbers = 2(W−1)/W · n  ->  2n, indepe
 workers: each cell counts how many workers' gradients are summed into that copy. After 3
 reduce-scatter steps the diagonal is complete (4); 3 all-gather steps copy it everywhere.
 Bottom right, measured by counting the bytes in `CommLog`: the busiest ring worker sends +
-receives `4(W−1)/W · n → 4n` numbers for any W, while the naive root handles
-`2(W−1) · n`: 126n at W = 64.
+receives $4(W-1)/W \cdot n \to 4n$ numbers for any $W$, while the naive root handles
+$2(W-1) \cdot n$: $126n$ at $W = 64$.
 
 `python distributed/parallel_numpy.py` with 1M fp32 numbers per worker:
 
@@ -435,14 +449,14 @@ receives `4(W−1)/W · n → 4n` numbers for any W, while the naive root handle
      16     30                  7.50            7.50                  60.0
 ```
 
-A useful cost model (the "α–β model") for an all-reduce of `n` bytes on `W` GPUs with
-per-message latency `α` and link bandwidth `β`:
+A useful cost model (the $\alpha\text{--}\beta$ model) for an all-reduce of $n$ bytes on $W$ GPUs with
+per-message latency $\alpha$ and link bandwidth $\beta$:
 
-```
-T_ring ≈ 2(W−1)·α + 2(W−1)/W · n/β
+```math
+T_{\text{ring}} \approx 2(W-1) \cdot \alpha + \frac{2(W-1)}{W} \cdot \frac{n}{\beta}
 ```
 
-Bandwidth cost is flat in W; latency grows with W. That is why NCCL also uses tree
+Bandwidth cost is flat in $W$; latency grows with $W$. That is why NCCL also uses tree
 algorithms for large W and small messages, and why DDP sends gradients in big buckets.
 `memory.py` turns it into seconds: all-reducing a 7B model's bf16 gradients means each
 GPU sends 26.5 GB per step on 64 GPUs: 0.53 s at 50 GB/s (a 400 Gb/s InfiniBand NIC),
@@ -456,7 +470,7 @@ GPU sends 26.5 GB per step on 64 GPUs: 0.53 s at 50 GB/s (a 400 Gb/s InfiniBand 
 ```
 
 The replicas are bit-identical (they apply identical updates), and they match one worker
-on the full batch to 3e-16, except in one place worth understanding: the key bias `b_k`,
+on the full batch to 3e-16, except in one place worth understanding: the key bias $b_k$,
 whose true gradient is exactly 0 (softmax ignores a constant shift, `../transformer/`
 section 7). Its computed gradient is pure round-off (~1e-16), and Adam divides each
 gradient by its own RMS, so a different summation order becomes a 1e-12 difference.
@@ -479,11 +493,11 @@ engineering that hides the communication:
 - **Overlap:** an autograd hook fires when a parameter's gradient is ready; when all
   gradients of a bucket are ready, its all-reduce starts **asynchronously** while the
   backward continues with earlier layers. Only the last bucket's all-reduce is exposed.
-- **Averaging:** gradients are summed and divided by `W`.
+- **Averaging:** gradients are summed and divided by $W$.
 - `no_sync()`: skip the all-reduce for the first micro-batches of a gradient accumulation;
-  the last backward all-reduces the accumulated sum. Without it you communicate `k` times
+  the last backward all-reduces the accumulated sum. Without it you communicate $k$ times
   per step for nothing.
-- `DistributedSampler`: gives each rank a disjoint `1/W` of the dataset (call
+- `DistributedSampler`: gives each rank a disjoint $1/W$ of the dataset (call
   `set_epoch(e)` each epoch so the shuffle changes). Uneven shards (`drop_last=False`)
   make one rank run an extra step and **hang** the others in the all-reduce.
 - `find_unused_parameters=True` is needed if some parameters get no gradient in a step
@@ -532,7 +546,7 @@ every parameter (as a `DTensor` shard) and a quarter of Adam's state.
 ![DDP scaling](images/ddp_scaling.png)
 
 **What to look at:** part (d), weak scaling (16 sequences × 64 tokens per process per
-step, a 4-layer `d = 128` GPT, 2 threads per process):
+step, a 4-layer $d = 128$ GPT, 2 threads per process):
 
 ```
       W  no comm: tok/s  DDP: tok/s  DDP speed-up  step alone/DDP (ms)  1 all-reduce (ms)
@@ -557,7 +571,7 @@ python distributed/ddp_pytorch.py                                # mp.spawn: W p
 torchrun --nproc_per_node=2 distributed/ddp_pytorch.py --torchrun   # torchrun sets RANK, WORLD_SIZE, LOCAL_RANK, MASTER_*
 ```
 
-Under `torchrun --nproc_per_node=2` the same checks pass (W = 2: 1.1e-14, 5.2e-14 and
+Under `torchrun --nproc_per_node=2` the same checks pass ($W = 2$: 1.1e-14, 5.2e-14 and
 1.1e-14). **Caveat for Python 3.9:** torch 2.8's `torchrun` launcher imports the
 `importlib_metadata` backport; without it, `torchrun` exits with
 `ModuleNotFoundError: No module named 'importlib_metadata'` before starting any worker.
@@ -583,14 +597,16 @@ rank waits in a collective before the watchdog kills the job (section 16).
 
 Plain DP stores **all 16 bytes/param on every GPU**: W identical copies of the optimizer
 state. ZeRO (Rajbhandari et al. 2020, "Zero Redundancy Optimizer") removes the
-redundancy in three stages; PyTorch's **FSDP** (Zhao et al. 2023) is ZeRO-3:
+redundancy in three stages; PyTorch's **FSDP** (Zhao et al. 2023) is ZeRO-3.
+Per-GPU model states, $N$ params, $W$ data-parallel GPUs:
 
-```
-per-GPU model states, N params, W data-parallel GPUs
-plain DP   2N + 2N + 12N            weights, grads, optimizer all replicated
-ZeRO-1     2N + 2N + 12N/W          shard the optimizer state (fp32 master, m, v)
-ZeRO-2     2N + (2N + 12N)/W        + shard the gradients
-ZeRO-3     (2N + 2N + 12N)/W        + shard the parameters       (= FSDP FULL_SHARD)
+```math
+\begin{array}{lll}
+\text{plain DP} & 2N + 2N + 12N & \text{weights, grads, optimizer all replicated} \\
+\text{ZeRO-1} & 2N + 2N + 12N/W & \text{shard the optimizer state (fp32 master, } m, v) \\
+\text{ZeRO-2} & 2N + (2N + 12N)/W & + \text{ shard the gradients} \\
+\text{ZeRO-3} & (2N + 2N + 12N)/W & + \text{ shard the parameters} \quad (= \text{FSDP FULL\_SHARD})
+\end{array}
 ```
 
 ![ZeRO stages](images/zero_stages.png)
@@ -612,7 +628,7 @@ optimizer: rank r updates ONLY its shard with ITS slice of m, v and master weigh
 
 This is exact because AdamW is element-wise: updating 4 slices separately is updating the
 whole vector. The simulation overwrites freed parameters with NaN, so any use of a
-parameter that was not gathered at that moment would poison the loss. Results (W = 4,
+parameter that was not gathered at that moment would poison the loss. Results ($W = 4$,
 3 steps, vs plain AdamW on the full batch):
 
 ```
@@ -653,79 +669,82 @@ which is what Llama 3 did for its model shards).
 ## 10. Tensor parallelism (Megatron-LM)
 
 When even one layer's weights or activations are too big, split **every matrix**
-(Shoeybi et al. 2019). For the MLP `Y = GELU(X W1) W2`:
+(Shoeybi et al. 2019). For the MLP $Y = \operatorname{GELU}(X W_1) W_2$:
 
-```
-column-parallel W1: W1 = [W1_0 | W1_1 | ...]     rank i: H_i = GELU(X W1_i)   (n, 4C/t)
-                    X is replicated; GELU is element-wise, so no communication
-row-parallel   W2:  W2 = [W2_0; W2_1; ...]       rank i: Y_i = H_i W2_i       (n, C), a PARTIAL sum
-                    Y = all-reduce(Σ_i Y_i) + b2                               <- 1 all-reduce forward
-backward:           dY is replicated; each rank computes its dW2_i, dW1_i locally;
-                    dX = all-reduce(Σ_i dX_i)                                   <- 1 all-reduce backward
+```math
+\begin{aligned}
+&\text{column-parallel } W_1: && W_1 = \begin{bmatrix} W_{1,0} & W_{1,1} & \cdots \end{bmatrix} && \text{rank } i: \; H_i = \operatorname{GELU}(X W_{1,i}) \quad (n, 4C/t) \\
+& && X \text{ is replicated; GELU is element-wise, so no communication} \\
+&\text{row-parallel } W_2: && W_2 = \begin{bmatrix} W_{2,0} \\ W_{2,1} \\ \vdots \end{bmatrix} && \text{rank } i: \; Y_i = H_i W_{2,i} \quad (n, C) \text{, a PARTIAL sum} \\
+& && Y = \text{all-reduce}\Big(\sum_i Y_i\Big) + b_2 && \leftarrow 1 \text{ all-reduce forward} \\
+&\text{backward:} && dY \text{ is replicated; each rank computes its } dW_{2,i}, dW_{1,i} \text{ locally;} \\
+& && dX = \text{all-reduce}\Big(\sum_i dX_i\Big) && \leftarrow 1 \text{ all-reduce backward}
+\end{aligned}
 ```
 
-Megatron calls the two conjugate operators `f` (identity forward, all-reduce backward)
-and `g` (all-reduce forward, identity backward). Attention is split by **heads**: rank i
-gets the q, k and v columns of its heads (column-parallel `W_qkv`) and the matching rows
-of `W_o` (row-parallel); heads never interact until `W_o`, so again one all-reduce
+Megatron calls the two conjugate operators $f$ (identity forward, all-reduce backward)
+and $g$ (all-reduce forward, identity backward). Attention is split by **heads**: rank $i$
+gets the q, k and v columns of its heads (column-parallel $W_{qkv}$) and the matching rows
+of $W_o$ (row-parallel); heads never interact until $W_o$, so again one all-reduce
 forward and one backward.
 
 ![Tensor parallelism](images/tensor_parallel.png)
 
-**What to look at:** each GPU holds half of `W1` (its columns) and half of `W2` (its
+**What to look at:** each GPU holds half of $W_1$ (its columns) and half of $W_2$ (its
 rows) and does half the FLOPs; the only communication is summing the partial outputs.
 `parallel_numpy.tp_mlp` / `tp_attention` reuse `../transformer/`'s `Linear`, `GELU` and
 `CausalSelfAttention` classes on the shards (the attention shard is the same class with
 fewer heads) and match the unsharded layers: outputs, input gradients and all weight
-gradients equal to 1e-14 for t = 2 and 4.
+gradients equal to 1e-14 for $t = 2$ and $4$.
 
-The price: per layer and micro-batch, 2 all-reduces of `b·s·h` activations forward and 2
+The price: per layer and micro-batch, 2 all-reduces of $b \cdot s \cdot h$ activations forward and 2
 backward, **on the critical path** (the next op needs the result). That needs NVLink-class
-bandwidth, so TP stays inside a node: t ≤ 8 in practice. **Sequence parallelism**
+bandwidth, so TP stays inside a node: $t \le 8$ in practice. **Sequence parallelism**
 (Korthikanti et al. 2022) splits the LayerNorm/dropout regions between the TP blocks along
 the sequence, turning each all-reduce into a reduce-scatter + all-gather (same bytes) and
-dividing the remaining replicated activations by t: that is the `/t` in `memory.py`.
+dividing the remaining replicated activations by $t$: that is the $/t$ in `memory.py`.
 
 ## 11. Pipeline parallelism
 
-Split the **layers** into p stages on p GPUs; stage s sends its activations to stage
-s+1 and receives gradients back. Naively only one GPU works at a time. GPipe (Huang et
-al. 2019) splits the batch into m **micro-batches** so the stages can work on different
+Split the **layers** into $p$ stages on $p$ GPUs; stage $s$ sends its activations to stage
+$s+1$ and receives gradients back. Naively only one GPU works at a time. GPipe (Huang et
+al. 2019) splits the batch into $m$ **micro-batches** so the stages can work on different
 micro-batches at once:
 
+```math
+\text{bubble (idle) fraction} = \frac{p - 1}{m + p - 1} \qquad \text{for both GPipe and 1F1B}
 ```
-bubble (idle) fraction = (p − 1) / (m + p − 1)           for both GPipe and 1F1B
-GPipe: all m forwards, then all m backwards  -> stage stashes activations of m micro-batches
-1F1B : p−s−1 warm-up forwards, then alternate one forward / one backward
-       -> stage s stashes at most p − s micro-batches         (PipeDream-Flush; Narayanan et al. 2021)
-```
+
+- GPipe: all $m$ forwards, then all $m$ backwards → stage stashes activations of $m$ micro-batches
+- 1F1B: $p-s-1$ warm-up forwards, then alternate one forward / one backward
+  → stage $s$ stashes at most $p - s$ micro-batches (PipeDream-Flush; Narayanan et al. 2021)
 
 ![Pipeline schedules](images/pipeline_schedule.png)
 
 **What to look at:** `simulate_schedule` runs the per-stage op lists in time (forward 1
-unit, backward 2) with the dependencies F(s, i) ← F(s−1, i) and B(s, i) ← B(s+1, i). With
-p = 4 and m = 8, both schedules take 33 time units and idle 27.3% of the time (hatched),
-exactly `(p−1)/(m+p−1) = 3/11`; but GPipe's stages each hold 8 micro-batches of
+unit, backward 2) with the dependencies $F(s, i) \leftarrow F(s-1, i)$ and $B(s, i) \leftarrow B(s+1, i)$. With
+$p = 4$ and $m = 8$, both schedules take 33 time units and idle 27.3% of the time (hatched),
+exactly $(p-1)/(m+p-1) = 3/11$; but GPipe's stages each hold 8 micro-batches of
 activations, 1F1B's hold 4, 3, 2, 1. Bottom: the formula and simulated 1F1B points; for
-p = 16 even m = 64 micro-batches still leave a 19% bubble.
+$p = 16$ even $m = 64$ micro-batches still leave a 19% bubble.
 
 `run_pipeline` then executes those schedules on a 4-block GPT split into 4 stages
 (stage 0 also owns the embeddings, stage 3 the final LayerNorm, head and loss), each
-micro-batch's loss divided by m, in the simulated time order: gradients equal to the
+micro-batch's loss divided by $m$, in the simulated time order: gradients equal to the
 full-batch ones to 1e-16, for GPipe and 1F1B.
 
-Refinements: **interleaved 1F1B** (Narayanan et al. 2021) gives each GPU v
-non-contiguous chunks of layers, dividing the bubble by v at the cost of more
+Refinements: **interleaved 1F1B** (Narayanan et al. 2021) gives each GPU $v$
+non-contiguous chunks of layers, dividing the bubble by $v$ at the cost of more
 communication (Llama 3 used it); **zero-bubble** schedules (Qi et al. 2023) split the
 backward into input-gradient and weight-gradient parts to fill the bubble. PP sends only
-activations between neighbours (point-to-point, `b·s·h` per micro-batch), so it tolerates
+activations between neighbours (point-to-point, $b \cdot s \cdot h$ per micro-batch), so it tolerates
 slower inter-node links than TP. Its costs: the bubble, uneven stages (the embedding and
-loss stages), and a global batch that must be at least `m × micro-batch × DP`.
+loss stages), and a global batch that must be at least $m \times \text{micro-batch} \times \text{DP}$.
 
 ## 12. Sequence and context parallelism (briefly)
 
-Long contexts make activations, not weights, the problem (the `5·a·s²·b` term and
-everything linear in s).
+Long contexts make activations, not weights, the problem (the $5 \cdot a \cdot s^2 \cdot b$ term and
+everything linear in $s$).
 
 - **Sequence parallelism** (Megatron, section 10): within a TP group, split the
   non-matmul regions along the sequence.
@@ -748,7 +767,10 @@ TP (+SP)          inside a node, NVLink: all-reduces every layer, on the critica
 CP                inside/near a node: K/V exchange every attention layer
 PP                across nodes: point-to-point activations, once per stage boundary
 DP (FSDP/ZeRO)    across everything: one gradient reduce-scatter/all-gather per step, overlapped
-#GPUs = TP × CP × PP × DP
+```
+
+```math
+\#\text{GPUs} = \text{TP} \times \text{CP} \times \text{PP} \times \text{DP}
 ```
 
 Llama 3 405B (Grattafiori et al. 2024, "The Llama 3 Herd of Models", Table 4), ordered
@@ -784,16 +806,16 @@ its activations, then FSDP/ZeRO-1 over DP for the states. Try your own:
 
 ## 14. Collectives cheat sheet
 
-`n` = numbers per rank's buffer, W ranks, ring algorithms (bandwidth term only):
+$n$ = numbers per rank's buffer, $W$ ranks, ring algorithms (bandwidth term only):
 
 | Collective | Before → after | Sent per rank | Used by |
 |------------|----------------|---------------|---------|
-| broadcast | rank 0 has x → all have x | ≈ n (pipelined) | DDP init, config |
-| reduce | each has x_r → rank 0 has Σ x_r | ≈ n | logging a global loss |
-| **all-reduce** | each has x_r → all have Σ x_r | 2(W−1)/W · n | DDP gradients, TP activations |
-| **reduce-scatter** | each has x_r → rank r has chunk r of Σ x | (W−1)/W · n | ZeRO-2/3, FSDP gradients, SP |
-| **all-gather** | rank r has chunk r → all have everything | (W−1)/W · n | ZeRO-3/FSDP parameters, SP, CP K/V |
-| all-to-all | rank r has W pieces → piece j goes to rank j | (W−1)/W · n | MoE expert routing, Ulysses |
+| broadcast | rank 0 has $x$ → all have $x$ | $\approx n$ (pipelined) | DDP init, config |
+| reduce | each has $x_r$ → rank 0 has $\sum x_r$ | $\approx n$ | logging a global loss |
+| **all-reduce** | each has $x_r$ → all have $\sum x_r$ | $2(W-1)/W \cdot n$ | DDP gradients, TP activations |
+| **reduce-scatter** | each has $x_r$ → rank $r$ has chunk $r$ of $\sum x$ | $(W-1)/W \cdot n$ | ZeRO-2/3, FSDP gradients, SP |
+| **all-gather** | rank $r$ has chunk $r$ → all have everything | $(W-1)/W \cdot n$ | ZeRO-3/FSDP parameters, SP, CP K/V |
+| all-to-all | rank $r$ has $W$ pieces → piece $j$ goes to rank $j$ | $(W-1)/W \cdot n$ | MoE expert routing, Ulysses |
 | send / recv | point to point | the tensor | pipeline activations and gradients |
 | barrier | wait for everyone | 0 | timing, shutdown |
 
@@ -805,7 +827,7 @@ reduce-scatter (FSDP's forward gather becomes a reduce-scatter in the backward).
 ## 15. torch.compile, profiling and MFU
 
 **MFU (model FLOPs utilization)**, from PaLM (Chowdhery et al. 2022): the FLOPs the model
-needs per token (`6N` + `12·L·s·d` for attention), times tokens per second, divided by the
+needs per token ($6N + 12 \cdot L \cdot s \cdot d$ for attention), times tokens per second, divided by the
 hardware's peak. Recomputation does not count (that would be HFU, hardware FLOPs
 utilization), so MFU measures useful work. PaLM 540B: 46.2% on 6,144 TPU v4 chips; Llama 3
 405B: 38–43%. `memory.py` back-solves LLaMA-2's published GPU-hours (Touvron et al. 2023:
@@ -830,7 +852,7 @@ element-wise work.
   CPU, where Accelerate's matmuls dominate), and a 0.9 s first step (Inductor caches its
   generated kernels on disk, so the very first compile on a machine takes longer). On
   GPUs, where element-wise kernels are a bigger share of the step, fusion pays off more.
-- **bf16 autocast on this CPU is a trap**: a 512 × 512 matmul runs at 1,578 GFLOP/s in fp32
+- **bf16 autocast on this CPU is a trap**: a $512 \times 512$ matmul runs at 1,578 GFLOP/s in fp32
   (Apple Accelerate) and 3.8 GFLOP/s in bf16 (417× slower: this PyTorch build has no bf16
   matrix kernels for this CPU). On transformer/'s small GPT a training step takes 2.0 ms in
   fp32 and 18 ms with `torch.autocast("cpu", dtype=torch.bfloat16)`. The numerics are
@@ -885,8 +907,8 @@ issues (GPUs alone 58.7%), yet automation kept effective training time above 90%
 - **Start simple:** one GPU → DDP → FSDP (ZeRO-3) → add TP inside the node → add PP across
   nodes, only when memory or scaling efficiency forces you to.
 - **Pick the micro-batch from memory, the global batch from optimization.** The global batch
-  (tokens/step) is a hyperparameter; `DP × micro-batch × accumulation steps` must equal it.
-  When you change W, change the accumulation, not the global batch.
+  (tokens/step) is a hyperparameter; $\text{DP} \times \text{micro-batch} \times \text{accumulation steps}$ must equal it.
+  When you change $W$, change the accumulation, not the global batch.
 - **Seeds:** same model-init seed on every rank (or broadcast/load), different data
   shuffles per rank (`DistributedSampler`), different dropout masks per rank.
 - **Only rank 0 logs and saves** (but every rank must join the collectives that produce what
@@ -911,7 +933,7 @@ teams interview for:
 - **Back-of-the-envelope math:** given a model and a cluster, estimate memory per GPU,
   FLOPs, days and dollars in five minutes (`memory.py`). Nobody launches a run without it.
 - **Choosing a parallelism layout:** FSDP for up to tens of billions of parameters,
-  TP × PP × DP (× CP, × EP for MoE) beyond, ordered by bandwidth (section 13).
+  $\text{TP} \times \text{PP} \times \text{DP}$ ($\times$ CP, $\times$ EP for MoE) beyond, ordered by bandwidth (section 13).
 - **Reading a profile:** where are the bubbles, is communication overlapped, what is MFU?
 - **Numerics:** bf16 vs fp16 vs FP8, loss scaling, why runs diverge, which reductions must
   be fp32.
@@ -931,7 +953,7 @@ function in this folder.
 Answer each one out loud in under a minute:
 
 1. Estimate the FLOPs and the days needed to train a 7B model on 1T tokens on 1,024 H100s.
-   Where does `6ND` come from?
+   Where does $6ND$ come from?
 2. Why 16 bytes per parameter for mixed-precision Adam? What are they?
 3. fp16 vs bf16 vs fp32: bits, range, precision. Why did LLM training move to bf16?
 4. Why do fp16 gradients underflow, and how does loss scaling fix it? Why must the scale
@@ -947,7 +969,7 @@ Answer each one out loud in under a minute:
     with the number of GPUs?
 11. How does DDP overlap communication with the backward pass? What are buckets for?
     What is `no_sync()` for?
-12. Why does DP with W workers give the same gradients as one worker on the full batch?
+12. Why does DP with $W$ workers give the same gradients as one worker on the full batch?
     When is the result not bitwise identical?
 13. ZeRO-1, -2, -3: what is sharded, how much memory per GPU, and what does each cost
     in communication?
@@ -956,7 +978,7 @@ Answer each one out loud in under a minute:
 15. Megatron tensor parallelism for the MLP: which matrix is split by columns, which by
     rows, and where is the all-reduce? Why must TP stay within a node?
 16. How is attention split under tensor parallelism?
-17. What is the pipeline bubble? Derive `(p−1)/(m+p−1)`. GPipe vs 1F1B: what is the
+17. What is the pipeline bubble? Derive $(p-1)/(m+p-1)$. GPipe vs 1F1B: what is the
     difference if the bubble is the same?
 18. What are sequence parallelism and context parallelism, and when do you need them?
 19. You have 1,024 GPUs (8 per node) and a 70B model with 8K context. Propose a TP/PP/DP
@@ -973,26 +995,26 @@ Answer each one out loud in under a minute:
 1. Break `data_parallel_grads` in `parallel_numpy.py` by removing the `/ W`
    (`return [s / W for s in summed], keys` → `return summed, keys`). Run
    `equivalence_check.py`: which checks fail, and why does the AdamW parameter check fail
-   only a little while the gradient check fails by a factor of W?
+   only a little while the gradient check fails by a factor of $W$?
 2. In `run_pipeline`, change `c.dlogits = dlogits / m` to `c.dlogits = dlogits` and watch the
    pipeline checks fail. Then delete `self._gather(r, u)` from the ZeRO-3 `backward`
    wrapper: the NaN poison makes the ZeRO-3 check fail. Explain why the forward gather alone
    is not enough.
 3. Implement a **tree all-reduce** (reduce up a binary tree, broadcast down) in
    `parallel_numpy.py`, count its bytes and steps with `CommLog`, and compare with the ring
-   for W = 4…1024 under the α–β model with α = 5 µs, β = 50 GB/s, for messages of 1 KB and
+   for $W = 4 \dots 1024$ under the $\alpha\text{--}\beta$ model with $\alpha = 5 \thinspace \mu\text{s}$, $\beta = 50\text{ GB/s}$, for messages of 1 KB and
    1 GB.
 4. Add **bucketing** to `data_parallel_grads`: all-reduce the gradients in buckets of
    ~1,000 numbers in reverse layer order, and print how many collectives you launch. Why do
    small buckets hurt and huge buckets also hurt?
-5. Extend `ZeroSimulator` with **prefetching** (gather block i+1 while block i computes) and
+5. Extend `ZeroSimulator` with **prefetching** (gather block $i+1$ while block $i$ computes) and
    report the new peak gathered parameters. Then add `reshard_after_forward=False` and
    compare the bytes sent per step.
 6. Make the tensor-parallel version of a whole `Block` (TP attention + TP MLP, LayerNorms
    replicated) and add it to `equivalence_check.py`. Then add **sequence parallelism**:
-   replace each all-reduce with a reduce-scatter + all-gather along T.
-7. Implement **interleaved 1F1B** (v = 2 chunks per stage) in `schedule_1f1b` /
-   `simulate_schedule` and check that the bubble drops to about `(p−1)/(v·m)`.
+   replace each all-reduce with a reduce-scatter + all-gather along $T$.
+7. Implement **interleaved 1F1B** ($v = 2$ chunks per stage) in `schedule_1f1b` /
+   `simulate_schedule` and check that the bubble drops to about $(p-1)/(v \cdot m)$.
 8. Train with `python distributed/precision_numpy.py --accum 1 --modes fp32,fp16` and
    `--accum 8192`. At what batch size does fp16 without scaling start to fail? Add an
    FP8-e5m2 gradient mode with a per-tensor scale (`round_to_format(g * s, "fp8_e5m2") / s`).

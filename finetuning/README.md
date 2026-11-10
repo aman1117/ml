@@ -23,10 +23,10 @@ LoRA and training loop. No HF Trainer, no PEFT, no TRL.
 |------|-----------------|
 | `domain_data.py` | The domain: a fictional lighthouse service's handbook (12 lighthouses x 4 facts). Writes the chat datasets deterministically, defines the char-level **chat template** (`<\|user\|>`, `<\|assistant\|>`, `<\|end\|>` as 3 reserved characters) and the **loss mask**. |
 | `sft_train.jsonl`, `sft_test.jsonl`, `prefs.jsonl` | The committed data: 116 training chats; 112 held-out questions in 4 splits that separate *format*, *facts* and *judgment*; 232 preference pairs (chosen vs rejected). |
-| `lora_numpy.py` | LoRA from scratch (`y = x W0 + (α/r)·x A B`, W0 frozen, B = 0 at init) with hand-written backward for A, B and x, column slices for the fused q/k/v matrix, merge/unmerge; the masked SFT loss and the DPO loss with their backward passes; the whole pipeline in NumPy (pretrain → LoRA SFT → merge → LoRA DPO). |
-| `lora_visual.py` | Step-by-step terminal walkthrough with the trained models: W0 vs A and B, one token through the adapter, the trained ΔW as a heatmap and its singular values, merging, the loss mask on a chat, one DPO pair with its margin. |
-| `gradient_check.py` | Numerical vs analytic gradients: LoRA layer (x, A, B, slices), masked CE, sequence log-prob, DPO, and every A and B inside a tiny GPT; the B = 0 init, merge == unmerged, base weights bit-identical after a step. Ends `Gradient check PASSED`. |
-| `finetune_pytorch.py` | (1) Our `LoRALinear(nn.Module)` == the NumPy one (logits, SFT and DPO gradients, merge, to 1e-15). (2) The experiment: pretrain a 4-layer GPT, then 1-shot prompting vs SFT full vs SFT + replay vs SFT LoRA vs DPO vs DPO + NLL: accuracy, format, refusals, **forgetting**, params, time, and the singular values of the full fine-tune's ΔW. |
+| `lora_numpy.py` | LoRA from scratch ($y = x W_0 + (\alpha/r) \cdot x A B$, $W_0$ frozen, $B = 0$ at init) with hand-written backward for $A$, $B$ and $x$, column slices for the fused q/k/v matrix, merge/unmerge; the masked SFT loss and the DPO loss with their backward passes; the whole pipeline in NumPy (pretrain → LoRA SFT → merge → LoRA DPO). |
+| `lora_visual.py` | Step-by-step terminal walkthrough with the trained models: $W_0$ vs $A$ and $B$, one token through the adapter, the trained $\Delta W$ as a heatmap and its singular values, merging, the loss mask on a chat, one DPO pair with its margin. |
+| `gradient_check.py` | Numerical vs analytic gradients: LoRA layer (x, A, B, slices), masked CE, sequence log-prob, DPO, and every A and B inside a tiny GPT; the $B = 0$ init, merge == unmerged, base weights bit-identical after a step. Ends `Gradient check PASSED`. |
+| `finetune_pytorch.py` | (1) Our `LoRALinear(nn.Module)` == the NumPy one (logits, SFT and DPO gradients, merge, to 1e-15). (2) The experiment: pretrain a 4-layer GPT, then 1-shot prompting vs SFT full vs SFT + replay vs SFT LoRA vs DPO vs DPO + NLL: accuracy, format, refusals, **forgetting**, params, time, and the singular values of the full fine-tune's $\Delta W$. |
 | `finetune_open_model.py` | OPTIONAL (needs `transformers`, skips cleanly without it): our LoRALinear injected into SmolLM2-135M-Instruct's attention, our masked loss on the model's own chat template, our training loop and KV-cache decoder; saves only the adapter (3.8 MB) and merges it. |
 | `make_figures.py` → `images/` | Draws every picture in this README from real runs (~65 s once `finetune_results.npz` exists; from scratch it first runs the experiment and the NumPy pipeline, ~3 min). |
 
@@ -98,10 +98,10 @@ tokens count** and **what the loss rewards**:
 
 | Stage | Loss | Data | In this folder |
 |-------|------|------|----------------|
-| Pretraining | `-mean log p(next token)` over all tokens | raw text | `finetune_pytorch.py` pretrains on `../rnn/input.txt` (43–52 s) |
+| Pretraining | $-\operatorname{mean} \log p(\text{next token})$ over all tokens | raw text | `finetune_pytorch.py` pretrains on `../rnn/input.txt` (43–52 s) |
 | SFT | the same, **masked** to the assistant's tokens | chats | `masked_cross_entropy`, `train_sft` |
-| RLHF (PPO) | maximize a learned reward − β·KL to the SFT model | prompts + a reward model trained on comparisons | section 9 (concepts only) |
-| DPO | `-log σ(β[Δ log π(chosen) − Δ log π(rejected)])` | (prompt, chosen, rejected) | `dpo_loss`, `train_dpo` |
+| RLHF (PPO) | maximize a learned reward $-\beta \cdot \operatorname{KL}$ to the SFT model | prompts + a reward model trained on comparisons | section 9 (concepts only) |
+| DPO | $-\log \sigma\big(\beta [\Delta \log \pi(\text{chosen}) - \Delta \log \pi(\text{rejected})]\big)$ | (prompt, chosen, rejected) | `dpo_loss`, `train_dpo` |
 
 InstructGPT (Ouyang et al. 2022) made this pipeline famous: labelers preferred the
 outputs of a 1.3B model trained with SFT + RLHF over those of the 175B GPT-3 it started
@@ -172,8 +172,8 @@ stop at `<|end|>`. Three things follow, and each is a classic production bug:
 **What to look at:** each box is a *target* character (predicted from everything before
 it). Only the green ones, the assistant's answer and its `<|end|>`, have mask 1:
 
-```
-L = Σ_t m_t · (-log p_t[y_t]) / Σ_t m_t          m_t ∈ {0, 1}, one per target position
+```math
+L = \frac{\sum_t m_t \cdot \big(-\log p_t[y_t]\big)}{\sum_t m_t} \qquad m_t \in \{0, 1\}, \text{ one per target position}
 ```
 
 The NumPy base model has a masked loss of **7.73** nats/char on this chat (worse than
@@ -216,7 +216,7 @@ different styles for the same question) become randomness in the model.
 | `train` | sft_train | 80 | 40 facts x 2 of their 3 question phrasings |
 | `refusal_demo` | sft_train | 36 | decline out-of-scope questions ("How tall is the tower at Gull Rock?" → "The handbook does not say.") for 3 lighthouses, and questions about 6 lighthouses not in the handbook (→ "I do not know that lighthouse.") |
 | `paraphrase` | sft_test | 40 | a trained fact, asked with the phrasing that was held out for it: recall beyond the exact wording |
-| `unseen_fact` | sft_test | 24 | 8 facts never trained. The value can only be guessed (chance ≈ 17%); a good model still answers in the right **format** |
+| `unseen_fact` | sft_test | 24 | 8 facts never trained. The value can only be guessed (chance $\approx$ 17%); a good model still answers in the right **format** |
 | `out_of_scope` | sft_test | 24 | the 4 out-of-scope questions about the 6 lighthouses without refusal demos |
 | `unknown_place` | sft_test | 24 | 6 new lighthouses that are not in the handbook |
 | prefs | prefs.jsonl | 232 | on train prompts only: chosen = correct; rejected = wrong value (80), wrong kind of answer (27), rambling (27), needless refusal (26); plus refusal pairs: out-of-scope (24, first 6 lighthouses) and hallucination (48, 12 unknown lighthouses) |
@@ -233,14 +233,16 @@ smaller learning rate than pretraining. It is the most expressive option and the
 expensive one, mostly in **memory**, not compute. With mixed-precision AdamW, every
 parameter costs (see [`../distributed/`](../distributed/)):
 
-```
-bf16 weights 2 B + bf16 gradient 2 B + fp32 master weight 4 B + Adam m 4 B + Adam v 4 B
-= 16 bytes per parameter, before activations
+```math
+\begin{aligned}
+&\underbrace{2\text{ B}}_{\text{bf16 weights}} + \underbrace{2\text{ B}}_{\text{bf16 gradient}} + \underbrace{4\text{ B}}_{\text{fp32 master weight}} + \underbrace{4\text{ B}}_{\text{Adam } m} + \underbrace{4\text{ B}}_{\text{Adam } v} \\
+&= 16\text{ bytes per parameter, before activations}
+\end{aligned}
 ```
 
 | Model | Full fine-tuning (16 B/param) | LoRA, bf16 frozen base (2 B/param) + adapters | QLoRA, 4-bit base (~0.5 B/param) |
 |-------|------|------|------|
-| ours (821,760 params) | 13 MB | 1.6 MB + 73,728 x 16 B = 1.2 MB | — |
+| ours (821,760 params) | 13 MB | $1.6\text{ MB} + 73{,}728 \times 16\text{ B} = 1.2\text{ MB}$ | — |
 | 7B | 112 GB | 14 GB + ~0.6 GB (r=16, all linear layers: 40M params) | ~4 GB + ~0.6 GB |
 | 70B | 1.1 TB | 140 GB + adapters | ~35 GB + adapters (fits one 48 GB GPU) |
 
@@ -254,21 +256,24 @@ can share one base model in memory.
 
 ## 5. LoRA: the low-rank update
 
-**The idea** (Hu et al. 2021). Fine-tuning changes a weight matrix by some `ΔW`. Bet that
-`ΔW` has low "intrinsic rank", and parameterize it as a product of two thin matrices:
+**The idea** (Hu et al. 2021). Fine-tuning changes a weight matrix by some $\Delta W$. Bet that
+$\Delta W$ has low "intrinsic rank", and parameterize it as a product of two thin matrices:
 
+```math
+\begin{aligned}
+y &= x W_0 + b + (\alpha/r) \cdot (x A) B && x: (N, d_{\text{in}}) \quad W_0: (d_{\text{in}}, d_{\text{out}}) \text{ FROZEN} \\
+& && A: (d_{\text{in}}, r) \quad B: (r, d_{\text{out}}) \text{ trainable} \\
+\Delta W &= (\alpha/r) \cdot A B && \operatorname{rank}(\Delta W) \le r, \quad r \ll \min(d_{\text{in}}, d_{\text{out}})
+\end{aligned}
 ```
-y = x W0 + b + (α/r) · (x A) B            x: (N, d_in)   W0: (d_in, d_out) FROZEN
-                                          A: (d_in, r)   B: (r, d_out)     trainable
-ΔW = (α/r) · A B                          rank(ΔW) <= r,   r << min(d_in, d_out)
-trainable numbers per matrix: r·(d_in + d_out)   instead of d_in·d_out
-```
+
+Trainable numbers per matrix: $r \cdot (d_{\text{in}} + d_{\text{out}})$ instead of $d_{\text{in}} \cdot d_{\text{out}}$.
 
 ![LoRA](images/lora_diagram.png)
 
 **What to look at:** the frozen path and the adapter path are added. The adapter
-squeezes every token through `r` numbers (`h = xA`). Nothing about the frozen path
-changes: no gradient for `W0` is computed or stored, and it needs no optimizer state.
+squeezes every token through $r$ numbers ($h = xA$). Nothing about the frozen path
+changes: no gradient for $W_0$ is computed or stored, and it needs no optimizer state.
 
 Why it is plausible: Aghajanyan et al. (2020) showed that fine-tuning has a low
 *intrinsic dimension*: optimizing only ~200 parameters, randomly projected into the full
@@ -280,43 +285,43 @@ fine-tuning on their benchmarks.
 
 ### Initialization: why B = 0 and A random
 
-- `B = 0` → `ΔW = 0`: the adapted model starts **exactly** at the pretrained model
-  (`gradient_check.py`: max |diff| = 0). A random `B` would add random noise to every
+- $B = 0$ → $\Delta W = 0$: the adapted model starts **exactly** at the pretrained model
+  (`gradient_check.py`: $\max \lvert \text{diff} \rvert = 0$). A random $B$ would add random noise to every
   layer at step 0 and damage the base model before learning starts.
-- `A` random → the gradient `dB = (α/r)·(xA)ᵀ dy` is non-zero, so learning starts. If
-  both were zero, `dA = (α/r)·xᵀ(dy Bᵀ) = 0` and `dB = 0` forever (a saddle point).
-- So at step 0, only `B` moves (`gradient_check.py`: max|dA| = 0, max|dB| = 10.49); once
-  `B ≠ 0`, `A` starts moving too.
+- $A$ random → the gradient $dB = (\alpha/r) \cdot (xA)^\top dy$ is non-zero, so learning starts. If
+  both were zero, $dA = (\alpha/r) \cdot x^\top (dy\thinspace B^\top) = 0$ and $dB = 0$ forever (a saddle point).
+- So at step 0, only $B$ moves (`gradient_check.py`: $\max \lvert dA \rvert = 0$, $\max \lvert dB \rvert = 10.49$); once
+  $B \ne 0$, $A$ starts moving too.
 
 ### The α/r scaling
 
-`ΔW` is scaled by `α/r`. With Adam, the size of each update to `A` and `B` is about
-`lr`, whatever the gradient scale; the scaling makes the effective step size of `ΔW`
-roughly independent of `r`, so you can change the rank without retuning the learning
-rate. The LoRA paper sets `α` to the first `r` tried and never tunes it; common recipes
-use `α = 2r` (we do: `r = 8, α = 16`). rsLoRA (Kalajdzievski 2023) argues `α/√r` keeps
+$\Delta W$ is scaled by $\alpha/r$. With Adam, the size of each update to $A$ and $B$ is about
+`lr`, whatever the gradient scale; the scaling makes the effective step size of $\Delta W$
+roughly independent of $r$, so you can change the rank without retuning the learning
+rate. The LoRA paper sets $\alpha$ to the first $r$ tried and never tunes it; common recipes
+use $\alpha = 2r$ (we do: $r = 8, \alpha = 16$). rsLoRA (Kalajdzievski 2023) argues $\alpha/\sqrt{r}$ keeps
 learning stable at large ranks (exercise 6).
 
 ### Which layers
 
-The LoRA paper adapted only `W_q` and `W_v` of GPT-3 and found that `q, v` at `r = 4`
-beat a single matrix at `r = 8`. QLoRA found that adapting **all** linear layers is
+The LoRA paper adapted only $W_q$ and $W_v$ of GPT-3 and found that $q, v$ at $r = 4$
+beat a single matrix at $r = 8$. QLoRA found that adapting **all** linear layers is
 needed to match full fine-tuning, and that became the default. Our GPT fuses
-`W_q, W_k, W_v` into one `(C, 3C)` matrix (`c_attn`), so `LoRALinear` supports
-**column slices**: one `(A, B)` per slice, so `--targets q,v` adapts columns `[0, C)` and
-`[2C, 3C)` and leaves `k` untouched (`gradient_check.py`: max |ΔW_k| = 0). Defaults
+$W_q, W_k, W_v$ into one $(C, 3C)$ matrix (`c_attn`), so `LoRALinear` supports
+**column slices**: one $(A, B)$ per slice, so `--targets q,v` adapts columns $[0, C)$ and
+$[2C, 3C)$ and leaves $k$ untouched (`gradient_check.py`: $\max \lvert \Delta W_k \rvert = 0$). Defaults
 here: `q, k, v, o` and both MLP matrices (`fc`, `proj`).
 
 ![Parameters vs rank](images/params_vs_rank.png)
 
 **What to look at:** left, our 4-layer GPT: rank 8 on all six matrix types trains
-73,728 numbers, 9.0% of 821,760; rank 1 trains 1.1%. Because our model is tiny (d = 128),
-LoRA saves little here. Right, the same arithmetic for one 4096 x 4096 matrix of a 7B
-model: rank 8 is 65,536 numbers, **0.39%** of 16.8M. LoRA's savings grow with `d`.
+73,728 numbers, 9.0% of 821,760; rank 1 trains 1.1%. Because our model is tiny ($d = 128$),
+LoRA saves little here. Right, the same arithmetic for one $4096 \times 4096$ matrix of a 7B
+model: rank 8 is 65,536 numbers, **0.39%** of 16.8M. LoRA's savings grow with $d$.
 
 ### Merging
 
-After training, fold the adapter into the weight once: `W0 ← W0 + (α/r)·A B`. The merged
+After training, fold the adapter into the weight once: $W_0 \leftarrow W_0 + (\alpha/r) \cdot A B$. The merged
 model is an ordinary model with **zero extra inference cost**; `unmerge` subtracts it
 again to swap adapters. In float64 the merged and unmerged outputs agree to 8.9e-16
 (`gradient_check.py`); in float32, to 7.7e-6 on the logits (`lora_visual.py` step 4);
@@ -326,62 +331,64 @@ adapters *unmerged* and batch requests for many different adapters on one base m
 
 ### QLoRA and NF4 (conceptually)
 
-QLoRA (Dettmers et al. 2023) keeps the frozen `W0` in **4 bits** and trains bf16 LoRA
+QLoRA (Dettmers et al. 2023) keeps the frozen $W_0$ in **4 bits** and trains bf16 LoRA
 adapters on top:
 
 - **NF4 (4-bit NormalFloat)**: pretrained weights are roughly normally distributed, so
   the 16 quantization levels are placed at quantiles of a normal distribution (each level
   equally likely), instead of evenly spaced. Each block of 64 weights is scaled by its own
-  absmax, `w ≈ absmax_block · NF4[code]`.
+  absmax, $w \approx \operatorname{absmax}_{\text{block}} \cdot \operatorname{NF4}[\text{code}]$.
 - **Double quantization**: the per-block scales are themselves quantized (8-bit),
   saving ~0.37 bits per parameter.
 - **Paged optimizers**: optimizer states spill to CPU memory on spikes instead of OOM.
-- In the forward pass `W0` is dequantized to bf16 block by block; the gradient flows
-  through it to `x` (and so to the adapters of earlier layers), never into `W0`.
+- In the forward pass $W_0$ is dequantized to bf16 block by block; the gradient flows
+  through it to $x$ (and so to the adapters of earlier layers), never into $W_0$.
 
 This let them fine-tune a 65B model on one 48 GB GPU; their Guanaco models reached
-99.3% of ChatGPT's level on the Vicuna benchmark. Exercise 12 builds a toy 4-bit `W0`.
+99.3% of ChatGPT's level on the Vicuna benchmark. Exercise 12 builds a toy 4-bit $W_0$.
 
 ### DoRA, briefly
 
 DoRA (Liu et al. 2024) splits each weight into a magnitude and a direction,
-`W = m · (W0 + BA) / ‖W0 + BA‖_c` (column-wise norm), trains the magnitude vector `m`
+$W = m \cdot \dfrac{W_0 + BA}{\lVert W_0 + BA \rVert_c}$ (column-wise norm), trains the magnitude vector $m$
 directly and the direction with LoRA. Analyses of full fine-tuning showed that it changes
 magnitude and direction in a way plain LoRA struggles to imitate; DoRA closes part of
-the gap to full fine-tuning at almost the same cost, and also merges into `W0`.
+the gap to full fine-tuning at almost the same cost, and also merges into $W_0$.
 
 ## 6. The backward passes, and the gradient check
 
-Row-vector convention, `dZ = ∂L/∂Z`, `s = α/r`, `h = xA` (cached in the forward pass).
+Row-vector convention, $dZ = \partial L / \partial Z$, $s = \alpha/r$, $h = xA$ (cached in the forward pass).
 
 **LoRA linear** (`LoRALinear.backward`):
 
-```
-dB = s · hᵀ dy                (r, N) @ (N, d_out)
-dh = s · dy Bᵀ                (N, d_out) @ (d_out, r)
-dA = xᵀ dh                    (d_in, N) @ (N, r)
-dx = dy W0ᵀ + dh Aᵀ           the frozen path still passes gradient to x (earlier layers need it)
-dW0: not computed             frozen: no gradient, no Adam state, no memory for them
+```math
+\begin{aligned}
+dB &= s \cdot h^\top dy && (r, N) \cdot (N, d_{\text{out}}) \\
+dh &= s \cdot dy\, B^\top && (N, d_{\text{out}}) \cdot (d_{\text{out}}, r) \\
+dA &= x^\top dh && (d_{\text{in}}, N) \cdot (N, r) \\
+dx &= dy\, W_0^\top + dh\, A^\top && \text{the frozen path still passes gradient to } x \text{ (earlier layers need it)} \\
+dW_0 &: \text{not computed} && \text{frozen: no gradient, no Adam state, no memory for them}
+\end{aligned}
 ```
 
 **Masked cross-entropy**: the softmax-CE gradient of `../transformer/`, with each row
 weighted by its mask and normalized by the number of trained targets:
 
-```
-dlogits_t = m_t · (softmax(z_t) − onehot(y_t)) / Σ m
-```
-
-**Sequence log-prob** (the quantity DPO works with), `log π(y|x) = Σ_t m_t log p_t[y_t]`:
-
-```
-∂ log π(y|x) / ∂z_t = m_t · (onehot(y_t) − softmax(z_t))
+```math
+d\text{logits}_t = \frac{m_t \cdot \big(\operatorname{softmax}(z_t) - \operatorname{onehot}(y_t)\big)}{\sum m}
 ```
 
-**DPO** (section 10), `z = β[(log π_w − log π_ref,w) − (log π_l − log π_ref,l)]`,
-`L = −log σ(z)`:
+**Sequence log-prob** (the quantity DPO works with), $\log \pi(y \mid x) = \sum_t m_t \log p_t[y_t]$:
 
+```math
+\frac{\partial \log \pi(y \mid x)}{\partial z_t} = m_t \cdot \big(\operatorname{onehot}(y_t) - \operatorname{softmax}(z_t)\big)
 ```
-∂L/∂ log π_w = −β σ(−z)          ∂L/∂ log π_l = +β σ(−z)        (π_ref: constants)
+
+**DPO** (section 10), $z = \beta\big[(\log \pi_w - \log \pi_{\text{ref},w}) - (\log \pi_l - \log \pi_{\text{ref},l})\big]$,
+$L = -\log \sigma(z)$:
+
+```math
+\frac{\partial L}{\partial \log \pi_w} = -\beta\, \sigma(-z) \qquad \frac{\partial L}{\partial \log \pi_l} = +\beta\, \sigma(-z) \qquad (\pi_{\text{ref}}\text{: constants})
 ```
 
 then chain into the logits with the sequence log-prob rule, and into the network with
@@ -392,7 +399,7 @@ hand-written backward pass of `../transformer/transformer_numpy.py` unchanged.
 differences in float64: the LoRA layer alone (x, A, B, and q/v slices of a fused qkv
 matrix), the masked CE (and that masked positions get exactly zero gradient and do not
 change the loss), the sequence log-prob, the DPO loss through the logits (and that it
-equals log 2 when policy = reference), and all 24 A/B tensors of a tiny GPT through the
+equals $\log 2$ when policy = reference), and all 24 A/B tensors of a tiny GPT through the
 SFT loss (worst relative error 4.2e-9) and through the DPO loss (2.8e-9). It also checks
 that one AdamW step on A and B leaves all 29 base tensors bit-identical. Break a line
 (exercise 1) and it prints `FAIL` and `Gradient check FAILED`.
@@ -427,29 +434,29 @@ optimizer work, which our tiny model doesn't feel.
 ![SFT curves](images/sft_curves.png)
 
 **What to look at:** left, full fine-tuning drives the training loss lowest (0.0089 at
-the end vs 0.0337 for r = 8); each doubling of the rank lowers the LoRA curve.
-Right, held-out results from `make_figures.py`'s rank sweep (α = 2r): rank 1 and 2 are
+the end vs 0.0337 for $r = 8$); each doubling of the rank lowers the LoRA curve.
+Right, held-out results from `make_figures.py`'s rank sweep ($\alpha = 2r$): rank 1 and 2 are
 too small (train exact 23.8% and 50.0%), rank 4 nearly memorizes the training facts
 (96.2%, paraphrase 65.0%), rank 8 and 16 match full fine-tuning on paraphrases (82.5%,
 80.0% vs 80.0%). Forgetting (red, right axis) grows with the rank: story loss 3.57
-at r = 1, 5.58 at r = 16. More capacity to learn is also more capacity to forget.
+at $r = 1$, 5.58 at $r = 16$. More capacity to learn is also more capacity to forget.
 
 ### Is a full fine-tune's update really low-rank?
 
-`finetune_pytorch.py` computes the singular values of `ΔW = W_after − W_before` for every
+`finetune_pytorch.py` computes the singular values of $\Delta W = W_{\text{after}} - W_{\text{before}}$ for every
 matrix of the fully fine-tuned model.
 
 ![Spectrum of ΔW](images/delta_spectrum.png)
 
-**What to look at:** left, the singular values of all 16 full-fine-tuning `ΔW`s
+**What to look at:** left, the singular values of all 16 full-fine-tuning $\Delta W\text{s}$
 (normalized) fall much faster than those of a random Gaussian matrix of the same shape.
-Right, for `blocks.0.attn.c_attn` (384 x 128): 36 of 128 directions hold 90% of
-`‖ΔW‖²` (median over the 16 matrices: 34), versus 94 for a random matrix. LoRA r = 8's
+Right, for `blocks.0.attn.c_attn` ($384 \times 128$): 36 of 128 directions hold 90% of
+$\lVert \Delta W \rVert^2$ (median over the 16 matrices: 34), versus 94 for a random matrix. LoRA $r = 8$'s
 update has rank at most 24 there by construction (8 per q, k, v slice) and needs 16
 directions for 90%. Honest reading: the full fine-tune's update is concentrated but not
 rank 8, and yet rank 8 reaches the same accuracy. Full fine-tuning spends many directions
 on things the evaluation doesn't need (including forgetting the story). Biderman et al.
-(2024) measured the same at scale: full fine-tuning's `ΔW` has a rank 10–100x higher
+(2024) measured the same at scale: full fine-tuning's $\Delta W$ has a rank 10–100x higher
 than typical LoRA configurations, LoRA "learns less" on hard targets (code, math) and
 "forgets less".
 
@@ -489,7 +496,7 @@ Remedies, roughly in order of how often they are used:
 - **LoRA with a small rank** (constrains how far the weights can move; the rank sweep in
   section 7).
 - **Regularize toward the old weights**: EWC (Kirkpatrick et al. 2017) penalizes moving
-  weights that were important for the old task, `λ/2 Σ_i F_i (θ_i − θ*_i)²` with `F` the
+  weights that were important for the old task, $\tfrac{\lambda}{2} \sum_i F_i (\theta_i - \theta^*_i)^2$ with $F$ the
   diagonal Fisher information; the KL term of RLHF and the reference model of DPO play
   the same role for preference tuning.
 - **Model merging / interpolation** between the base and the fine-tune (WiSE-FT).
@@ -501,20 +508,16 @@ to write the perfect one. RLHF (Christiano et al. 2017; Stiennon et al. 2020; Ou
 al. 2022) learns from comparisons in two steps:
 
 1. **Reward model.** Collect prompts, sample two answers, ask a human which is better.
-   Train a model `r_φ(x, y)` (usually the SFT model with a scalar head) with the
+   Train a model $r_\phi(x, y)$ (usually the SFT model with a scalar head) with the
    **Bradley–Terry** model of preferences (Bradley & Terry 1952):
-   ```
-   P(y_w ≻ y_l | x) = σ(r_φ(x, y_w) − r_φ(x, y_l))       L_RM = −log σ(r_w − r_l)
-   ```
+   $$P(y_w \succ y_l \mid x) = \sigma\big(r_\phi(x, y_w) - r_\phi(x, y_l)\big) \qquad L_{\text{RM}} = -\log \sigma(r_w - r_l)$$
 2. **RL against it, with a leash.** Maximize the reward of the policy's own samples,
    but stay close to the SFT model, or the policy finds answers the reward model
    wrongly loves (reward hacking):
-   ```
-   max_π  E_{x, y~π} [ r_φ(x, y) ]  −  β · KL( π(·|x) || π_ref(·|x) )
-   ```
+   $$\max_\pi \thickspace \mathbb E_{x, \thinspace y \sim \pi} \big[ r_\phi(x, y) \big] - \beta \cdot \operatorname{KL}\big( \pi(\cdot \mid x) \thinspace \Vert \thinspace \pi_{\text{ref}}(\cdot \mid x) \big)$$
    optimized with **PPO** (Schulman et al. 2017): sample answers, score them, estimate
    advantages with a learned value function, and take clipped policy-gradient steps,
-   `min(ρ A, clip(ρ, 1−ε, 1+ε) A)` with `ρ = π_new/π_old`, so one batch can't move the
+   $\min\big(\rho A, \operatorname{clip}(\rho, 1 - \epsilon, 1 + \epsilon) A\big)$ with $\rho = \pi_{\text{new}} / \pi_{\text{old}}$, so one batch can't move the
    policy too far.
 
 The cost: four models in memory (policy, reference, reward model, value model),
@@ -528,31 +531,30 @@ of samples per prompt) or replace the reward model by a program that checks the 
 ### From the RLHF objective to a classification loss
 
 DPO (Rafailov et al. 2023) notices that the KL-regularized objective above has a closed-form
-optimum for any reward `r`:
+optimum for any reward $r$:
 
-```
-π*(y|x) = π_ref(y|x) · exp(r(x, y) / β) / Z(x)          Z(x) = Σ_y π_ref(y|x) exp(r(x, y)/β)
+```math
+\pi^*(y \mid x) = \frac{\pi_{\text{ref}}(y \mid x) \exp\big(r(x, y) / \beta\big)}{Z(x)} \qquad Z(x) = \sum_y \pi_{\text{ref}}(y \mid x) \exp\big(r(x, y) / \beta\big)
 ```
 
-Solve for the reward: `r(x, y) = β log(π*(y|x) / π_ref(y|x)) + β log Z(x)`. Plug this into
-the Bradley–Terry likelihood: the intractable `Z(x)` is the same for both answers and
+Solve for the reward: $r(x, y) = \beta \log \dfrac{\pi^*(y \mid x)}{\pi_{\text{ref}}(y \mid x)} + \beta \log Z(x)$. Plug this into
+the Bradley–Terry likelihood: the intractable $Z(x)$ is the same for both answers and
 **cancels**. Fitting the reward model and solving the RL problem collapse into one
 supervised loss on the policy itself:
 
-```
-L_DPO = −log σ( β [ (log π(y_w|x) − log π_ref(y_w|x)) − (log π(y_l|x) − log π_ref(y_l|x)) ] )
-        └ implicit reward of the chosen ┘   └ implicit reward of the rejected ┘
+```math
+L_{\text{DPO}} = -\log \sigma\Big( \beta \Big[ \underbrace{\big(\log \pi(y_w \mid x) - \log \pi_{\text{ref}}(y_w \mid x)\big)}_{\text{implicit reward of the chosen}} - \underbrace{\big(\log \pi(y_l \mid x) - \log \pi_{\text{ref}}(y_l \mid x)\big)}_{\text{implicit reward of the rejected}} \Big] \Big)
 ```
 
-"Your language model is secretly a reward model": `β log(π/π_ref)` is the reward. No
+"Your language model is secretly a reward model": $\beta \log(\pi / \pi_{\text{ref}})$ is the reward. No
 reward model, no sampling, no value function, no RL: two forward passes per pair (the
 reference log-probs never change, so `train_dpo` computes them once). Its gradient
-(section 6) weights each pair by `σ(−z)`: pairs already ranked correctly stop
+(section 6) weights each pair by $\sigma(-z)$: pairs already ranked correctly stop
 contributing.
 
 **The reference model for free.** If the policy is "SFT model + a fresh LoRA", then the
 reference (the SFT model) is the same network with the adapter switched off:
-`lora_numpy.py` calls `set_lora_enabled(model, False)` to compute `log π_ref`, so DPO
+`lora_numpy.py` calls `set_lora_enabled(model, False)` to compute $\log \pi_{\text{ref}}$, so DPO
 needs no second copy of the weights. `finetune_pytorch.py` uses an explicit frozen copy,
 to show the general case. **Turn dropout off** for both (TRL does too): with dropout the
 policy and the reference disagree before the first update, and the log-ratios are noise.
@@ -560,7 +562,7 @@ policy and the reference disagree before the first update, and the log-ratios ar
 ### What happened
 
 `finetune_pytorch.py` starts from the merged SFT LoRA model (out-of-scope refusal
-70.8%, unknown place 0%) and runs DPO with a fresh rank-8 LoRA, β = 0.5, lr 1e-3, 150
+70.8%, unknown place 0%) and runs DPO with a fresh rank-8 LoRA, $\beta = 0.5$, lr 1e-3, 150
 steps of 16 pairs, once as plain DPO and once with an extra NLL loss on the chosen answers:
 
 ```
@@ -574,10 +576,10 @@ LoRA SFT + DPO+NLL    100.0%   65.0%   67.5%   54.2%  100.0%    33.3%        17.
 ![DPO curves](images/dpo_curves.png)
 
 **What to look at:** both runs optimize the DPO objective perfectly: the loss falls from
-log 2 to ~0, the margin rises to +12–15, and preference accuracy on the training pairs is
+$\log 2$ to ~0, the margin rises to +12–15, and preference accuracy on the training pairs is
 1.00 after 50 steps (right and left panels). The middle panel shows *how*: the rejected
 answers are pushed down by 25–30 nats. In plain DPO the chosen answers go **down** too
-(Δ log π = −1.18 at the end): the objective only cares about the *difference*, so
+($\Delta \log \pi = -1.18$ at the end): the objective only cares about the *difference*, so
 pushing everything down while pushing the rejected down faster is a valid solution. The
 probability mass goes to answers nobody wrote: plain DPO answers `'ht use.'` and
 `'The ha handbook does not say.'`, and train accuracy collapses from 97.5% to 46.2%.
@@ -585,7 +587,7 @@ This is **likelihood displacement** (Razin et al. 2024; Pal et al. 2024): the ch
 rejected answers share most of their tokens ("The light is …"), so pushing down one
 drags down the other.
 
-The fix used here is the simplest one: add `nll · (masked CE of the chosen answers)` to
+The fix used here is the simplest one: add $\text{nll} \cdot (\text{masked CE of the chosen answers})$ to
 the loss (`--nll 1.0`; Pang et al. 2024 call it DPO+NLL, others RPO). The chosen
 log-probs now rise (+0.83), train accuracy is 100%, and the new behaviour **generalizes
 where SFT alone was weak**: out-of-scope refusal 70.8% → 100% on lighthouses that had
@@ -598,9 +600,9 @@ further than intended. This is the helpfulness/harmlessness trade-off every alig
 team measures, and why the evaluation must track both (section 11). The model also
 refuses 25% of the unseen facts, which is arguably the *right* answer: it cannot know them.
 
-Other knobs and variants, each a short change to `dpo_loss`: a larger β keeps the
+Other knobs and variants, each a short change to `dpo_loss`: a larger $\beta$ keeps the
 policy closer to the reference (smaller moves, less displacement); a lower lr or fewer
-steps; IPO (Azar et al. 2023) replaces `−log σ` with a squared loss so the margin can't
+steps; IPO (Azar et al. 2023) replaces $-\log \sigma$ with a squared loss so the margin can't
 grow forever; SimPO drops the reference and normalizes by length; KTO learns from
 single thumbs-up/down labels instead of pairs; and **on-policy** preference data
 (sample from the current model, rank, train, repeat) avoids the off-policy problem of
@@ -643,7 +645,7 @@ What the numbers say, honestly:
 
 1. **Format is easy, facts are memorized, unseen facts are guessed.** Every SFT model
    answers unseen-fact questions in the right format 88–96% of the time, with the
-   right value only 4–17% of the time (chance ≈ 17%). Fine-tuning does not create
+   right value only 4–17% of the time (chance $\approx$ 17%). Fine-tuning does not create
    knowledge; it teaches the model to *sound* like it has it. For facts, use retrieval.
 2. **Paraphrase recall is real but partial** (72.5–82.5%): the models learned
    facts as (lighthouse, attribute) → value, not just as strings, most of the time.
@@ -654,13 +656,13 @@ What the numbers say, honestly:
    side: models sometimes refuse on known lighthouses that had refusal demos (the
    paraphrase example printed at the end of the script is Gull Rock: 4 of 5 fine-tunes
    answer "The handbook does not say."), a spurious correlation from the demo data.
-4. **LoRA ≈ full fine-tuning here** at 9% of the parameters, and forgets less.
+4. **LoRA $\approx$ full fine-tuning here** at 9% of the parameters, and forgets less.
 5. **Preference tuning works on the objective long before it works on the behaviour**,
    and can destroy the behaviour while the training metrics look perfect. Always
    evaluate generations, not just the loss and the reward margin.
 
 The NumPy pipeline (`python finetuning/lora_numpy.py`, 2 layers, d_model 64, 114,304
-parameters, LoRA r = 8 = 16.1% of them, ~20 s) shows the same shape with a weaker model:
+parameters, LoRA $r = 8$ = 16.1% of them, ~20 s) shows the same shape with a weaker model:
 
 ```
                             train       paraphrase      unseen_fact     out_of_scope    unknown_place   story
@@ -718,11 +720,11 @@ vary by model and data; tune on a held-out set):
 |------|---------|-------|
 | learning rate | LoRA 1e-4–3e-4; full FT 1e-5–2e-5 | the most important knob; too high = forgetting and loss spikes |
 | epochs | 1–3 (big data), more for tiny data | watch held-out loss; over-training memorizes and forgets |
-| rank r, α | r 8–64, α = r or 2r | higher r helps hard tasks (code, math), rarely format tasks |
+| rank $r$, $\alpha$ | $r$ 8–64, $\alpha = r$ or $2r$ | higher r helps hard tasks (code, math), rarely format tasks |
 | target modules | all linear layers (q,k,v,o, gate, up, down) | q,v only is cheaper and often enough for style |
 | LoRA dropout | 0–0.1 | on the adapter input |
 | batch / seq length | as large as memory allows; pack sequences | gradient accumulation for effective batch size |
-| DPO β | ~0.1 (0.01–0.5) | larger = closer to the reference |
+| DPO $\beta$ | ~0.1 (0.01–0.5) | larger = closer to the reference |
 | DPO lr | 5–10x below the SFT lr | DPO overfits fast (section 10) |
 
 Run it yourself (never install `transformers` into this repo's `.venv`):
@@ -753,16 +755,16 @@ with a bigger model and was not run for this README.)
   fails in production often sees a slightly different string.
 - **Loss on prompt tokens**: the model learns to write questions, and short answers get
   a tiny share of the gradient. Mask them (or weight them down).
-- **Overfitting tiny data**: training loss → 0, held-out flat or worse. More epochs on
+- **Overfitting tiny data**: training loss $\to 0$, held-out flat or worse. More epochs on
   80 chats memorize strings; paraphrase and held-out splits catch it.
 - **Forgetting**: keep a slice of general data in the eval (and possibly in the training
   mix, section 8).
-- **LoRA does nothing?** Check that `B` actually changes (it starts at 0), that the
+- **LoRA does nothing?** Check that $B$ actually changes (it starts at 0), that the
   optimizer received the adapter parameters (and only them: `n_trainable` should be a
-  few %), that the adapters are not merged during training, and that `α/r` isn't tiny.
+  few %), that the adapters are not merged during training, and that $\alpha/r$ isn't tiny.
 - **Merged model differs from the adapter model**: merging in bf16/fp16 loses precision;
   merge in float32 and cast after. Ours: 2.7e-4 logit difference in float32 for SmolLM2.
-- **DPO**: watch `log π(chosen)` as well as the margin; if it falls, lower lr, raise β,
+- **DPO**: watch $\log \pi(\text{chosen})$ as well as the margin; if it falls, lower lr, raise $\beta$,
   add the NLL term, or use fewer epochs. Turn dropout off. Check that the reference
   log-probs come from the SFT model, not the base.
 - **Determinism**: fixed seeds and thread counts make our runs reproduce to the last
@@ -811,18 +813,18 @@ Answer each one out loud in under a minute:
 6. Estimate the GPU memory to fully fine-tune a 7B model with AdamW in mixed precision.
    Where does each of the 16 bytes per parameter go?
 7. Write the LoRA forward pass with shapes. How many trainable parameters does a
-   4096 x 4096 matrix get at r = 8?
-8. Why is B initialized to zero and A randomly? What if both were zero? Both random?
-9. What does α/r do? What does rsLoRA change?
-10. Derive the LoRA backward pass for A, B and x. Why is no gradient for W0 needed?
+   $4096 \times 4096$ matrix get at $r = 8$?
+8. Why is $B$ initialized to zero and $A$ randomly? What if both were zero? Both random?
+9. What does $\alpha/r$ do? What does rsLoRA change?
+10. Derive the LoRA backward pass for $A$, $B$ and $x$. Why is no gradient for $W_0$ needed?
 11. How do you merge a LoRA adapter, and what does it cost at inference before and after?
 12. Which layers do you put LoRA on, and what did the LoRA and QLoRA papers find?
 13. What does QLoRA quantize, what is NF4, and where do gradients flow?
 14. What is DoRA in one sentence?
 15. What is catastrophic forgetting, how do you measure it, and name three mitigations.
 16. Explain the RLHF pipeline: reward model loss, the KL-regularized objective, why PPO.
-17. Derive the DPO loss from the KL-regularized RLHF objective. Why does Z(x) cancel?
-18. What is the implicit reward in DPO? What does β control?
+17. Derive the DPO loss from the KL-regularized RLHF objective. Why does $Z(x)$ cancel?
+18. What is the implicit reward in DPO? What does $\beta$ control?
 19. DPO's training margin goes up but generations get worse. What is happening and how
     do you fix it?
 20. How would you get a DPO reference model without a second copy of the weights?
@@ -830,7 +832,7 @@ Answer each one out loud in under a minute:
 22. How would you evaluate a domain fine-tune? Which splits and metrics?
 23. What is the "superficial alignment hypothesis" (LIMA)?
 24. Why does LoRA "learn less and forget less"? What does the singular value spectrum of
-    a full fine-tune's ΔW look like?
+    a full fine-tune's $\Delta W$ look like?
 
 ## 16. Exercises
 
@@ -847,7 +849,7 @@ Answer each one out loud in under a minute:
    `transformers` in a separate environment, do the same with
    `finetune_open_model.py --targets q_proj,v_proj --rank 4`, and compare `--steps 60`
    with `--steps 200`: which split needs the most steps?
-5. Initialize `B` randomly (std 0.02) instead of 0 in `LoRALinear`. Evaluate the model
+5. Initialize $B$ randomly (std 0.02) instead of 0 in `LoRALinear`. Evaluate the model
    *before* training: is it still the base model? Compare the first SFT losses.
 6. Implement rsLoRA (`scale = alpha / sqrt(r)`) and re-run the rank sweep in
    `make_figures.py`. Do high ranks behave differently?
@@ -863,9 +865,9 @@ Answer each one out loud in under a minute:
 10. **Train the new tokens.** In LoRA mode, make the three reserved rows of `wte` and
     `lm_head` trainable (zero the gradient of the other rows with a hook). Does the loss
     on `<|end|>` drop? How many parameters does it add?
-11. Add IPO (`(z/β − 1/(2β))²`-style squared loss on the log-ratio difference) or SimPO to
+11. Add IPO ($\big(z/\beta - 1/(2\beta)\big)^2$-style squared loss on the log-ratio difference) or SimPO to
     `dpo_loss`, extend `gradient_check.py` to cover it, and compare with DPO + NLL.
-12. **Toy QLoRA.** Quantize `W0` of every `LoRALinear` to 4 bits (per-block absmax, block
+12. **Toy QLoRA.** Quantize $W_0$ of every `LoRALinear` to 4 bits (per-block absmax, block
     64, 16 evenly spaced or normal-quantile levels), dequantize in `forward`, and train
     the adapters on top. How much accuracy do you lose? NF4 vs uniform levels?
 

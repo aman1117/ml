@@ -8,7 +8,7 @@ You will see:
     counts, the winning pair, the new token, and the sequence shrinking,
   - the learned merge table, and how a NEW word is encoded with it (always apply the
     earliest-learned merge that is present),
-  - the real tokenizer (V = 4096, trained on ~170 KB by bpe.py) on a few sentences,
+  - the real tokenizer (V = 4096, trained on ~178 KB by bpe.py) on a few sentences,
     with coloured token boundaries: English, numbers, code, other languages, emoji.
 
 Uses tokenizer/tokenizer.json if it matches the corpus, otherwise trains it first (<1 s).

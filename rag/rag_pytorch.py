@@ -101,12 +101,14 @@ def part1_equivalence(enc32):
     model = BiEncoder(enc.config["n_buckets"], enc.config["dim"]).double()
     load_numpy_weights(model, enc)
 
-    texts = [c.text for c in get_chunks()] + [q.question for q in load_qa()]
+    chunk_texts, questions = [c.text for c in get_chunks()], [q.question for q in load_qa()]
+    texts = chunk_texts + questions
     bags = enc.bags(texts)
     e_np = enc.forward(bags)
     e_pt = model(*to_torch(bags, torch.float64)).detach().numpy()
     diff = np.abs(e_np - e_pt).max()
-    print(f"  embeddings of {len(texts)} texts (261 chunks + 63 questions): max |diff| = {diff:.1e}")
+    print(f"  embeddings of {len(texts)} texts ({len(chunk_texts)} chunks + {len(questions)} questions): "
+          f"max |diff| = {diff:.1e}")
     assert diff < 1e-12
 
     rng = np.random.default_rng(0)

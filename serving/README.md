@@ -25,7 +25,7 @@ client: you see every line.
 | `heldout.txt` | 1,392 characters of new sentences in the style of the training text, never trained on: the held-out set for quantization and speculative decoding. |
 | `batching.py` | **Static batching** (left padding + attention mask + per-sequence positions), a **paged KV cache** (blocks, block tables, free list, gather), a **continuous batching** scheduler with admission, preemption and window slides; replays a Poisson trace and measures throughput, TTFT, TPOT, p50/p95/p99 and KV memory; measures this CPU's **roofline**. |
 | `quantize_numpy.py` | int8 absmax per-tensor and per-channel, int4 group-wise with two nibbles per byte, dequantize-on-the-fly matmul; size, weight error, held-out bits/char, KL and top-1 agreement for fp32/fp16/int8/int4; the **outlier problem**; KV-cache quantization. |
-| `speculative.py` | Speculative decoding with a tiny draft GPT (and an n-gram draft): γ drafts, one target pass, the exact accept/reject rule and residual resampling; greedy equality, a chi-square test that the output distribution is the target's, acceptance rate and speed-up vs γ. |
+| `speculative.py` | Speculative decoding with a tiny draft GPT (and an n-gram draft): $\gamma$ drafts, one target pass, the exact accept/reject rule and residual resampling; greedy equality, a chi-square test that the output distribution is the target's, acceptance rate and speed-up vs $\gamma$. |
 | `server.py` | A real HTTP server (`ThreadingHTTPServer`): `POST /v1/completions` (JSON or server-sent events over chunked encoding), `GET /health`, `GET /metrics` (Prometheus text format), strict validation, bounded queue + 429, per-request timeouts, a continuous-batching engine thread, canary routing, graceful shutdown, one JSON log line per request. `--quantize int8`. |
 | `load_test.py` | An open-loop load generator with threads and fault injection (oversized and invalid requests, unseen characters, timeouts, slow uploads, disconnects, a burst, input drift, a canary rollout). `--spawn-server` runs everything in one process. |
 | `monitor.py` | Production log analysis: SLIs, SLO error budget and multi-window burn rates, a **failure-mode taxonomy**, quality by model version (z-test), **drift** (PSI, KL), alert rules, a markdown report and an **eval-case export** for `../evals/`. |
@@ -71,19 +71,24 @@ Three numbers matter, and they pull against each other.
 | Metric | Definition | Who cares |
 |---|---|---|
 | **TTFT** (time to first token) | arrival → first generated token (queueing + prefill) | a chat user staring at an empty box |
-| **TPOT** (time per output token, a.k.a. inter-token latency) | (last token time − first token time) / (n − 1) | anyone reading a stream; must beat reading speed |
-| **End-to-end latency** | arrival → last token ≈ TTFT + (n − 1) · TPOT | API callers, agents chaining calls |
+| **TPOT** (time per output token, a.k.a. inter-token latency) | $(\text{last token time} - \text{first token time}) / (n - 1)$ | anyone reading a stream; must beat reading speed |
+| **End-to-end latency** | arrival → last token $\approx \text{TTFT} + (n - 1) \cdot \text{TPOT}$ | API callers, agents chaining calls |
 | **Throughput** | generated tokens per second across all users | whoever pays for the GPUs |
 | **Goodput** | throughput of requests that *met* their latency SLO | the honest version of throughput |
 
-**Cost** follows from throughput: dollars per million tokens = GPU $/hour ÷ (tokens/s ×
-3,600) × 10⁶. At an assumed $2 per GPU-hour, a GPU that decodes 140 tokens/s (one user
-at a time, see section 2) costs $3.97 per million tokens; batching it up to 2,500 tokens/s
-brings that to $0.22. Most of this folder is about getting from the first number to the
+**Cost** follows from throughput:
+
+```math
+\text{dollars per million tokens} = \frac{\text{GPU \$/hour}}{\text{tokens/s} \times 3{,}600} \times 10^{6}
+```
+
+At an assumed \$2 per GPU-hour, a GPU that decodes 140 tokens/s (one user
+at a time, see section 2) costs \$3.97 per million tokens; batching it up to 2,500 tokens/s
+brings that to \$0.22. Most of this folder is about getting from the first number to the
 second without wrecking latency.
 
 The model we serve is the mini-GPT from `../transformer/`: 107,776 parameters, two
-layers, `d_model = 64`, a 32-character context window, a 44-character vocabulary,
+layers, $d_{\text{model}} = 64$, a 32-character context window, a 44-character vocabulary,
 trained on a 3.9 KB story. Its version string is a hash of its weights,
 `gpt-5e812e7b`; every log line carries it. (If `transformer/model.npz` is missing,
 `common.get_model()` trains the same model with the same seed in ~9 s and caches it as
@@ -103,20 +108,21 @@ then 51 tokens at 0.28 ms each, 16 ms in total. Decode dominates.
 
 ## 2. Inference math: 2N FLOPs, the KV cache, memory bandwidth
 
-**FLOPs.** A forward pass costs about `2N` FLOPs per token (one multiply and one add per
-weight, `../transformer/` section 11), plus attention's `4 · L · t · d` for a context of
-`t` tokens. Our model: `2 × 107,776 ≈ 0.22` MFLOP per token. A 7B model: 14 GFLOP per
+**FLOPs.** A forward pass costs about $2N$ FLOPs per token (one multiply and one add per
+weight, `../transformer/` section 11), plus attention's $4 \cdot L \cdot t \cdot d$ for a context of
+$t$ tokens. Our model: $2 \times 107{,}776 \approx 0.22$ MFLOP per token. A 7B model: 14 GFLOP per
 token.
 
-**The KV cache.** Generating token `t+1` needs the keys and values of all `t` earlier
+**The KV cache.** Generating token $t+1$ needs the keys and values of all $t$ earlier
 tokens in every layer, so the server keeps them:
 
-```
-KV bytes = 2 (K and V) · n_layer · n_kv_heads · d_head · tokens · bytes_per_number
-
-ours (fp32):        2 · 2 · 4 · 16 · 4 B   = 1,024 B per token  (32 KB for a full window)
-LLaMA-2-7B (fp16):  2 · 32 · 32 · 128 · 2 B = 0.5 MiB per token  (2 GiB for 4,096 tokens)
-LLaMA-2-70B, GQA:   2 · 80 · 8 · 128 · 2 B  = 0.31 MiB per token (MHA would be 2.5 MiB)
+```math
+\begin{aligned}
+\text{KV bytes} &= 2\;(\text{K and V}) \cdot n_{\text{layer}} \cdot n_{\text{kv-heads}} \cdot d_{\text{head}} \cdot \text{tokens} \cdot \text{bytes per number} \\[4pt]
+\text{ours (fp32):} \quad 2 \cdot 2 \cdot 4 \cdot 16 \cdot 4\text{ B} &= 1{,}024\text{ B per token} && \text{(32 KB for a full window)} \\
+\text{LLaMA-2-7B (fp16):} \quad 2 \cdot 32 \cdot 32 \cdot 128 \cdot 2\text{ B} &= 0.5\text{ MiB per token} && \text{(2 GiB for 4,096 tokens)} \\
+\text{LLaMA-2-70B, GQA:} \quad 2 \cdot 80 \cdot 8 \cdot 128 \cdot 2\text{ B} &= 0.31\text{ MiB per token} && \text{(MHA would be 2.5 MiB)}
+\end{aligned}
 ```
 
 For a big batch of long conversations the KV cache, not the weights, fills the GPU. That
@@ -130,17 +136,20 @@ step takes at least 7 ms, i.e. at most ~140 tokens/s for a single user, while th
 tensor cores (312 TFLOP/s) sit at about 0.6% utilization (14 GFLOP in 7 ms = 2 TFLOP/s).
 The fix is to make one read of the weights serve many tokens: batching.
 
-**Arithmetic intensity** is FLOPs per byte moved. For one weight matrix `W (d × d)` in
-fp16 applied to `b` token vectors `x (b × d)`:
+**Arithmetic intensity** is FLOPs per byte moved. For one weight matrix $W$ ($d \times d$) in
+fp16 applied to $b$ token vectors $x$ ($b \times d$):
 
-```
-FLOPs = 2 · b · d²        bytes ≈ 2 · d² (read W) + 4 · b · d (read x, write y)
-intensity ≈ 2bd² / 2d² = b          (for b ≪ d)
+```math
+\begin{aligned}
+\text{FLOPs} &= 2 \cdot b \cdot d^2 \\
+\text{bytes} &\approx \underbrace{2 \cdot d^2}_{\text{read } W} + \underbrace{4 \cdot b \cdot d}_{\text{read } x\text{, write } y} \\
+\text{intensity} &\approx \frac{2bd^2}{2d^2} = b && (\text{for } b \ll d)
+\end{aligned}
 ```
 
-A machine with peak `P` FLOP/s and bandwidth `B` bytes/s is **memory-bound** below the
-*ridge point* `P / B` and **compute-bound** above it (the roofline model, Williams et al.
-2009). For an A100, `312e12 / 2e12 = 156`: decode steps with fewer than ~156 tokens in
+A machine with peak $P$ FLOP/s and bandwidth $B$ bytes/s is **memory-bound** below the
+*ridge point* $P / B$ and **compute-bound** above it (the roofline model, Williams et al.
+2009). For an A100, $312 \times 10^{12} / (2 \times 10^{12}) = 156$: decode steps with fewer than ~156 tokens in
 the batch are memory-bound, and adding sequences to the batch is nearly free.
 
 ![Roofline](images/roofline.png)
@@ -149,11 +158,11 @@ the batch are memory-bound, and adding sequences to the batch is nearly free.
 at batch 1 has intensity ~1 and reaches ~2 TFLOP/s; batch 64 reaches ~128; a 2,048-token
 prefill sits on the flat compute roof. Right, *measured* on this CPU by `batching.py`
 (`y = x @ W` with a 64 MB fp32 matrix): in the run quoted here, copy bandwidth
-127 GB/s, best matmul 1,787 GFLOP/s, ridge ≈ 14 FLOPs/byte. From `b = 2` to `b = 64`
-rows the matmul takes 3.2–3.7 ms *whatever b is*: 32× more work for the same time, the
-signature of a memory-bound kernel. (Honest caveat: `b = 1` takes only 0.34 ms because
-Accelerate switches to a dedicated matrix-vector routine; the general small-`b` matrix
-multiply is far below the roof. GPU libraries ship special small-batch "GEMV / split-K"
+127 GB/s, best matmul 1,787 GFLOP/s, ridge $\approx 14$ FLOPs/byte. From $b = 2$ to $b = 64$
+rows the matmul takes 3.2–3.7 ms *whatever* $b$ *is*: 32× more work for the same time, the
+signature of a memory-bound kernel. (Honest caveat: $b = 1$ takes only 0.34 ms because
+Accelerate switches to a dedicated matrix-vector routine; the general matrix
+multiply at small $b$ is far below the roof. GPU libraries ship special small-batch "GEMV / split-K"
 kernels for decode for exactly this reason.)
 
 ## 3. Prefill vs decode, TTFT and TPOT
@@ -188,12 +197,12 @@ Two consequences shape every serving system:
 
 - **TTFT and TPOT fight.** A long prefill admitted into the running batch stalls every
   decoding user for one step (a TPOT spike). *Chunked prefill* (section 8) splits it.
-- **Latency = TTFT + (n − 1) · TPOT**, and for typical chat lengths the decode part
-  dominates (51 tokens × 0.28 ms vs 1 ms TTFT in our load test).
+- **$\text{Latency} = \text{TTFT} + (n - 1) \cdot \text{TPOT}$**, and for typical chat lengths the decode part
+  dominates ($51 \times 0.28\text{ ms}$ vs $1\text{ ms}$ TTFT in our load test).
 
 ## 4. Batching: static, dynamic, continuous
 
-**Static batching** runs B requests through the model together. Prompts have different
+**Static batching** runs $B$ requests through the model together. Prompts have different
 lengths, so they are padded to a rectangle, and three things must be right or the
 batched answer silently differs from the single one:
 
@@ -229,7 +238,7 @@ Finished rows keep burning compute, and new arrivals wait for the whole batch.
 **Continuous batching** (iteration-level scheduling, Orca, Yu et al. 2022) re-forms the
 batch at *every* decode step: finished requests leave, waiting ones join immediately.
 The trick that makes it work is Orca's *selective batching*: every Linear, LayerNorm and
-MLP sees all the new tokens of all requests as one `(B, C)` matrix (the weights are read
+MLP sees all the new tokens of all requests as one $(B, C)$ matrix (the weights are read
 once), and only attention is per sequence, because each has its own cache length.
 
 ```python
@@ -340,25 +349,30 @@ pieces and the block tables grow. vLLM defaults to 16 tokens.
 
 Decode is memory-bound, so **bytes per weight is speed**. Store weights in 8 or 4 bits
 instead of 32 (or 16), dequantize inside the matmul, and each step moves 4–8× fewer
-bytes. Our `Linear` stores `W` as `(n_in, n_out)`; an output channel is a column.
+bytes. Our `Linear` stores $W$ as $(n_{\text{in}}, n_{\text{out}})$; an output channel is a column.
+
+```math
+\begin{aligned}
+&\text{int8 absmax per tensor:} && s = \frac{\max \lvert W \rvert}{127}, \quad q = \operatorname{round}(W / s) \in [-127, 127] \\
+&\text{int8 absmax per channel:} && s_j = \frac{\max_i \lvert W_{ij} \rvert}{127} \quad \text{(one scale per output column)} \\
+&\text{int4 group-wise:} && \text{each group of } g \text{ consecutive inputs of a column } (g = 32 \text{ or } 64)\text{:} \\
+& && s = \frac{\max \lvert W_{\text{group}} \rvert}{7}, \quad q \in [-8, 7], \quad \text{two values per byte} \\
+&\text{dequantize:} && \hat{W} = q \cdot s, \quad \lvert W - \hat{W} \rvert \le s / 2 \text{ elementwise (rounding)} \\
+&\text{on-the-fly matmul:} && y_j = s_j \cdot \sum_i x_i q_{ij} \quad \text{(the scale leaves the sum)}
+\end{aligned}
+```
 
 ```
-int8 absmax per tensor:   s = max|W| / 127                q = round(W / s) ∈ [-127, 127]
-int8 absmax per channel:  s_j = max_i |W_ij| / 127        (one scale per output column)
-int4 group-wise:          each group of g consecutive inputs of a column (g = 32 or 64):
-                          s = max|W_group| / 7,  q ∈ [-8, 7],  two values per byte
-dequantize:               Ŵ = q · s,   |W − Ŵ| <= s / 2 elementwise (rounding)
-on-the-fly matmul:        y_j = s_j · Σ_i x_i q_ij        (the scale leaves the sum)
 int4 packing:             byte = (q[2i] & 0xF) | (q[2i+1] << 4); unpack, then sign-extend
                           with (n ^ 8) - 8:   [-8, 7, -1, 0, 3, -5] -> 0x78 0x0f 0xb3
 ```
 
-The `s / 2` bound and the exact pack/unpack round-trip (all 256 nibble pairs) are checked
+The $s / 2$ bound and the exact pack/unpack round-trip (all 256 nibble pairs) are checked
 in `serving_check.py`. `QLinear` is a drop-in replacement for the model's `Linear`; we
 quantize every Linear (95% of the parameters) and keep embeddings, LayerNorms and biases
 in fp32. Measured by `quantize_numpy.py`:
 
-| variant | size | × smaller | mean \|ΔW\| | held-out bits/char | loss on train text | top-1 = fp32 | KL vs fp32 |
+| variant | size | × smaller | mean $\lvert \Delta W \rvert$ | held-out bits/char | loss on train text | top-1 = fp32 | KL vs fp32 |
 |---|---|---|---|---|---|---|---|
 | fp32 | 431,104 B | 1.00 | 0 | 4.0838 | 0.2355 | 100.0% | 0 |
 | fp16 | 228,864 B | 1.88 | 0.000009 | 4.0838 | 0.2355 | 100.0% | 0.00000 |
@@ -382,8 +396,8 @@ the cost of more scales (89,824 vs 81,968 bytes).
 **The outlier problem.** LLM activations have a few feature dimensions with values 20–100×
 larger than the rest (Dettmers et al. 2022), and weights have outliers too. A single big
 value sets the absmax scale for everything that shares it. `quantize_numpy.py` makes
-one: it scales output column 5 of `W_v` in layer 0 by 50 and divides row 5 of `W_o` by
-50, so the model computes *exactly the same function* (attention is linear in `v`), but
+one: it scales output column 5 of $W_v$ in layer 0 by 50 and divides row 5 of $W_o$ by
+50, so the model computes *exactly the same function* (attention is linear in $v$), but
 `c_attn` now has an outlier column.
 
 | scheme | other weights of the matrix rounded to 0 | their mean relative error | top-1 = fp32 (without → with outlier) |
@@ -395,12 +409,12 @@ one: it scales output column 5 of `W_v` in layer 0 by 50 and divides row 5 of `W
 Per-tensor int8 collapses because the scale is now 50× too coarse for every other
 weight; per-channel and group scales are local, so only the outlier's own column or
 group pays. (The small drop of per-channel int8 is the *activation* side: the scaled-up
-`v_5` makes the next layer's rounding error in row 5 count 50× more.) The real methods:
+$v_5$ makes the next layer's rounding error in row 5 count 50× more.) The real methods:
 
 - **LLM.int8()** (Dettmers et al. 2022): int8 per-row/column, but the few outlier
   feature dimensions are computed in fp16 (mixed-precision decomposition).
-- **SmoothQuant** (Xiao et al. 2022): divide activation outlier channels by `s` and
-  multiply the matching weight rows by `s` (our transform, used on purpose) to make both
+- **SmoothQuant** (Xiao et al. 2022): divide activation outlier channels by $s$ and
+  multiply the matching weight rows by $s$ (our transform, used on purpose) to make both
   easy to quantize to int8 (W8A8).
 - **GPTQ** (Frantar et al. 2022): quantize weights one column at a time and update the
   remaining columns to compensate the error, using second-order (Hessian) information
@@ -434,55 +448,56 @@ changed, because 40% of the matrix's other weights round to zero.
 
 ## 7. Speculative decoding
 
-Decode is memory-bound: scoring γ+1 tokens in one forward pass costs about the same as
+Decode is memory-bound: scoring $\gamma + 1$ tokens in one forward pass costs about the same as
 scoring one (our target: one step 0.117 ms, a pass over 5 tokens 0.147 ms, 1.25×). So let
-a small, cheap **draft** model guess γ tokens, and let the big **target** model check all
+a small, cheap **draft** model guess $\gamma$ tokens, and let the big **target** model check all
 of them in one pass (Leviathan et al. 2023; Chen et al. 2023):
 
-```
-1. draft:   x_1..x_γ  with  x_i ~ q_i = q(· | context, x_<i)            γ cheap steps
-2. target:  ONE forward over [last token, x_1..x_γ]  ->  p_1..p_{γ+1}     one pass
-3. for i = 1..γ:
-       accept x_i with probability min(1, p_i(x_i) / q_i(x_i))
-       on the first rejection: sample from the residual  norm(max(0, p_i − q_i))  and stop
-   if all γ accepted: sample a bonus token from p_{γ+1}
-4. roll both KV caches back to the accepted tokens
+```math
+\begin{aligned}
+&1.\ \text{draft:} && x_1, \dots, x_\gamma \text{ with } x_i \sim q_i = q(\cdot \mid \text{context}, x_{<i}) && \gamma \text{ cheap steps} \\
+&2.\ \text{target:} && \text{ONE forward over } [\text{last token}, x_1, \dots, x_\gamma] \to p_1, \dots, p_{\gamma+1} && \text{one pass} \\
+&3.\ \text{for } i = 1, \dots, \gamma\text{:} && \text{accept } x_i \text{ with probability } \min\left(1, \frac{p_i(x_i)}{q_i(x_i)}\right) \\
+& && \text{on the first rejection: sample from the residual } \operatorname{norm}\big(\max(0, p_i - q_i)\big) \text{ and stop} \\
+& && \text{if all } \gamma \text{ accepted: sample a bonus token from } p_{\gamma+1} \\
+&4. && \text{roll both KV caches back to the accepted tokens}
+\end{aligned}
 ```
 
 **Why the output is distributed exactly as the target's.** For one position,
-`P(output = x) = q(x) · min(1, p(x)/q(x)) + P(reject) · residual(x)`. The first term is
-`min(p(x), q(x))`. The rejection probability is `1 − Σ_y min(p(y), q(y))`, and the
-residual is `(p(x) − min(p(x), q(x))) / (1 − Σ_y min(p(y), q(y)))`, so the second term
-is `p(x) − min(p(x), q(x))`. They add up to `p(x)`. Each accepted token is therefore a
+$P(\text{output} = x) = q(x) \cdot \min\big(1, p(x)/q(x)\big) + P(\text{reject}) \cdot \operatorname{residual}(x)$. The first term is
+$\min(p(x), q(x))$. The rejection probability is $1 - \sum_y \min(p(y), q(y))$, and the
+residual is $\big(p(x) - \min(p(x), q(x))\big) / \big(1 - \sum_y \min(p(y), q(y))\big)$, so the second term
+is $p(x) - \min(p(x), q(x))$. They add up to $p(x)$. Each accepted token is therefore a
 genuine sample from the target, whatever the draft is; a bad draft only lowers the
-acceptance rate `α = Σ min(p, q) = 1 − TV(p, q)`. If tokens were accepted independently
-with probability α, each target pass would yield `(1 − α^{γ+1}) / (1 − α)` tokens.
+acceptance rate $\alpha = \sum \min(p, q) = 1 - \operatorname{TV}(p, q)$. If tokens were accepted independently
+with probability $\alpha$, each target pass would yield $(1 - \alpha^{\gamma+1}) / (1 - \alpha)$ tokens.
 
-Our model's window adds one rule: never draft across a window slide (`γ_eff = min(γ,
-room left)`), so the target computes exactly the conditionals `generate.py` would.
+Our model's window adds one rule: never draft across a window slide ($\gamma_{\text{eff}} = \min(\gamma, \text{room left}){}$),
+so the target computes exactly the conditionals `generate.py` would.
 `speculative.py` measures:
 
-- **The rule**, vectorized (V = 10, random p and q, 200,000 draws): accept rate 0.5134
-  vs theory Σ min(p, q) = 0.5139; output vs p: TV 0.0038, chi² 21.5 < 28.1 (the p = 0.001
-  critical value, 9 degrees of freedom). A *naive* rule (keep the draft if p(x) ≥ q(x),
-  else resample from p) gives TV 0.1269, chi² 17,454: biased.
+- **The rule**, vectorized ($V = 10$, random $p$ and $q$, 200,000 draws): accept rate 0.5134
+  vs theory $\sum \min(p, q) = 0.5139$; output vs $p$: TV 0.0038, $\chi^2 = 21.5 < 28.1$ (the $p = 0.001$
+  critical value, 9 degrees of freedom). A *naive* rule (keep the draft if $p(x) \ge q(x)$,
+  else resample from $p$) gives TV 0.1269, $\chi^2 = 17{,}454$: biased.
 - **Greedy** speculative decoding == greedy target decoding, token for token, for 300
   tokens in float64.
 - **The distribution, end to end:** 20,000 runs of 3 characters after `"The "` at
-  temperature 1 with γ = 3, vs the target's exact marginals (computed by enumerating all
-  44 and 44² prefixes): TV 0.0097 / 0.0084 / 0.0096, chi² 22.0 / 25.8 / 32.9 against
+  temperature 1 with $\gamma = 3$, vs the target's exact marginals (computed by enumerating all
+  44 and $44^2$ prefixes): TV 0.0097 / 0.0084 / 0.0096, $\chi^2$ 22.0 / 25.8 / 32.9 against
   critical values 52.7 / 42.4 / 49.8. 28,326 of 46,753 drafted tokens were accepted.
 
-| draft | cost per step | γ | α | tokens per target pass | speed-up (temperature 0.8) |
+| draft | cost per step | $\gamma$ | $\alpha$ | tokens per target pass | speed-up (temperature 0.8) |
 |---|---|---|---|---|---|
-| GPT, 1 layer, d = 32 (16,608 params, ~2 s to train) | 0.060 ms (0.51× target) | 1 | 0.783 | 1.58 | 0.85× |
+| GPT, 1 layer, $d = 32$ (16,608 params, ~2 s to train) | 0.060 ms (0.51× target) | 1 | 0.783 | 1.58 | 0.85× |
 | | | 3 | 0.604 | 2.29 | 0.83× |
 | | | 8 | 0.333 | 2.61 | 0.57× |
 | 6-gram counts of the training text | 0.002 ms (0.02×) | 1 | 0.838 | 1.63 | 1.24× |
 | | | 4 | 0.629 | 2.68 | 1.68× |
 | | | 6 | 0.577 | 3.12 | 1.78× |
 
-With greedy decoding the n-gram draft reaches 2.15× at γ = 8 (α = 0.650, 3.93 tokens per
+With greedy decoding the n-gram draft reaches 2.15× at $\gamma = 8$ ($\alpha = 0.650$, 3.93 tokens per
 pass). **Honest caveat:** the GPT draft accepts plenty of tokens but *loses* time,
 because in NumPy a 1-layer model still costs half a 2-layer one (Python overhead per
 layer dominates our tiny models). Speculative decoding pays when the draft is much
@@ -494,9 +509,9 @@ n-grams of the prompt). Other draft designs: extra decoding heads on the target 
 
 ![Speculative decoding](images/speculative.png)
 
-**What to look at:** α falls as γ grows (later drafts depend on earlier guesses), while
+**What to look at:** $\alpha$ falls as $\gamma$ grows (later drafts depend on earlier guesses), while
 tokens per target pass keep rising; the measured tokens per pass even *beat* the
-independent-acceptance formula (dotted) at large γ, because acceptances are correlated:
+independent-acceptance formula (dotted) at large $\gamma$, because acceptances are correlated:
 in passages the model knows by heart whole drafts are accepted, at hard spots the first
 token is rejected. Third panel: speed-up needs a cheap draft. Right: the 2nd generated
 character after `"The "`, exact target distribution vs 5,000 speculative samples: the
@@ -519,7 +534,7 @@ Each of these is a paragraph here and a big engineering project in a real server
   memory-bound, the prefill chunk fills the compute). A related idea, *disaggregated*
   serving (e.g. DistServe, Zhong et al. 2024), runs prefill and decode on different GPUs.
 - **FlashAttention / FlashDecoding.** FlashAttention (Dao et al. 2022) computes exact
-  attention in on-chip tiles without writing the `T × T` matrix; it accelerates prefill.
+  attention in on-chip tiles without writing the $T \times T$ matrix; it accelerates prefill.
   At decode time there is one query per sequence, so the parallelism must come from the
   *keys*: Flash-Decoding (Dao et al. 2023) splits a long KV cache into chunks processed in
   parallel and combines them with a log-sum-exp reduction. PagedAttention kernels do the
@@ -573,14 +588,14 @@ $ curl -s localhost:8000/v1/completions -d '{"prompt": "The keeper", "max_tokens
 
 | field | rule | error type (400) |
 |---|---|---|
-| `prompt` | non-empty string, ≤ 512 chars | `invalid_prompt`, `prompt_too_long` |
-| `max_tokens` | integer in [1, 256] (not a bool), default 64 | `invalid_max_tokens` |
-| `temperature` | number in [0, 2] (0 = greedy; NaN rejected), default 0.8 | `invalid_temperature` |
-| `top_k` | null or integer in [1, 44] | `invalid_top_k` |
+| `prompt` | non-empty string, $\le 512$ chars | `invalid_prompt`, `prompt_too_long` |
+| `max_tokens` | integer in $[1, 256]$ (not a bool), default 64 | `invalid_max_tokens` |
+| `temperature` | number in $[0, 2]$ (0 = greedy; NaN rejected), default 0.8 | `invalid_temperature` |
+| `top_k` | null or integer in $[1, 44]$ | `invalid_top_k` |
 | `seed` | null or non-negative integer (reproducible sampling) | `invalid_seed` |
-| `stop` | null, a string or ≤ 4 strings of 1–16 chars; not returned in the text | `invalid_stop` |
+| `stop` | null, a string or $\le 4$ strings of 1–16 chars; not returned in the text | `invalid_stop` |
 | `stream` | boolean | `invalid_stream` |
-| `timeout_s` | number in (0, 60], default 10 | `invalid_timeout` |
+| `timeout_s` | number in $(0, 60]$, default 10 | `invalid_timeout` |
 | anything else | rejected: a typo like `max_token` fails loudly instead of being ignored | `unknown_field` |
 
 Other statuses: 404 (unknown path), 408 `slow_client` (body not received within the read
@@ -696,12 +711,12 @@ server's own `/metrics` agree: 200: 809, 400: 52, 408: 9, 429: 70, 499: 16, 504:
 server can see).
 
 **Capacity planning** starts from Little's law (Little 1961): the average number of
-requests in the system = arrival rate × average time in the system, `L = λ W`. At 37 req/s
+requests in the system = arrival rate × average time in the system, $L = \lambda W$. At 37 req/s
 and the median 17 ms, ~0.6 requests are in flight: the server is mostly idle, which is
 why the median is good. The burst pushed the queue depth past 60 (section 15's
 dashboard) and the p95/p99 up to ~0.5–0.7 s. To size a deployment: measure the saturated
 throughput at the batch size whose TPOT meets the SLO (section 4), divide the peak
-expected tokens/s by it, add headroom for bursts and a failed replica (N + 1), and verify
+expected tokens/s by it, add headroom for bursts and a failed replica ($N + 1$), and verify
 with a load test at the target rate. Honest caveat: through HTTP, threads and the GIL our
 server peaks at ~8k tokens/s during the burst (dashboard), while the in-process engine
 does 20k at batch 16 (section 4); the HTTP layer is not free.
@@ -748,13 +763,15 @@ consented data into eval sets.
 An **SLI** is a measured ratio of good events; an **SLO** is the target for it over a
 window; the **error budget** is what the SLO allows to fail (Google SRE book, ch. 4).
 
-```
-availability SLI = good requests / valid requests
-                   good  = 200 with no error
-                   valid = everything except the client's own faults (400, 408, 411, 413, 499)
-                   (429, 5xx and timeouts count against us)
-SLO: 99%          ->  error budget = 1% of valid requests
-burn rate         =  observed error rate / (1 − SLO)      (1 = spend exactly the budget)
+```math
+\begin{aligned}
+\text{availability SLI} &= \frac{\text{good requests}}{\text{valid requests}} \\
+\text{good} &= 200 \text{ with no error} \\
+\text{valid} &= \text{everything except the client's own faults (400, 408, 411, 413, 499)} \\
+&\phantom{=} \text{(429, 5xx and timeouts count against us)} \\
+\text{SLO: } 99\% &\to \text{error budget} = 1\% \text{ of valid requests} \\
+\text{burn rate} &= \frac{\text{observed error rate}}{1 - \text{SLO}} && (1 = \text{spend exactly the budget})
+\end{aligned}
 ```
 
 `monitor.py` on the load-test log: availability **90.39%** (809 good / 895 valid), i.e.
@@ -781,15 +798,15 @@ first-seen time and examples:
 | client_disconnect | 499 | 16 (1.6%) | 0.1 s | users giving up: check latency at that moment |
 | server_error_5xx | 500/503 | 0 | – | page someone |
 | empty_output | 200 but empty/whitespace text | 16 (1.6%) | 0.4 s | here: `stop: " "` matching the very first token |
-| degenerate_repetition | ≥ 20 tokens and (repeating suffix or `rep4` ≥ 0.35) | 9 (0.9%) | 1.2 s | roll back the model, repetition penalty, eval set |
+| degenerate_repetition | $\ge 20$ tokens and (repeating suffix or `rep4` $\ge 0.35$) | 9 (0.9%) | 1.2 s | roll back the model, repetition penalty, eval set |
 | max_token_truncation | a stop string was requested but `max_tokens` hit first | 58 (6.0%) | 1.4 s | raise the default, document it |
 | unknown_chars | characters dropped by the tokenizer | 192 (19.8%) | 2.6 s | byte-level tokenizer ([`../tokenizer/`](../tokenizer/)) |
 | context_truncation | prompt longer than the context | 314 (32.3%) | 0.1 s | longer context ([`../llama/`](../llama/) RoPE), chunking |
-| latency_outlier | latency per output token > median + 4 robust SDs (≥ 10 tokens) | 79 (8.1%) | 9.0 s | the burst (queueing); find what else coincides |
+| latency_outlier | latency per output token $> \text{median} + 4$ robust SDs ($\ge 10$ tokens) | 79 (8.1%) | 9.0 s | the burst (queueing); find what else coincides |
 
 The canary is the most instructive one. **By model version:**
 
-| version | requests | degenerate | rate | z vs the rest | p |
+| version | requests | degenerate | rate | $z$ vs the rest | $p$ |
 |---|---|---|---|---|---|
 | gpt-5e812e7b (stable) | 783 | 2 of 623 ok | 0.3% | −3.9 | 9e-05 |
 | gpt-8e7304a8 (canary, from 8.1 s) | 189 | 7 of 186 ok | 3.8% | +3.9 | 9e-05 |
@@ -798,7 +815,7 @@ The 6× smaller canary falls into loops under greedy decoding (real log lines:
 `'ten steps, ten steps, ten steps, ten steps, ten steps, ten steps, ten '`, rep4 0.73,
 loop period 11). Its *latency* is fine (p95 327 vs 568 ms: it is smaller); a latency-only
 dashboard would have promoted it. A two-proportion z-test on the degenerate rate flags
-it at p = 9·10⁻⁵ with only 186 requests. Honest caveat: both stable "degenerate" outputs
+it at $p = 9 \cdot 10^{-5}$ with only 186 requests. Honest caveat: both stable "degenerate" outputs
 are false positives of the 4-gram heuristic on genuinely repetitive training text
 (`'e wind was cold. The wind was warm. The sea was grey. The sea w'`, rep4 0.35).
 Heuristic quality signals need a threshold calibrated on the stable version and a
@@ -816,20 +833,22 @@ never show up as errors at all: every one of those requests returned 200.
 
 Models are evaluated on one input distribution and then served on whatever arrives.
 **Drift** monitoring compares a reference window of inputs with recent windows. For a
-feature binned into `k` bins with proportions `r` (reference) and `c` (current):
+feature binned into $k$ bins with proportions $r$ (reference) and $c$ (current):
 
+```math
+\text{PSI} = \sum_i (c_i - r_i) \cdot \ln \frac{c_i}{r_i} = \operatorname{KL}(c \,\Vert\, r) + \operatorname{KL}(r \,\Vert\, c)
 ```
-PSI = Σ_i (c_i − r_i) · ln(c_i / r_i)   = KL(c‖r) + KL(r‖c)   (checked in serving_check.py)
-rule of thumb: < 0.1 stable, 0.1–0.25 moderate shift, > 0.25 major shift
-bins: reference deciles for numeric features (each bin holds 10% of the reference);
-      one bin per character (+ one for "never seen in the reference") for text
-```
+
+- The identity is checked in `serving_check.py`.
+- Rule of thumb: $< 0.1$ stable, 0.1–0.25 moderate shift, $> 0.25$ major shift.
+- Bins: reference deciles for numeric features (each bin holds 10% of the reference);
+  one bin per character (+ one for "never seen in the reference") for text.
 
 `monitor.py` uses the first 30% of the log as the reference and compares prompt length,
 the character histogram and character classes:
 
 - prompt length: mean 42 → 102 characters, **PSI 0.85**;
-- characters: **PSI 5.00**, KL(current ‖ reference) 3.63; character classes PSI 3.30.
+- characters: **PSI 5.00**, $\operatorname{KL}(\text{current} \Vert \text{reference})$ 3.63; character classes PSI 3.30.
 
 ![Drift](images/drift_psi.png)
 
@@ -917,8 +936,8 @@ The loop, which [`../evals/`](../evals/) implements on the offline side:
 gives it a KV-cache decode loop (prefill with `F.scaled_dot_product_attention(is_causal=True)`,
 then one-token steps that `torch.cat` onto the cache):
 
-- prefill 1 token + 31 decode steps vs one full forward, float64: max |logit diff|
-  **1.6·10⁻¹⁴**; greedy generation of 120 tokens (3 window slides) is identical to NumPy's
+- prefill 1 token + 31 decode steps vs one full forward, float64: max $\lvert \text{logit diff} \rvert$
+  **$1.6 \cdot 10^{-14}$**; greedy generation of 120 tokens (3 window slides) is identical to NumPy's
   `generate.py` for both test prompts.
 - **Quantization on the trained model** (held-out text):
 
@@ -933,7 +952,7 @@ then one-token steps that `torch.cat` onto the cache):
   `quantize_dynamic` stores int8 weights per tensor *and* quantizes the activations to
   int8 on the fly for every matmul (W8A8), so it errs more than our weight-only int8.
 - **Speed**, one decode step at batch 1 with 64 cached tokens, a random 53M-parameter GPT
-  (d = 1024, 4 layers, 211 MB in fp32): torch fp32 2.91 ms, int8 dynamic 3.43 ms, bf16
+  ($d = 1024$, 4 layers, 211 MB in fp32): torch fp32 2.91 ms, int8 dynamic 3.43 ms, bf16
   1.79 ms, NumPy fp32 1.77 ms, NumPy int8 (dequantize then matmul) 13.98 ms. bf16 halves
   the bytes and is 1.6× faster; int8 is slower on this ARM CPU (qnnpack re-quantizes
   activations every step). `torch.compile` of the decode step worked here (1.4 s to
@@ -956,7 +975,7 @@ then one-token steps that `torch.cat` onto the cache):
 | Outlier column, int8 per-tensor | top-1 agreement 99.3% → 85.6%; per-channel 98.6% |
 | Speculative decoding | exact distribution (chi-square passes, naive rule fails); 1.78× with an n-gram draft at temperature 0.8, 0.85× with a GPT draft |
 | Load test | 972 requests, 809 OK, availability 90.4% (9.6× the 99% budget), every failure classified |
-| Monitoring | canary regression found at p = 9·10⁻⁵; drift PSI 0.85 (length) / 5.00 (characters); 7 alerts firing for the right reasons |
+| Monitoring | canary regression found at $p = 9 \cdot 10^{-5}$; drift PSI 0.85 (length) / 5.00 (characters); 7 alerts firing for the right reasons |
 
 **Honest caveats.** Everything runs on a laptop CPU with a 108k-parameter model, so
 absolute numbers are toys: per-step costs are dominated by Python overhead, not memory
@@ -986,10 +1005,10 @@ tests are deterministic.
   template. Compare versions with a statistical test, not by eye.
 - **Quantization**: compare against the same model in fp16 on agreement/KL and task evals,
   not just perplexity (our int4 *improved* held-out perplexity). Look for outliers
-  (`max|W| / mean|W|` per tensor) before choosing per-tensor scales.
+  ($\max \lvert W \rvert / \operatorname{mean} \lvert W \rvert$ per tensor) before choosing per-tensor scales.
 - **Speculative decoding**: test greedy equality first (any mismatch is a cache rollback
   or position bug), then the distribution with a chi-square test. Measure the draft's cost
-  ratio before tuning γ.
+  ratio before tuning $\gamma$.
 - **Don't trust a single heuristic quality signal**: calibrate thresholds on the stable
   version (our 4-gram detector flags the training text's own repetitions).
 - **Logs must be parseable by a dumb tool**: one JSON object per line, stable field
@@ -1050,7 +1069,7 @@ Answer each one out loud in under a minute:
 12. Why can a quantized model be *slower* than fp32? When does quantization give speed?
 13. Write the speculative-decoding accept/reject rule and prove the output distribution
     equals the target's. What is the expected number of tokens per target pass?
-14. When does speculative decoding not help? What determines the best γ?
+14. When does speculative decoding not help? What determines the best $\gamma$?
 15. Design the API of an LLM completion endpoint: validation, errors, streaming,
     idempotency, timeouts. Why reject unknown fields?
 16. What is backpressure and why is a bounded queue + 429 better than an unbounded queue?
@@ -1076,8 +1095,8 @@ Answer each one out loud in under a minute:
    check. Then try counting positions from column 0 instead of from each row's first token.
 2. Break the residual in `speculative.accept_reject` (resample from `ps[i]` instead of
    `max(ps[i] - qs[i], 0)`) and watch the distribution check fail (TV jumps from ~0.02 to
-   ~0.16). Then change the int4 scale from `/ 7` to `/ 8` and watch the `s/2` bound fail.
-3. Add **top-p** to the server: validation (`top_p` in (0, 1]), sampling in the batcher,
+   ~0.16). Then change the int4 scale from `/ 7` to `/ 8` and watch the $s/2$ bound fail.
+3. Add **top-p** to the server: validation (`top_p` in $(0, 1]$), sampling in the batcher,
    and a check that batched == unbatched with top-p.
 4. Implement **swap** preemption: copy a preempted request's blocks to a CPU-side store
    and back, instead of recomputing. Compare the time per preemption with recompute.
@@ -1089,7 +1108,7 @@ Answer each one out loud in under a minute:
    the decodes. Measure the p99 TPOT of running requests with and without it on a trace
    with occasional 32-token prompts.
 7. **AWQ-lite**: before int4 group quantization, scale each input channel of a Linear by
-   `mean|x_i|^0.5` (measured on the training text) and fold the inverse into the previous
+   $\operatorname{mean} \lvert x_i \rvert^{0.5}$ (measured on the training text) and fold the inverse into the previous
    LayerNorm; measure top-1 agreement vs plain int4.
 8. Store the **paged KV cache in int8** (values + one scale per token and head) and
    measure greedy agreement with fp32 over 1,000 tokens, plus the memory saved.

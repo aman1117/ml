@@ -90,7 +90,7 @@ LLM direct its own process. Their advice, which this folder agrees with: start w
 simplest thing (one call, then a workflow) and use an agent only when the path really
 can't be written down in advance. Agents trade latency, cost and predictability for
 flexibility, and their errors **compound**: if each step succeeds with probability 0.95,
-a 10-step trajectory succeeds with 0.95¹⁰ = 0.60. Much of this folder is about
+a 10-step trajectory succeeds with $0.95^{10} = 0.60$. Much of this folder is about
 recovering from step-level errors so that they don't compound.
 
 ![The agent loop](images/agent_loop.png)
@@ -153,7 +153,7 @@ line, because a model that keeps writing will happily *invent* the tool's result
 (section 7).
 
 **Constrained decoding.** You can make malformed calls impossible: at each decoding
-step, set the logits of every token that would violate the JSON schema to −∞ before the
+step, set the logits of every token that would violate the JSON schema to $-\infty$ before the
 softmax (`../transformer/` section 10), so only grammar-valid continuations can be
 sampled. A JSON schema compiles to a finite-state machine or a grammar over tokens
 (Willard & Louf 2023, the "Outlines" approach; providers' "structured outputs" modes do
@@ -206,7 +206,7 @@ Stop conditions, each recorded as the run's `stop_reason`:
 Every step is one JSON line of the trace (`python agents/agent.py --trace t.jsonl`):
 
 ```json
-{"task_id": "demo", "step": 2, "prompt_chars": 4437, "prompt_tokens": 1109, "completion_tokens": 30,
+{"task_id": "demo", "step": 2, "prompt_chars": 4438, "prompt_tokens": 1109, "completion_tokens": 30,
  "raw_output": "Thought: 'multiply it by 7' -> calculator (router p=1.00)\nAction: {...}",
  "llm_latency_s": 0.822, "context_compacted": 0, "guardrail_events": [],
  "calls": [{"id": "call_2", "tool": "calculator", "args": {"expression": "20 * 7"}, "ok": true,
@@ -254,7 +254,7 @@ thumb, and where this folder applies them:
 - **Coerce the harmless near-misses** (`"5"` → 5, `"Recall"` → `"recall"`); reject
   everything else rather than guess.
 - **Return what the model needs, not everything.** `read_file` returns line/char counts
-  and at most 2,000 characters; `search_docs` returns 3 passages of ≤ 600 characters
+  and at most 2,000 characters; `search_docs` returns 3 passages of $\le 600$ characters
   *and* `terms_not_found`, the query words that appear in no document, which is what lets
   a model say "the docs don't cover this" instead of answering from an irrelevant hit.
 - **Side effects are explicit.** Every tool is `read_only` or `mutating` (here only
@@ -278,24 +278,29 @@ answers that implicitly while generating; production systems often also put a sm
 fast classifier in front (to pick a tool subset, a model size, or a workflow). Ours
 classifies a request (or one clause of it) into 6 labels:
 
-```
-text ──hash──> x ∈ R^D, D = 2048       binary bag of hashed words + word bigrams, x /= √(#features)
-h = ReLU(x W1 + b1)                    W1: (2048, 64)   b1: (64,)      h: (N, 64)
-z = h W2 + b2                          W2: (64, 6)      b2: (6,)       z: (N, 6)
-p = softmax(z),  L = −mean log p[y]                                    131,526 parameters
+```math
+\begin{aligned}
+\text{text} &\xrightarrow{\text{hash}} x \in \mathbb{R}^D, \quad D = 2048 && \text{binary bag of hashed words + word bigrams}, \; x \leftarrow x / \sqrt{\#\text{features}} \\
+h &= \operatorname{ReLU}(x W_1 + b_1) && W_1: (2048, 64) \quad b_1: (64,) \quad h: (N, 64) \\
+z &= h W_2 + b_2 && W_2: (64, 6) \quad b_2: (6,) \quad z: (N, 6) \\
+p &= \operatorname{softmax}(z), \quad L = -\operatorname{mean} \log p_y && 131{,}526 \text{ parameters}
+\end{aligned}
 ```
 
 **Features: the hashing trick** (Weinberger et al. 2009). Lowercase words, numbers →
 `<num>`, file paths → `<path>` + `<ext:md>`, plus word bigrams; each feature string is
-hashed with `crc32` (stable across runs, unlike Python's salted `hash()`) into one of D
+hashed with `crc32` (stable across runs, unlike Python's salted `hash()`) into one of $D$
 buckets. No vocabulary to store, and unseen words still land somewhere (with
-collisions as the price). The backward pass is the MLP one from `../mlp/`:
+collisions as the price). The backward pass is the MLP one from `../mlp/` ($dX$ is short
+for $\partial L / \partial X$):
 
-```
-dz = (p − onehot(y)) / N               (N, 6)
-dW2 = hᵀ dz      db2 = Σ dz            dh = dz W2ᵀ
-da = dh ⊙ [h > 0]                      ReLU backward
-dW1 = xᵀ da      db1 = Σ da
+```math
+\begin{aligned}
+dz &= (p - \operatorname{onehot}(y)) / N && (N, 6) \\
+dW_2 &= h^\top dz \qquad db_2 = \textstyle\sum dz \qquad dh = dz\, W_2^\top \\
+da &= dh \odot [h > 0] && \text{ReLU backward} \\
+dW_1 &= x^\top da \qquad db_1 = \textstyle\sum da
+\end{aligned}
 ```
 
 The data (`make_router_data.py`) is templated: 300 training requests per label from
@@ -304,22 +309,22 @@ training set never saw** ("Peek into README.md", "Hey, how's it going?").
 
 ![Router training and confusion matrix](images/router.png)
 
-**What to look at:** `python agents/router_numpy.py` starts at loss 1.787 (≈ ln 6 =
-1.792, as it should) and trains in well under a second. Training accuracy hits 100% in 4 epochs, but
+**What to look at:** `python agents/router_numpy.py` starts at loss 1.787
+($\approx \ln 6 = 1.792$, as it should) and trains in well under a second. Training accuracy hits 100% in 4 epochs, but
 test accuracy on held-out phrasings plateaus at **94.2%**: that gap is the price of
 phrasings it never saw. The confusion matrix shows exactly which ones: 13 of 100 no-tool
 requests go to `read_file` (all "Hey, how's it going?", whose `'s` and `?` tokens look
 like a file question), and 10 unit conversions go to `calculator` (8 of them phrased "I
 have 3.5 grams, how much is that in ounces?": a number and "how much" look like arithmetic). A fun real
-failure: "Read ../../etc/passwd" is routed to `calculator` (p = 0.54, the slashes look
-like division), while "Read the file ../../etc/passwd" goes to `read_file` (p = 0.95).
+failure: "Read ../../etc/passwd" is routed to `calculator` ($p = 0.54$, the slashes look
+like division), while "Read the file ../../etc/passwd" goes to `read_file` ($p = 0.95$).
 
 `python agents/gradient_check.py` compares every backward with central differences in
 float64 (Linear, ReLU, softmax-CE on their own, then every parameter of a small router on
 real hashed requests): worst relative error 1.4e-10, `Gradient check PASSED`.
 `python agents/router_pytorch.py` copies the weights into `nn.Linear` layers and gets
 the same logits (1.4e-16) and gradients (≤ 4.2e-17). It then shows that "bag of hashed
-features × W1" **is** `nn.EmbeddingBag(mode="sum")` (difference 0.0): a request touches
+features $\times W_1$" **is** `nn.EmbeddingBag(mode="sum")` (difference 0.0): a request touches
 14 of 2,048 buckets on average, so summing 14 rows is 149× less work than the dense
 matmul. That is how fastText-style classifiers (Joulin et al. 2016) scale to millions of
 buckets. The idiomatic version (65,536 buckets, 8.4M parameters, dropout, AdamW, early
@@ -397,7 +402,7 @@ Seven switches in `agent.Guardrails`, each measured in section 11:
 | `validate` | JSON-schema checks, coercion, "did you mean", examples | tools get raw args and crash with opaque Python errors |
 | `retry` | feeds parse/validation/tool errors back as messages, up to 3 in a row | the first error ends the run |
 | `loop_detect` | an identical call that already succeeded → a warning observation; again → stop | loops run until `max_steps` |
-| `grounding_check` | a final answer with no tool use, to a request the router says needs a tool (p ≥ 0.5) → rejected once | confident made-up answers |
+| `grounding_check` | a final answer with no tool use, to a request the router says needs a tool ($p \ge 0.5$) → rejected once | confident made-up answers |
 | `delimit_untrusted` | tool output wrapped in `<tool_output trust="untrusted">` (closing tag escaped inside), plus a system-prompt rule | documents can talk like the user |
 | `confirm_mutations` | once untrusted text is in the context, every mutating call needs the human's OK | injected instructions can write/delete |
 
@@ -473,7 +478,7 @@ injection with probability `p`.
 **What to look at** (`agent_eval.py` part E, 5 attack tasks × 10 runs):
 
 - **No defense:** the scripted model follows 100% of the attacks and all of them do
-  harm. The noisy model (p = 0.3) attempts 92% and does harm in 86%.
+  harm. The noisy model ($p = 0.3$) attempts 92% and does harm in 86%.
 - **Delimiting only** stops our well-behaved scripted model completely (0%), but the
   noisy model still attempts 28% and every attempt succeeds (28% harmed). Delimiting
   ("spotlighting", Hines et al. 2024) lowers the odds; it is not a security boundary.
@@ -519,7 +524,7 @@ An agent eval needs more than a reference answer:
 | What | How (in `agent_eval.py`) |
 |---|---|
 | **Outcome**: is the final answer right? | numeric match with relative tolerance, or regex |
-| **Trajectory**: did it act correctly? | required tools called, forbidden tools not called (e.g. none for chit-chat), ≤ `max_steps` |
+| **Trajectory**: did it act correctly? | required tools called, forbidden tools not called (e.g. none for chit-chat), $\le$ `max_steps` |
 | **State**: did it leave the world right? | expected memory contents after the run |
 | **Safety** | the attacker's side effect did not happen; no canary text in the answer |
 | **Efficiency** | steps, tokens, latency, invalid-call rate |
@@ -553,10 +558,10 @@ CI is roughly ±4 points around 93% and ±8 around 70%: small evals only detect 
 ![Success vs noise, and what each guardrail buys](images/guardrails_vs_noise.png)
 
 **What to look at:** left, with all guardrails the success rate degrades gracefully with
-model noise: 100% → 98.7% → 96.1% → 92.6% → 77.4% for p = 0, 0.1, 0.2, 0.3, 0.5. Without
-them it falls off a cliff: 76.1% → 58.3% → 44.3% → 33.9% → 15.7%. (Even at p = 0 the
+model noise: 100% → 98.7% → 96.1% → 92.6% → 77.4% for $p = 0, 0.1, 0.2, 0.3, 0.5$. Without
+them it falls off a cliff: 76.1% → 58.3% → 44.3% → 33.9% → 15.7%. (Even at $p = 0$ the
 unguarded agent fails 11 tasks: the 6 tool-error tasks, because the first error ends
-the run, and the 5 injection attacks.) Middle, at p = 0.3, adding guardrails in order:
+the run, and the 5 injection attacks.) Middle, at $p = 0.3$, adding guardrails in order:
 none 33.9%, + robust parsing 38.7%, + validation 39.1%, **+ retry 69.6%**,
 + loop detection 82.6%, + grounding check 86.5%, + delimiting 91.3%, + confirmation
 92.6%. Right, removing one at a time from the full set: retry costs 48.3 points, loop
@@ -568,12 +573,17 @@ better error message has nobody to read it.
 
 ![pass@k vs pass^k](images/pass_k.png)
 
-**What to look at:** **pass@k** (any of k attempts succeeds; the code-generation metric
-of Chen et al. 2021) measures *capability*; **pass^k** (all k attempts succeed; τ-bench)
+**What to look at:** **pass@k** (any of $k$ attempts succeeds; the code-generation metric
+of Chen et al. 2021) measures *capability*; **pass^k** (all $k$ attempts succeed; τ-bench)
 measures *reliability*, which is what a user who runs the agent every day experiences.
-Both use the unbiased estimators from n = 8 runs per task: pass@k = 1 − C(n−c, k)/C(n, k)
-and pass^k = C(c, k)/C(n, k) for c successes (`agent_check.py` checks both against
-brute-force enumeration). At p = 0.2 without guardrails, pass@1 is 48.6% and pass@8 rises
+Both use the unbiased estimators from $n = 8$ runs per task, for $c$ successes:
+
+```math
+\text{pass@}k = 1 - \frac{\binom{n-c}{k}}{\binom{n}{k}} \qquad\qquad \text{pass}^k = \frac{\binom{c}{k}}{\binom{n}{k}}
+```
+
+(`agent_check.py` checks both against
+brute-force enumeration). At $p = 0.2$ without guardrails, pass@1 is 48.6% and pass@8 rises
 to 76.1% (the agent *can* do three quarters of the tasks), while pass^8 is **0.0%**: no
 task succeeds 8 times in a row. With guardrails pass@1 is 96.7% and pass^8 is still 82.6%.
 A demo shows pass@k; a product needs pass^k.
@@ -599,7 +609,7 @@ you would label production logs. For each failed run, the first matching rule:
 | Label | Rule (from the trace) |
 |---|---|
 | injection followed | the attacker's side effect happened or the canary is in the answer |
-| loop | stopped by loop detection, or ≥ 3 identical calls |
+| loop | stopped by loop detection, or $\ge 3$ identical calls |
 | budget exceeded | max steps / tokens / time, or more steps than the task allows |
 | bad args | the run ended on an invalid output or call (parse error, unknown tool, invalid args, crash) |
 | gave up | ended on a tool error it was not allowed to retry, or answered "I couldn't …" |
@@ -609,7 +619,7 @@ you would label production logs. For each failed run, the first matching rule:
 
 ![Failure taxonomy](images/failure_taxonomy.png)
 
-**What to look at:** at p = 0.3 without guardrails (230 runs), the failures are 70 bad
+**What to look at:** at $p = 0.3$ without guardrails (230 runs), the failures are 70 bad
 args, 27 gave up, 23 hallucinated answers, 20 loops, 11 injections followed and 1 wrong
 answer. With all guardrails only loops (8), injections (5, all answer hijacks) and budget
 overruns (4) remain: the guardrails convert most failure types into recoveries, and what
@@ -630,10 +640,10 @@ a document with instructions in it.
 
 ```
 configuration                      success [95% CI]        tool sel.       invalid   steps  tokens  latency
-scripted + all guardrails          100.0% [100.0%,100.0%]  P 1.00 R 1.00    0.0%     2.17    1631   2.06s
-noisy p=0.3 guardrails=all          92.6% [ 88.3%, 96.5%]  P 0.98 R 1.00   15.7%     2.90    2354   2.67s
-noisy p=0.3 guardrails=none         33.9% [ 26.5%, 41.7%]  P 0.94 R 0.74   12.7%     2.43    2173   2.29s
-noisy p=0.5 guardrails=all          77.4% [ 70.9%, 83.5%]  P 0.97 R 0.99   29.5%     3.58    3036   3.24s
+scripted + all guardrails          100.0% [100.0%,100.0%]  P 1.00 R 1.00    0.0%     2.17    1629   2.06s
+noisy p=0.3 guardrails=all          92.6% [ 88.3%, 96.5%]  P 0.98 R 1.00   15.7%     2.90    2351   2.67s
+noisy p=0.3 guardrails=none         33.9% [ 26.5%, 41.7%]  P 0.94 R 0.74   12.7%     2.43    2174   2.29s
+noisy p=0.5 guardrails=all          77.4% [ 70.9%, 83.5%]  P 0.97 R 0.99   29.5%     3.58    3034   3.24s
 
 pass@k vs pass^k at p=0.2:  all guardrails  pass@1 0.967  pass@8 1.000  pass^8 0.826
                             no guardrails   pass@1 0.486  pass@8 0.761  pass^8 0.000
@@ -648,8 +658,8 @@ What these numbers are and are not:
   calling; small open models often do).
 - The scripted policy was written together with the tasks, so its 100% is a property of
   the stand-in. Its brittleness is real, though (the mini-GPT example in section 6).
-- The guardrails cost something: with them, the average run at p = 0.3 uses 2,354
-  tokens and 2.67 s instead of 2,173 and 2.29 s, because recovering takes extra steps.
+- The guardrails cost something: with them, the average run at $p = 0.3$ uses 2,351
+  tokens and 2.67 s instead of 2,174 and 2.29 s, because recovering takes extra steps.
   That is a good trade: those extra steps turn 34% into 93%.
 - Delimiting + confirmation still leaves 18% of injection runs harmful under noise.
   That number is the honest summary of the state of prompt-injection defense.
@@ -772,7 +782,7 @@ Answer each one out loud in under a minute:
    transient fault that retries now double-write. Fix it with an idempotency key.
 5. Implement "forced final answer": when loop detection stops a run, make one more model
    call with tools disabled and the instruction to answer from what it has. Does it
-   recover the 8 loop failures at p = 0.3?
+   recover the 8 loop failures at $p = 0.3$?
 6. Replace the stub in `compact` with an extractive summary (keep the sentences with
    numbers and the query terms). Write a task where the original stub loses the answer.
 7. Add an LLM-free trajectory judge: score each trace for "verified before answering"

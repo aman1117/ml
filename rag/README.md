@@ -60,7 +60,10 @@ Macs, NumPy 2.0 with Apple Accelerate emits spurious `RuntimeWarning: ... encoun
 matmul` messages even when results are correct; the scripts filter out just those.
 `embedder.npz` and `index_results.npz` are gitignored and regenerated on demand. Timings
 quoted below are from an 18-core Apple-silicon laptop and vary by 10–20% between runs;
-every metric is deterministic.
+every metric is deterministic on a given machine. Corpus-only numbers (chunks, BM25,
+TF-IDF) are identical everywhere, but metrics that depend on the trained encoder
+(dense, hybrid, reranker, end-to-end) can differ slightly across CPUs/BLAS builds; the
+ones quoted here were regenerated on an x86 Windows machine.
 
 ---
 
@@ -75,10 +78,10 @@ up that sounds right. Three ways to give it the knowledge:
 |---|---|---|---|
 | How | train the weights on your docs | paste all docs into the prompt | retrieve the few relevant chunks, paste those |
 | Fresh data | retrain | re-paste (free) | re-index the changed docs (minutes) |
-| Cost per question | cheap at inference | pays for every token, every time (attention is `O(T²)`, [`../transformer/`](../transformer/) section 11) | a search (here: 0.2 ms) + a short prompt |
+| Cost per question | cheap at inference | pays for every token, every time (attention is $O(T^2)$, [`../transformer/`](../transformer/) section 11) | a search (here: 0.2 ms) + a short prompt |
 | Citations / "where did this come from?" | no | weak (the model may or may not say) | **yes, by construction**: the generator sees numbered sources |
 | Access control (user A can't see doc B) | impossible once trained in | must filter before pasting | filter at retrieval time |
-| Scales to | what fits in the weights; teaches *style and skills* better than facts | ~10⁵–10⁶ tokens per prompt | billions of chunks |
+| Scales to | what fits in the weights; teaches *style and skills* better than facts | $\sim 10^5\text{–}10^6$ tokens per prompt | billions of chunks |
 | Fails when | it confidently mixes up facts | the answer is "lost in the middle" (section 13) | **retrieval misses** (sections 11, 13) |
 
 In practice they combine: fine-tune for format and domain skills, RAG for facts that
@@ -97,9 +100,9 @@ evaluate retrieval separately, with labels. That's what most of this folder is a
 ![The RAG pipeline](images/pipeline.png)
 
 **What to look at:** two phases. **Index time** (top, offline, re-run when the documents
-change): 6 READMEs, 182,549 characters, are cut into 261 chunks, each prefixed with its
-heading path; every chunk goes into an inverted index (2,150 terms, 16,613 postings)
-and through the bi-encoder (4.2M parameters) into a 261 × 128 matrix of unit vectors.
+change): 6 READMEs, 192,581 characters, are cut into 275 chunks, each prefixed with its
+heading path; every chunk goes into an inverted index (2,177 terms, 17,598 postings)
+and through the bi-encoder (4.2M parameters) into a $275 \times 128$ matrix of unit vectors.
 **Query time** (bottom): the question gets a BM25 ranking and a dense ranking, Reciprocal
 Rank Fusion merges them, a small learned model reranks the top 20, the best 4 become
 numbered sources in a prompt, and the generator answers with citations, or abstains
@@ -111,7 +114,7 @@ Every box is one function you can read:
 ```
 chunks   = chunk_markdown(docs, max_chars=1000, contextual=True)        chunking.py
 bm25     = BM25([tokenize(c.text) for c in chunks])                     bm25.py
-emb      = encoder.encode([c.text for c in chunks])      (261, 128)      embed_numpy.py
+emb      = encoder.encode([c.text for c in chunks])      (275, 128)      embed_numpy.py
 -- per question --
 r_sparse = argsort(-bm25.score(tokenize(q)))                            bm25.py
 r_dense  = argsort(-(emb @ encoder.encode([q])[0]))                     index.py (exact)
@@ -131,7 +134,7 @@ need labels. `qa.jsonl` has 63 questions I wrote by reading the six READMEs:
 | Type | # | Example | What it tests |
 |------|--:|---------|---------------|
 | keyword | 21 | "What does ALiBi use instead of a position embedding?" | rare exact terms: BM25's home turf |
-| semantic | 21 | "Why do we shrink the query-key dot products before the softmax?" (the text says "divide by √d_k", "scores") | paraphrase: where dense retrieval should help |
+| semantic | 21 | "Why do we shrink the query-key dot products before the softmax?" (the text says "divide by $\sqrt{d_k}$", "scores") | paraphrase: where dense retrieval should help |
 | multi-hop | 15 | "How many parameters does the char-level LSTM have compared with the mini-GPT?" | needs 2 chunks from 2 READMEs |
 | unanswerable | 6 | "What LoRA rank does this repo recommend for fine-tuning LLaMA?" | right behaviour = abstain |
 
@@ -157,7 +160,7 @@ section, so if someone edits a README, CI tells you which labels broke.
 retriever missed. Four multi-hop questions (m01, m03, m06, m15) had a perfectly valid
 answer location I hadn't labelled; for example the comparison table in
 `transformer/README.md` section 15 also says the mini-GPT has 107,776 parameters. I added
-them as alternatives, which raised BM25's recall@5 from 0.737 to 0.763. Auditing
+them as alternatives, which raised BM25's recall@5 from 0.763 to 0.781. Auditing
 failures is how real eval sets get better; doing it only for failures (never for
 successes) biases scores upwards a little, so the audit rule must be "add any valid
 location you find", not "fix the questions we got wrong".
@@ -172,11 +175,11 @@ the wrong place: the answer is split across two chunks that each look half-relev
 
 | Strategy | Rule | Chunks | Mean chars | Span two sections | End mid-sentence |
 |----------|------|-------:|-----------:|------------------:|-----------------:|
-| `fixed-chars` | every 1000 chars, 200 overlap | 229 | 991 | 148 | 213 |
-| `fixed-words` | every 160 words, 40 overlap | 252 | 958 | 160 | 230 |
-| `sentence` | pack whole sentences ≤ 1000 chars, 1-sentence overlap | 212 | 936 | 120 | 0 |
-| `markdown` | never cross a heading; pack whole paragraphs / code blocks ≤ 1000 chars; split only oversized blocks by sentence | 261 | 698 | 0 | 0 |
-| `markdown+ctx` | the same, each prefixed with `file \| title > section > subsection` | 261 | 698 | 0 | 0 |
+| `fixed-chars` | every 1000 chars, 200 overlap | 243 | 987 | 145 | 227 |
+| `fixed-words` | every 160 words, 40 overlap | 259 | 985 | 165 | 227 |
+| `sentence` | pack whole sentences $\le 1000$ chars, 1-sentence overlap | 222 | 939 | 120 | 0 |
+| `markdown` | never cross a heading; pack whole paragraphs / code blocks $\le 1000$ chars; split only oversized blocks by sentence | 275 | 698 | 0 | 0 |
+| `markdown+ctx` | the same, each prefixed with `file \| title > section > subsection` | 275 | 698 | 0 | 0 |
 
 (`python rag/chunking.py`.) The contextual header is the cheapest trick in RAG: a chunk
 that says "Setting the forget bias to **1** ..." is easier to find for "LSTM forget-gate
@@ -186,17 +189,17 @@ LSTM equations > The forget-gate bias = 1 trick`. Anthropic's *Contextual Retrie
 
 ![Chunking strategies](images/chunking.png)
 
-**What to look at:** the same 3,501 characters of `lstm/README.md` cut five ways
+**What to look at:** the same 3,633 characters of `lstm/README.md` cut five ways
 (dashed lines are headings). The fixed chunkers start and stop anywhere: 93% of
-`fixed-chars` chunks end mid-sentence and 65% straddle two sections, so a chunk about
+`fixed-chars` chunks end mid-sentence and 60% straddle two sections, so a chunk about
 "Why sigmoid for gates" also contains half of "The forget-gate bias trick". The sentence
-packer never cuts a sentence but still straddles headings (57%). The markdown chunker
+packer never cuts a sentence but still straddles headings (54%). The markdown chunker
 snaps to the section structure (0 and 0). The red bars are gold evidence spans
 of three questions; thanks to the overlap (and short evidence strings), no strategy
 happened to split any of the 90 evidence strings (`python rag/chunking.py`).
 
 Honest caveat, measured in section 11: on this corpus the strategy matters **less** than
-you'd expect. With 57 questions the 95% confidence intervals on recall@5 are about ±0.1
+you'd expect. With 57 questions the 95% confidence intervals on recall@5 are about $\pm 0.1$
 wide, and the chunkers differ by less than that. Clean boundaries matter more for the
 *generator* (it reads whole, on-topic chunks) than for these retrieval scores.
 
@@ -206,8 +209,8 @@ Represent each chunk by its words (after lowercasing, dropping ~100 stopwords an
 tiny suffix-stripper: `gates/gated → gat`, `layers → layer`). A query matches a chunk
 through the words they share, and rarer words count more.
 
-**TF-IDF.** Weight each term `(1 + ln tf) · idf`, with `idf = ln((1+N)/(1+df)) + 1`
-(`N` chunks, `df` = chunks containing the term), and score by cosine similarity. No knob
+**TF-IDF.** Weight each term $(1 + \ln \text{tf}) \cdot \text{idf}$, with $\text{idf} = \ln \dfrac{1 + N}{1 + \text{df}} + 1$
+($N$ chunks, $\text{df}$ = chunks containing the term), and score by cosine similarity. No knob
 for how fast repeated words stop mattering; length is handled by the vector norm.
 
 **BM25** (Robertson & Zaragoza 2009) comes from the probabilistic relevance framework:
@@ -215,28 +218,29 @@ rank by the odds that a chunk is relevant given the terms it contains. Three ste
 
 1. Assume terms contribute independently, so the log-odds is a sum over query terms.
    With no relevance information, each term's weight becomes an inverse document
-   frequency (the Robertson-Spärck Jones weight): `idf(t) = ln(1 + (N − df + 0.5) / (df + 0.5))`.
+   frequency (the Robertson-Spärck Jones weight): $\operatorname{idf}(t) = \ln\left(1 + \dfrac{N - \text{df} + 0.5}{\text{df} + 0.5}\right)$.
 2. A term occurring in a chunk is evidence the chunk is *about* it ("eliteness"), but
    evidence that **saturates**: the 10th "attention" says little more than the 5th. The
-   2-Poisson eliteness model is approximated by `tf / (tf + k1)`, which goes from 0 to 1.
-3. A long chunk has more of every word just by being long, so `tf` is normalised by
-   length relative to the average: `k1` is replaced by `k1 · (1 − b + b·|d|/avgdl)`.
+   2-Poisson eliteness model is approximated by $\text{tf} / (\text{tf} + k_1)$, which goes from 0 to 1.
+3. A long chunk has more of every word just by being long, so $\text{tf}$ is normalised by
+   length relative to the average: $k_1$ is replaced by $k_1 \cdot (1 - b + b \cdot \lvert d \rvert / \text{avgdl})$.
 
-```
-BM25(q, d) = Σ_{t ∈ q}  idf(t) · tf(t,d) · (k1 + 1) / ( tf(t,d) + k1 · (1 − b + b · |d| / avgdl) )
-
-k1 = 1.2   saturation speed (0: present-or-not, ∞: raw tf)        tf(t,d): count of t in chunk d
-b  = 0.75  length normalisation (0: none, 1: full)                 |d|, avgdl: chunk length, average
+```math
+\begin{aligned}
+\operatorname{BM25}(q, d) &= \sum_{t \in q} \operatorname{idf}(t) \cdot \frac{\operatorname{tf}(t,d) \cdot (k_1 + 1)}{\operatorname{tf}(t,d) + k_1 \cdot \left(1 - b + b \cdot \dfrac{|d|}{\text{avgdl}}\right)} \\[6pt]
+k_1 &= 1.2 && \text{saturation speed (0: present-or-not, } \infty \text{: raw tf)} && \operatorname{tf}(t,d)\text{: count of } t \text{ in chunk } d \\
+b &= 0.75 && \text{length normalisation (0: none, 1: full)} && |d|, \text{avgdl: chunk length, average}
+\end{aligned}
 ```
 
 ![BM25 curves](images/bm25_curves.png)
 
-**What to look at:** left, BM25's contribution saturates at `k1 + 1` while raw tf grows
-forever; TF-IDF's `1 + ln tf` grows slowly but without a ceiling. Middle, at `b = 0.75` a
+**What to look at:** left, BM25's contribution saturates at $k_1 + 1$ while raw tf grows
+forever; TF-IDF's $1 + \ln \text{tf}$ grows slowly but without a ceiling. Middle, at $b = 0.75$ a
 chunk twice the average length gets 18% less credit for the same 3 hits; the orange
 histogram shows our chunk lengths, 95% of them between 0.25× and 1.5× the average.
-Right, the idf of real terms in our index: `alibi` (in 3 chunks) is worth 4.32,
-`im2col` (in 10) 3.22, `attention` (in 87) only 1.10. Terms like `md` and `readm` from the headers are in all 261 chunks and
+Right, the idf of real terms in our index: `alibi` (in 3 chunks) is worth 4.37,
+`im2col` (in 11) 3.18, `attention` (in 91) only 1.10. Terms like `md` and `readm` from the headers are in all 275 chunks and
 get an idf of ~0, so the headers' file names cost nothing.
 
 **The inverted index.** For every term, a posting list: the ids of the chunks that
@@ -249,82 +253,91 @@ billions of documents per query, and why BM25 has no "index" to approximate.
 
 ```
 Query: 'What does the causal mask do?'   tokens: ['causal', 'mask']
-  1.   8.68  [transformer/README.md] Why the causal mask makes parallel training = generation
-             causal: tf 5 x idf 2.60 -> 4.48, mask: tf 7 x idf 2.29 -> 4.21
-  2.   7.53  [attention/README.md] 6. Masking
-             causal: tf 2 x idf 2.60 -> 3.22, mask: tf 9 x idf 2.29 -> 4.30
+  1.   8.66  [transformer/README.md] Why the causal mask makes parallel training = generation
+             causal: tf 5 x idf 2.60 -> 4.49, mask: tf 7 x idf 2.27 -> 4.18
+  2.   6.99  [transformer/README.md] 3. Self-attention, with the causal mask
+             causal: tf 2 x idf 2.60 -> 3.73, mask: tf 2 x idf 2.27 -> 3.26
+  3.   6.95  [attention/README.md] 6. Masking
+             causal: tf 1 x idf 2.60 -> 2.73, mask: tf 6 x idf 2.27 -> 4.22
 ```
 
-Notice saturation at work: 9 "mask"s earn 4.30, barely more than 7 earn in a shorter
-chunk (4.21). The same script sweeps `k1 ∈ [0.3, 3]` and `b ∈ [0, 1]`: recall@5 on
-qa.jsonl stays between 0.746 and 0.781 everywhere, so the textbook defaults are fine
-here. Dropping the stemmer costs 0.05 (0.763 → 0.711), keeping stopwords 0.07 (→ 0.693).
+Notice saturation at work: 6 "mask"s earn 4.22, only 30% more than 2 earn (3.26), and
+7 in a longer chunk earn a little less (4.18). The same script sweeps $k_1 \in [0.3, 3]$ and $b \in [0, 1]$: recall@5 on
+qa.jsonl stays between 0.754 and 0.798 everywhere, so the textbook defaults are fine
+here. Dropping the stemmer costs 0.05 (0.781 → 0.728), keeping stopwords 0.10 (→ 0.684).
 
 ## 6. Dense retrieval and contrastive learning
 
-BM25 can't match "shrink the dot products" to "divide by √d_k". A **dense retriever**
+BM25 can't match "shrink the dot products" to "divide by $\sqrt{d_k}$". A **dense retriever**
 maps every text to a vector so that a question and the passage that answers it are close,
 whatever their words. A **bi-encoder** embeds queries and chunks *separately* (so the
 chunks can be embedded once, offline) and scores with a dot product.
 
 The famous ones (DPR, Karpukhin et al. 2020; Contriever, E5, OpenAI's embedding models)
 are Transformers pretrained on billions of tokens. Ours must train in half a minute on
-180 KB, so each part is the smallest thing that keeps the mechanism:
+190 KB, so each part is the smallest thing that keeps the mechanism:
 
 ```
 text      "Why divide by √d_k?"  ->  content words: divide, d, k   (lowercase, no stopwords)
 features  each word -> its own bucket + its character trigrams:  "<divide>" -> "<di","div","ivi","vid","ide","de>"
           hashed into B = 32,768 buckets (the hashing trick, Weinberger et al. 2009):
           no vocabulary, no out-of-vocabulary words; "gating" shares trigrams with "gate"
-x  = Σ_j w_j E[id_j]            (n, D)   embedding bag: weighted mean of rows of E (B, D)
-                                         w_j ∝ idf of the bucket, trigrams × 0.5, Σ_j w_j = 1
-z  = x + tanh(x W1 + b1) W2     (n, D)   residual MLP, W1, W2: (D, D), D = 128
-e  = z / ‖z‖                    (n, D)   unit length, so a dot product is a cosine
 ```
 
-4,227,200 parameters, 99.6% of them in `E`. At initialisation (`W2` small), `e` is
+```math
+\begin{aligned}
+x &= \textstyle\sum_j w_j E[\text{id}_j] && (n, D) && \text{embedding bag: weighted mean of rows of } E \ (B, D) \\
+  & && && w_j \propto \text{idf of the bucket, trigrams} \times 0.5, \quad \textstyle\sum_j w_j = 1 \\
+z &= x + \tanh(x W_1 + b_1) W_2 && (n, D) && \text{residual MLP, } W_1, W_2: (D, D), \ D = 128 \\
+e &= z / \lVert z \rVert && (n, D) && \text{unit length, so a dot product is a cosine}
+\end{aligned}
+```
+
+4,227,200 parameters, 99.6% of them in $E$. At initialisation ($W_2$ small), $e$ is
 already a random projection of the bag of n-grams: a fuzzy lexical matcher. Training
 bends it towards "texts about the same thing".
 
 ### InfoNCE with in-batch negatives
 
-Take a batch of `N` (query, positive passage) pairs, embed all of them, and score every
+Take a batch of $N$ (query, positive passage) pairs, embed all of them, and score every
 query against every passage:
 
-```
-S = Q Pᵀ / τ                                    Q, P: (N, D) unit rows,  S: (N, N)
-L = −(1/N) Σ_i log softmax(S_i)_i = −(1/N) Σ_i log [ exp(S_ii) / Σ_j exp(S_ij) ]
+```math
+\begin{aligned}
+S &= Q P^\top / \tau && Q, P: (N, D) \text{ unit rows}, \quad S: (N, N) \\
+L &= -\frac{1}{N} \sum_i \log \operatorname{softmax}(S_i)_i = -\frac{1}{N} \sum_i \log \left[ \frac{\exp(S_{ii})}{\sum_j \exp(S_{ij})} \right]
+\end{aligned}
 ```
 
-Each query must pick its own passage out of the `N` in the batch: a softmax
-classification with `N` classes, where the other `N − 1` passages are **free negatives**
+Each query must pick its own passage out of the $N$ in the batch: a softmax
+classification with $N$ classes, where the other $N - 1$ passages are **free negatives**
 (they were embedded anyway). This is InfoNCE (Oord et al. 2018, *Contrastive Predictive
-Coding*), and `log N − L` is a lower bound on the mutual information between queries and
+Coding*), and $\log N - L$ is a lower bound on the mutual information between queries and
 passages, which is why bigger batches (more negatives) help: they make the
-classification harder and the bound tighter. Our batch is 128, so chance is `ln 128 = 4.85`.
+classification harder and the bound tighter. Our batch is 128, so chance is $\ln 128 = 4.85$.
 
-**The temperature τ.** Cosines live in [−1, 1]. With `τ = 1` the logits differ by at most
-2, so even a perfect encoder can't do better than `L = ln(1 + 127·e⁻²) = 2.9`. With
-`τ = 0.05` (ours) they span ±20 and the loss can approach 0. Small `τ` also focuses the
-gradient on the hardest negatives: `∂L/∂S_ij = (P_ij − δ_ij)/N`, and with a sharp softmax
-almost all of `P_i·` sits on the few negatives that score close to the positive.
+**The temperature $\tau$.** Cosines live in $[-1, 1]$. With $\tau = 1$ the logits differ by at most
+2, so even a perfect encoder can't do better than $L = \ln(1 + 127 \cdot e^{-2}) = 2.9$. With
+$\tau = 0.05$ (ours) they span $\pm 20$ and the loss can approach 0. Small $\tau$ also focuses the
+gradient on the hardest negatives: $\partial L / \partial S_{ij} = (P_{ij} - \delta_{ij}) / N$, and with a sharp softmax
+almost all of $P_{i \cdot}$ sits on the few negatives that score close to the positive.
 
 **Where do pairs come from without labels?** We may not train on qa.jsonl (that's the
 test set), so pairs are **mined from the corpus**, fresh samples every epoch:
 
 | Kind | Query | Positive | Why |
 |------|-------|----------|-----|
-| heading | a section title, "Why divide by √d_k?" | a paragraph of that section | closest thing to a real (question, answer) pair |
+| heading | a section title, "Why divide by $\sqrt{d_k}$?" | a paragraph of that section | closest thing to a real (question, answer) pair |
 | ict | one sentence of a paragraph | the rest of the paragraph, **without** that sentence | the Inverse Cloze Task (Lee et al. 2019): which statements belong together, without copying words |
 | drop | 30–50% of a paragraph's content words, shuffled | the paragraph | keyword-style queries; robust to missing words and order |
 
-890 pairs per epoch from 316 paragraphs in 105 sections; 12 sections (110 pairs) are
+896 pairs per epoch from 319 paragraphs in 105 sections; 12 sections (117 pairs) are
 held out to measure generalisation. Two details that mattered:
 
 - **False negatives.** Two paragraphs under one heading both answer the heading query,
   so in-batch "negatives" from the same section are masked out of the softmax
   (`group_mask`). Without this the model is punished for being right.
-- **Feature dropout.** 890 pairs and 4.2M parameters memorise in a few hundred steps.
+- **Feature dropout.** 896 pairs and 4.2M parameters memorise in a few hundred steps.
   Every training text drops half of its hashed features at random (a fresh subset each
   time). In quick comparisons while building this folder it helped both the held-out
   pairs and qa.jsonl (try `--feat-drop 0`). Honest caveat: I chose the feature dropout
@@ -338,69 +351,73 @@ question about LSTMs). DPR adds one BM25-retrieved hard negative per question, a
 
 ![InfoNCE training](images/infonce.png)
 
-**What to look at:** left, the InfoNCE loss drops from 2.86 to 0.16 (chance is 4.85),
-while top-1 accuracy on the **held-out** sections only moves from 0.45 to 0.47. Middle
+**What to look at:** left, the InfoNCE loss drops from 2.84 to 0.16 (chance is 4.85),
+while top-1 accuracy on the **held-out** sections only moves from 0.42 to 0.50. Middle
 and right: cosine between 8 held-out headings and paragraphs, before and after training.
-The diagonal (the true pairs) rises from a mean of 0.13 to 0.32 and the row argmax
+The diagonal (the true pairs) rises from a mean of 0.14 to 0.22 and the row argmax
 lands on it for 50% of rows instead of 38%, but off-diagonal pairs from related topics
-light up too. Honest reading: with 180 KB of text, the model mostly learns **this
+light up too. Honest reading: with 190 KB of text, the model mostly learns **this
 corpus** (which is the one we'll search, so that is useful), and generalises only a
 little to unseen text. This is why real systems start from an embedding model
 pretrained on billions of pairs and, at most, fine-tune it on their domain.
 
 ![Embedding space](images/embedding_pca.png)
 
-**What to look at:** the 261 chunk embeddings projected to 2D with PCA (implemented
+**What to look at:** the 275 chunk embeddings projected to 2D with PCA (implemented
 with one SVD in `make_figures.py`), coloured by source README. At random init, chunks
 from different READMEs already have a lower cosine (0.13) than chunks of the same README
-(0.25): shared words. After training, different READMEs move apart (0.03) while
-same-README similarity stays the same (0.26), and the first two components separate the
-repo's branches: LSTM (top left), CNN and MLP (bottom left), attention and Transformer
+(0.24): shared words. After training, different READMEs move apart (0.01) while
+same-README similarity stays the same (0.25), and the first two components separate the
+repo's branches: CNN and MLP (top left), LSTM (bottom left), attention and Transformer
 (right), with the RNN chunks in between. Two PCs explain only 18% of the variance, so the
 real geometry has many more directions.
 
-On qa.jsonl the trained encoder lifts dense recall@5 from 0.509 (random init) to 0.614
-and MRR from 0.378 to 0.499 (`python rag/embed_numpy.py`, ~25 s). Over 4 seeds (each also
+On qa.jsonl the trained encoder lifts dense recall@5 from 0.474 (random init) to 0.623
+and MRR from 0.374 to 0.483 (`python rag/embed_numpy.py`, ~25 s). Over 4 seeds (each also
 re-draws the held-out split), `python rag/embed_numpy.py --seeds 0 1 2 3` (~2 min) gives
-dense recall@5 0.634 ± 0.013 (0.614–0.649) and hybrid recall@5 0.759 ± 0.037
-(0.711–0.807): seed noise alone moves these numbers by several points, and our default
-seed 0 happens to be the best seed for hybrid and the worst for dense.
+dense recall@5 $0.623 \pm 0.025$ (0.588–0.658) and hybrid recall@5 $0.748 \pm 0.031$
+(0.702–0.781): seed noise alone moves these numbers by several points, and our default
+seed 0 is exactly at the mean for dense and happens to be the best seed for hybrid.
 
 ## 7. The backward pass
 
-Forward for a batch of `n` texts (queries and passages go through the **same** encoder
-in one call, `n = 2N`), then the loss on the two halves:
+Forward for a batch of $n$ texts (queries and passages go through the **same** encoder
+in one call, $n = 2N$), then the loss on the two halves:
 
-```
-x = bag(E)             (n, D)     x_i = Σ_j w_ij E[id_ij]
-u = x W1 + b1          (n, D)     h = tanh(u)
-z = x + h W2           (n, D)     e = z / ‖z‖  (row-wise)
-S = e_Q e_Pᵀ / τ       (N, M)     M ≥ N: positives, then any extra (hard) negatives
-L = −(1/N) Σ_i log softmax(S_i)_i
+```math
+\begin{aligned}
+x &= \operatorname{bag}(E) && (n, D) && x_i = \textstyle\sum_j w_{ij} E[\text{id}_{ij}] \\
+u &= x W_1 + b_1 && (n, D) && h = \tanh(u) \\
+z &= x + h W_2 && (n, D) && e = z / \lVert z \rVert \ \text{(row-wise)} \\
+S &= e_Q e_P^\top / \tau && (N, M) && M \ge N\text{: positives, then any extra (hard) negatives} \\
+L &= -\frac{1}{N} \sum_i \log \operatorname{softmax}(S_i)_i
+\end{aligned}
 ```
 
-Backward, row-vector convention, `dX` = `∂L/∂X`:
+Backward, row-vector convention, $dX = \partial L / \partial X$:
 
-```
-dS   = (softmax(S) − I_{N×M}) / N                              softmax-CE, exactly as in ../mlp/
-de_Q = dS e_P / τ                (N, D)
-de_P = dSᵀ e_Q / τ               (M, D)    both sides get a gradient: concatenate, one backward
-dz   = (de − e ⊙ rowsum(de ⊙ e)) / ‖z‖                          L2 normalisation
-dW2  = hᵀ dz       dh = dz W2ᵀ       du = dh ⊙ (1 − h²)          tanh
-dW1  = xᵀ du       db1 = Σ_rows du
-dx   = dz + du W1ᵀ                                              residual: the gradient also skips the MLP
-dE[id_ij] += w_ij · dx_i                                        embedding bag: a scatter-add
+```math
+\begin{aligned}
+dS &= \big(\operatorname{softmax}(S) - I_{N \times M}\big) / N && && \text{softmax-CE, exactly as in ../mlp/} \\
+de_Q &= dS \, e_P / \tau && (N, D) \\
+de_P &= dS^\top e_Q / \tau && (M, D) && \text{both sides get a gradient: concatenate, one backward} \\
+dz &= \big(de - e \odot \operatorname{rowsum}(de \odot e)\big) / \lVert z \rVert && && \text{L2 normalisation} \\
+dW_2 &= h^\top dz, \quad dh = dz \, W_2^\top, \quad du = dh \odot (1 - h^2) && && \text{tanh} \\
+dW_1 &= x^\top du, \quad db_1 = \textstyle\sum_{\text{rows}} du \\
+dx &= dz + du \, W_1^\top && && \text{residual: the gradient also skips the MLP} \\
+dE[\text{id}_{ij}] &\mathrel{+}= w_{ij} \cdot dx_i && && \text{embedding bag: a scatter-add}
+\end{aligned}
 ```
 
 Two lines deserve a second look:
 
-- **L2 normalisation.** `∂e/∂z = (I − e eᵀ)/‖z‖`: the part of `de` along `e` is removed.
-  Making `z` longer doesn't change `e`, only rotating it does, so the gradient is
+- **L2 normalisation.** $\partial e / \partial z = (I - e e^\top) / \lVert z \rVert$: the part of $de$ along $e$ is removed.
+  Making $z$ longer doesn't change $e$, only rotating it does, so the gradient is
   tangent to the sphere. Forget the projection term and the check reports a relative
   error of 0.40 instead of 4e-11 (exercise 1).
-- **The embedding bag** is a sparse matmul (a `(n, B)` matrix of weights times `E`), so
-  its gradient is that matrix transposed times `dx`. A batch touches a few thousand of
-  the 32,768 rows, so `backward` returns `dE` **sparse** (rows, values) and the
+- **The embedding bag** is a sparse matmul (a $(n, B)$ matrix of weights times $E$), so
+  its gradient is that matrix transposed times $dx$. A batch touches a few thousand of
+  the 32,768 rows, so `backward` returns $dE$ **sparse** (rows, values) and the
   optimizer updates only those rows (lazy Adam, like `torch.optim.SparseAdam`).
 
 `python rag/gradient_check.py` compares all of this with central differences in float64
@@ -414,25 +431,25 @@ the 90 evidence strings: 32 checks, ~0.3 s, `Gradient check PASSED`.
 
 ## 8. Vector indexes: exact, IVF, PQ, HNSW
 
-Once chunks are vectors, retrieval is "find the `k` rows of `X` (n, D) with the largest
-dot product with `q`":
+Once chunks are vectors, retrieval is "find the $k$ rows of $X$ $(n, D)$ with the largest
+dot product with $q$":
 
 ```
 scores = X q                          (n,)    n·D multiply-adds, reads all n·D·4 bytes
 top_k  = argpartition(-scores, k)             O(n), then sort only those k   (index.topk)
 ```
 
-For our 261 chunks that takes **9 µs**. Nothing else in this section matters at that
+For our 275 chunks that takes **9 µs**. Nothing else in this section matters at that
 size, and you should not run a vector database for it. At 100 million chunks × 768 dims
 it is 307 GB of float32 per query scan, and you need **approximate nearest neighbour**
 (ANN) search, which trades a little recall for a lot of speed and/or memory:
 
 | Index | Idea | Knob | Pays with |
 |-------|------|------|-----------|
-| Exact | scan everything | — | `O(n·D)` time, `4·n·D` bytes |
-| **IVF** (inverted file) | k-means the vectors into `nlist` clusters; at query time open only the `nprobe` clusters whose centroids score highest | `nprobe` | misses neighbours in unopened clusters; speed-up ≈ `nlist / nprobe` |
-| **PQ** (Jégou et al. 2011) | split each vector into `m` sub-vectors, k-means each subspace to 256 centroids, store `m` one-byte codes; score with a per-query `(m, 256)` lookup table | `m` | approximation error; memory ÷ `4D/m` |
-| **HNSW** (Malkov & Yashunin 2018; not built here) | a layered proximity graph: greedy walk from a sparse top layer down to the dense bottom layer | `M` links, `efSearch` | ~`2M` extra ints per vector; slow, memory-hungry builds; the default in most vector DBs |
+| Exact | scan everything | — | $O(n \cdot D)$ time, $4 \cdot n \cdot D$ bytes |
+| **IVF** (inverted file) | k-means the vectors into `nlist` clusters; at query time open only the `nprobe` clusters whose centroids score highest | `nprobe` | misses neighbours in unopened clusters; speed-up $\approx \text{nlist} / \text{nprobe}$ |
+| **PQ** (Jégou et al. 2011) | split each vector into $m$ sub-vectors, k-means each subspace to 256 centroids, store $m$ one-byte codes; score with a per-query $(m, 256)$ lookup table | $m$ | approximation error; memory $\div \thinspace 4D/m$ |
+| **HNSW** (Malkov & Yashunin 2018; not built here) | a layered proximity graph: greedy walk from a sparse top layer down to the dense bottom layer | $M$ links, `efSearch` | $\sim 2M$ extra ints per vector; slow, memory-hungry builds; the default in most vector DBs |
 
 Combinations are standard (FAISS's `IVF-PQ`: cluster, then store PQ codes of the
 residuals; re-rank the shortlist with exact vectors kept on SSD).
@@ -440,8 +457,8 @@ residuals; re-rank the shortlist with exact vectors kept on SSD).
 `python rag/index.py` measures it all, one query at a time (like a request to a server):
 
 ```
-1. Our corpus: 261 chunk vectors x D=128 (130 KB)  exact search: 9 µs per query.
-   IVF nlist=16: nprobe 1: recall@10 0.43, nprobe 4: 0.85, nprobe 8: 0.96, nprobe 16: 1.00
+1. Our corpus: 275 chunk vectors x D=128 (138 KB)  exact search: 9 µs per query.
+   IVF nlist=16: nprobe 1: recall@10 0.49, nprobe 4: 0.90, nprobe 8: 0.97, nprobe 16: 1.00
 2. Synthetic clustered unit vectors: n=100,000 x D=128 (48.8 MB float32)
    exact: 0.81 ms per query (0.632 ms/query when 300 queries are batched into one matmul)
    IVF nlist=316 (≈ √n), built in 0.5 s:
@@ -462,29 +479,29 @@ curve is a choice between speed and recall. (Recalls are deterministic; the timi
 move by 10–20% between runs: an earlier run measured 40× at nprobe 1.) On **uniform** random vectors (grey), IVF is
 useless: 16% recall at nprobe 8. ANN works because real embeddings have structure, and
 in 128 dimensions random points are all nearly equidistant (the curse of dimensionality).
-Right, memory: float32 needs 512 bytes per vector, PQ with m = 16 needs 16 (32× less;
-100M vectors: 51 GB → 1.6 GB). PQ alone loses recall (0.46 at m = 16), but re-scoring its
+Right, memory: float32 needs 512 bytes per vector, PQ with $m = 16$ needs 16 (32× less;
+100M vectors: 51 GB → 1.6 GB). PQ alone loses recall (0.46 at $m = 16$), but re-scoring its
 top 100 with exact vectors recovers 0.98.
 
 Honest note on the PQ timings: in NumPy, the per-query table lookups (`flat[codes + offsets]`)
-are slower than BLAS's matmul (2.4 ms vs 0.81 ms exact at m = 16), so PQ is **not** faster here.
+are slower than BLAS's matmul (2.4 ms vs 0.81 ms exact at $m = 16$), so PQ is **not** faster here.
 In FAISS the same lookups are SIMD-vectorised in registers and PQ is much faster than a
 float scan. The memory saving is real in both.
 
 ## 9. Hybrid search and Reciprocal Rank Fusion
 
 BM25 and the dense model fail on different questions (`retrieval_eval.py` lists them:
-BM25 wins 12, dense wins 4 of the 16 questions where they disagree at recall@5). Fusing
+BM25 wins 15, dense wins 5 of the 20 questions where they disagree at recall@5). Fusing
 them should help, but their scores live on different scales (BM25: 0–15, unbounded;
 cosine: −1 to 1) and the scale changes with every query. **Reciprocal Rank Fusion**
 (Cormack, Clarke & Büttcher 2009) ignores scores and uses only ranks:
 
-```
-RRF(d) = Σ_{rankers r}  1 / (k + rank_r(d))        k = 60,  rank 1 = best
+```math
+\operatorname{RRF}(d) = \sum_{\text{rankers } r} \frac{1}{k + \operatorname{rank}_r(d)} \qquad k = 60, \quad \text{rank 1 = best}
 ```
 
-A chunk ranked 1st by both gets `2/61 = 0.0328`; 1st by one and absent from the other's
-top 100 gets `1/61 = 0.0164`: being liked by both beats being loved by one. `k = 60`
+A chunk ranked 1st by both gets $2/61 = 0.0328$; 1st by one and absent from the other's
+top 100 gets $1/61 = 0.0164$: being liked by both beats being loved by one. $k = 60$
 (from the paper) flattens the curve so that rank 1 vs rank 3 matters less than
 "appears in both lists". `rag_visual.py` step 4 prints the fusion table for a real query.
 
@@ -501,7 +518,7 @@ top 20–100:
   ~100× more expensive per pair. The standard production pattern: retrieve 100 cheaply,
   cross-encode, keep 5.
 - **ColBERT** (Khattab & Zaharia 2020), "late interaction": keep one vector **per
-  token**, and score `Σ_{query tokens i} max_{passage tokens j} q_i · d_j` (MaxSim). The
+  token**, and score $\sum_{\text{query tokens } i} \max_{\text{passage tokens } j} q_i \cdot d_j$ (MaxSim). The
   passage vectors are still precomputed, but matching is token by token: a middle
   ground in accuracy and cost.
 - **Ours, a cross-feature reranker:** six features of the (question, chunk) **pair**
@@ -510,23 +527,25 @@ top 20–100:
   terms in the chunk's heading path, RRF score), combined by logistic regression. It
   needs labels, so it is trained with **5-fold cross-validation over questions**: every
   question is reranked by a model that never saw its labels. Trained on all questions,
-  the weights are `bm25/max +3.60, cosine +1.82, idf coverage +0.91, heading +0.72, rrf +0.48,
-  bigram +0.24, bias −6.34`. No class re-weighting, on purpose: its output is then a
+  the weights are     `bm25/max +3.37, cosine +1.67, idf coverage +1.05, rrf +0.83, heading +0.77,
+    bigram +0.32, bias −6.54`. No class re-weighting, on purpose: its output is then a
   **calibrated probability** that a chunk is relevant, which section 12 uses to abstain.
 - **MMR** (Carbonell & Goldstein 1998) re-orders for diversity:
-  `argmax_d λ·sim(q, d) − (1 − λ)·max_{picked p} sim(d, p)`, so the 2nd result isn't a
+  $\arg\max_d \thinspace \lambda \cdot \operatorname{sim}(q, d) - (1 - \lambda) \cdot \max_{\text{picked } p} \operatorname{sim}(d, p)$, so the 2nd result isn't a
   near-copy of the 1st.
 
 ## 11. Retrieval metrics, and how sure we can be
 
 Per answerable question, with its evidence slots and a ranked list of chunks:
 
-```
-recall@k    = (# slots satisfied by the top k) / (# slots)              did we find it?
-precision@k = (# top-k chunks satisfying any slot) / k                  how much noise?
-MRR         = 1 / rank of the first relevant chunk                      how high?
-nDCG@k      = Σ_{i ≤ k} gain_i / log2(i + 1)  ÷  the same for the best possible ranking
-              gain_i = number of slots chunk i satisfies for the first time
+```math
+\begin{aligned}
+\text{recall@}k &= \frac{\#\,\text{slots satisfied by the top } k}{\#\,\text{slots}} && \text{did we find it?} \\
+\text{precision@}k &= \frac{\#\,\text{top-}k \text{ chunks satisfying any slot}}{k} && \text{how much noise?} \\
+\text{MRR} &= \frac{1}{\text{rank of the first relevant chunk}} && \text{how high?} \\
+\text{nDCG@}k &= \frac{\sum_{i \le k} \text{gain}_i / \log_2(i + 1)}{\text{the same for the best possible ranking}} \\
+\text{gain}_i &= \text{number of slots chunk } i \text{ satisfies for the first time}
+\end{aligned}
 ```
 
 recall@k is what matters most for RAG: if the evidence isn't in the prompt, the
@@ -538,52 +557,55 @@ Precision@5 is low by construction here (most questions have 1–2 relevant chun
 
 ```
   retriever       recall@1          recall@5 recall@10    P@5               MRR  nDCG@10
-  tfidf              0.412  0.763 [0.66,0.86]     0.860  0.204  0.608 [0.50,0.71]    0.656
-  bm25               0.404  0.763 [0.66,0.86]     0.877  0.200  0.617 [0.52,0.71]    0.668
-  dense              0.316  0.614 [0.50,0.73]     0.789  0.161  0.499 [0.40,0.60]    0.553
-  hybrid             0.404  0.807 [0.71,0.89]     0.868  0.218  0.610 [0.51,0.70]    0.659
-  hybrid+rerank      0.430  0.807 [0.70,0.89]     0.877  0.214  0.644 [0.55,0.74]    0.685
-  hybrid+mmr         0.342  0.728 [0.62,0.83]     0.807  0.193  0.551 [0.45,0.65]    0.598
+  tfidf              0.404  0.772 [0.67,0.87]     0.851  0.207  0.611 [0.51,0.71]    0.656
+  bm25               0.404  0.781 [0.68,0.87]     0.886  0.200  0.621 [0.52,0.72]    0.673
+  dense              0.272  0.623 [0.50,0.75]     0.772  0.165  0.483 [0.38,0.59]    0.528
+  hybrid             0.333  0.781 [0.68,0.88]     0.877  0.200  0.581 [0.48,0.68]    0.634
+  hybrid+rerank      0.412  0.816 [0.72,0.90]     0.851  0.214  0.641 [0.54,0.74]    0.670
+  hybrid+mmr         0.289  0.719 [0.61,0.82]     0.798  0.189  0.534 [0.44,0.64]    0.575
 ```
 
 ![Retriever comparison](images/retrievers.png)
 
 **What to look at:** left, recall@5 per question type with 95% bootstrap intervals.
-Keyword questions are nearly solved by everything lexical (0.95 for TF-IDF and hybrid);
-our dense model is clearly worse there (0.76): exact rare terms are BM25's home turf.
-On **semantic** questions, where dense retrieval is supposed to shine, our small dense
-model (0.52) is *still* below BM25 (0.67). Hybrid is the best or tied-best in every
-group (keyword 0.95, semantic 0.71, multi-hop 0.73). Right: recall grows with `k`;
-at `k = 10` every lexical method finds 86–88% of the evidence.
+Keyword questions are nearly solved by everything lexical (1.00 for BM25, hybrid and the
+reranker, 0.95 for TF-IDF); our dense model is worse there (0.90): exact rare terms are
+BM25's home turf. On **semantic** questions, where dense retrieval is supposed to shine,
+our small dense model (0.38) is *still* below BM25 (0.62). Hybrid + rerank is the best or
+tied-best on keyword (1.00) and semantic (0.71) questions; on multi-hop, TF-IDF edges it
+(0.73 vs 0.70). Right: recall grows with $k$; at $k = 10$ every lexical method finds
+85–89% of the evidence.
 
 **How sure are we?** With 57 questions, one question is 1.8 points of recall. The
-intervals are ±0.1 wide, so most differences in that table are noise. The **paired**
+intervals are $\pm 0.1$ wide, so most differences in that table are noise. The **paired**
 bootstrap resamples questions but keeps each question's pair of scores together, which
 removes the per-question difficulty from the comparison:
 
 ```
-  hybrid        - bm25  : +0.044  95% CI [-0.053, +0.140]  P(no improvement) = 0.211
-  hybrid        - dense : +0.193  95% CI [+0.105, +0.298]  P(no improvement) = 0.000
-  hybrid+rerank - hybrid: +0.000  95% CI [-0.070, +0.079]  P(no improvement) = 0.552
-  dense         - bm25  : -0.149  95% CI [-0.281, -0.035]  P(no improvement) = 0.994
+  hybrid        - bm25  : +0.000  95% CI [-0.096, +0.097]  P(no improvement) = 0.533
+  hybrid        - dense : +0.158  95% CI [+0.053, +0.263]  P(no improvement) = 0.002
+  hybrid+rerank - hybrid: +0.035  95% CI [-0.009, +0.096]  P(no improvement) = 0.126
+  dense         - bm25  : -0.158  95% CI [-0.281, -0.018]  P(no improvement) = 0.990
 ```
 
 So, honestly: dense is significantly *worse* than BM25 here, hybrid is significantly
-better than dense, and hybrid's +0.044 over BM25 and the reranker's improvements in
-MRR (0.610 → 0.644) and nDCG (0.659 → 0.685) are suggestive, not established. To
-detect a 3-point difference you need several hundred questions, which is the main
-practical lesson of retrieval evaluation (`../evals/`).
+better than dense, but fusing in this weak dense model only ties BM25 alone (+0.000).
+The reranker's +0.035 recall@5 over hybrid is within noise, and its improvements in MRR
+(0.581 → 0.641) and nDCG (0.634 → 0.670) are suggestive, not established. To detect a 3-point difference you need several hundred
+questions, which is the main practical lesson of retrieval evaluation (`../evals/`).
 
 ![Chunking x retriever](images/ablation.png)
 
 **What to look at:** recall@5 for every chunker × retriever. The spread within a column
-is 0.05–0.09, less than the width of one confidence interval, so no chunker clearly wins.
-Two real patterns: (1) the **dense** model is worst on the `sentence` and
-`fixed-words` chunks (0.53, 0.55), because it was trained on paragraphs; (2) overlap
-helps lexical recall (`fixed-words` BM25 0.789): the same evidence appears in two
-chunks, two chances to be retrieved, at the price of duplicated prompt text. Contextual
-headers help hybrid (0.746 → 0.807 on `markdown` vs `markdown+ctx`) and hurt TF-IDF
-(0.807 → 0.763); with these intervals, I would not claim either.
+is 0.06–0.12, less than the width of one confidence interval, so no chunker clearly wins.
+Two patterns worth noting: (1) the **dense** model is worst on the `fixed-chars` and
+`sentence` chunks (0.52 each), because it was trained on paragraphs; (2) overlap can help
+lexical recall (`fixed-chars`: TF-IDF 0.816 and BM25 0.798, the best cells of both
+columns): the same evidence appears in two chunks, two chances to be retrieved, at the
+price of duplicated prompt text; but `fixed-words` overlaps too and gains nothing (BM25
+0.763). Contextual headers help BM25 a little (0.763 → 0.781 on `markdown` vs
+`markdown+ctx`) and slightly hurt dense (0.640 → 0.623); with these intervals,
+I would not claim either.
 
 ## 12. Generation with citations and abstention
 
@@ -594,7 +616,7 @@ Sources:
 
 [1] (transformer/README.md > Why the causal mask makes parallel training = generation)
 ### Why the causal mask makes parallel training = generation
-A language model must predict token `t+1` from tokens `0..t` only. ...
+A language model must predict token $t+1$ from tokens $0 \dots t$ only. ...
 
 [2] (transformer/README.md > 3. Self-attention, with the causal mask)
 ...
@@ -607,25 +629,26 @@ with a system prompt: answer only from the sources, cite every claim as `[n]`, s
 instructions (section 13). Two generators:
 
 **Extractive (default, offline).** Split the 4 chunks into sentences and code lines,
-score each by `0.6 · (idf-weighted fraction of question terms it contains) + 0.4 · cosine
-to the question + 0.2 · its chunk's reranker probability`, quote the best one, and a
-second one only if it scores ≥ 75% of the best **and** adds question terms the first
+score each by
+$0.6 \cdot (\text{idf-weighted fraction of question terms it contains}) + 0.4 \cdot \text{cosine to the question} + 0.2 \cdot \text{its chunk's reranker probability}$,
+quote the best one, and a
+second one only if it scores $\ge$ 75% of the best **and** adds question terms the first
 lacked (useful for multi-hop). Headings, questions and sections like "Interview check"
 or "Resources" are never quoted. It cannot hallucinate (every word is copied) but it
 cannot synthesise either.
 
-**Abstention.** Before generating, look at the reranker's calibrated `P(relevant)` of the
+**Abstention.** Before generating, look at the reranker's calibrated $P(\text{relevant})$ of the
 best retrieved chunk. If it is below a threshold (0.2), answer "I don't know: the
 retrieved sources don't answer this." The threshold sweep from `rag_pipeline.py`:
 
 ```
-    threshold 0.15: abstains on  17% of unanswerable,   0% of answerable
-    threshold 0.20: abstains on  50% of unanswerable,   9% of answerable
-    threshold 0.25: abstains on  67% of unanswerable,  19% of answerable
-    threshold 0.30: abstains on 100% of unanswerable,  35% of answerable
+    threshold 0.15: abstains on  17% of unanswerable,   2% of answerable
+    threshold 0.20: abstains on  67% of unanswerable,   9% of answerable
+    threshold 0.25: abstains on  83% of unanswerable,  18% of answerable
+    threshold 0.30: abstains on 100% of unanswerable,  40% of answerable
 ```
 
-The six unanswerable questions get confidences of 0.13–0.28; but so do many paraphrased
+The six unanswerable questions get confidences of 0.14–0.26; but so do many paraphrased
 answerable questions, because the reranker is least sure exactly where retrieval is
 hardest. Abstention is a trade-off curve, not a solved problem. Honest caveat: I
 picked 0.2 *after* looking at this sweep, on the same questions, so the abstention
@@ -656,21 +679,21 @@ ideas with token overlap instead of an LLM judge):
 | answer correctness | does it match the gold answer? | token F1 / exact match (SQuAD-style), gold-answer recall, and "evidence in answer" (does a quoted sentence overlap a gold evidence span?) |
 | citation precision | are the cited chunks relevant? | cited chunks containing gold evidence / cited chunks |
 | citation recall | is every needed piece cited? | gold slots covered by a cited chunk / slots |
-| faithfulness | is every sentence supported by what it cites? | answer sentences whose content words are ≥ 70% present in their cited chunks |
+| faithfulness | is every sentence supported by what it cites? | answer sentences whose content words are $\ge$ 70% present in their cited chunks |
 | abstention | does it refuse when it should, and only then? | abstained on unanswerable / wrongly abstained on answerable |
 
 `python rag/rag_pipeline.py` (0.5 s for all 63 questions):
 
 ```
   metric                                all   keyword  semantic  multihop
-  evidence in answer      0.346 [0.23,0.47]     0.524     0.188     0.267
-  gold-answer recall      0.353 [0.27,0.44]     0.510     0.167     0.392
-  token F1                0.221 [0.17,0.27]     0.297     0.108     0.271
+  evidence in answer      0.413 [0.30,0.54]     0.619     0.250     0.300
+  gold-answer recall      0.395 [0.31,0.48]     0.581     0.198     0.410
+  token F1                0.247 [0.20,0.30]     0.332     0.134     0.285
   exact match             0.000 [0.00,0.00]     0.000     0.000     0.000
-  citation precision      0.587 [0.46,0.70]     0.714     0.406     0.600
-  citation recall         0.553 [0.43,0.67]     0.762     0.381     0.500
+  citation precision      0.577 [0.46,0.69]     0.762     0.375     0.533
+  citation recall         0.570 [0.45,0.68]     0.857     0.381     0.433
   faithfulness            1.000 [1.00,1.00]     1.000     1.000     1.000
-  abstained on unanswerable: 50%   wrongly abstained on answerable: 9%   abstention accuracy: 87%
+  abstained on unanswerable: 67%   wrongly abstained on answerable: 9%   abstention accuracy: 89%
   latency per question: retrieve + rerank median 0.2 ms, extractive generation median 1.0 ms
 ```
 
@@ -681,10 +704,10 @@ everywhere **by construction** (copying can't be unfaithful), which is exactly w
 faithfulness alone is a bad success metric: a faithful answer can still quote the
 wrong passage. Exact match is 0: a quoted sentence never equals a short hand-written
 answer, which is why we also report recall-style scores. Keyword questions are answered
-best (evidence in answer 0.52); semantic ones worst (0.19), the same ordering as
+best (evidence in answer 0.62); semantic ones worst (0.25), the same ordering as
 retrieval. Right, the abstention trade-off: every threshold that refuses all 6
-unanswerable questions (red ✕ marks show their confidences) also refuses a third of the
-answerable ones.
+unanswerable questions (red ✕ marks show their confidences) also refuses more than a
+fifth of the answerable ones (13 of 57 just above the highest red ✕, more beyond).
 
 ### Failure modes, with real examples
 
@@ -693,10 +716,11 @@ answerable ones.
   every retriever finds the mini-GPT half (the comparison table in
   `transformer/README.md` section 15 lists 107,776), but none finds the LSTM's 62,444 in
   its top 5: the query words ("char-level", "mini-GPT", "parameters") match the
-  Transformer intro, the LSTM *resources* list and the LSTM title paragraph better than
-  the LSTM equations. The extractive answer then quotes the table's header row and a
-  prerequisite line: citation precision 0.50, faithfulness 1.00, and no number at all.
-  Faithful, cited, and useless. Run `python rag/rag_visual.py --query` with that
+  Transformer intro, the LSTM *resources* list, the Transformer *Files* table and the
+  LSTM title paragraph better than the LSTM equations. The extractive answer then quotes
+  the table's header row and a prerequisite line: citation precision 0.50, faithfulness
+  1.00, and no number at all. Faithful, cited, and useless. Run
+  `python rag/rag_visual.py --query` with that
   question to watch it happen. Fixes: query decomposition ("LSTM parameters" +
   "mini-GPT parameters"), more retrieved chunks, better embeddings.
 - **Wrong chunk boundaries.** A fixed-size chunk that ends with "Setting the forget bias
@@ -705,7 +729,7 @@ answerable ones.
 - **Lost in the middle** (Liu et al. 2023): LLMs use information at the start and end of
   a long context much better than in the middle (a U-shaped accuracy curve). Retrieving
   more chunks is not free: put the best chunks first (we sort by reranker score) and
-  keep `k` small.
+    keep $k$ small.
 - **Stale index.** The README changes, the index doesn't, and the system cites a number
   that no longer exists. Here the check script catches stale *labels*; in production,
   re-index on change and store the source version with every chunk.
@@ -728,12 +752,12 @@ weighted mean (our weights already sum to 1), `nn.Linear` stores `W.T`, `F.norma
 is our L2 step, and `F.cross_entropy(Q @ P.T / τ, arange(N))` is InfoNCE:
 
 ```
-  embeddings of 324 texts (261 chunks + 63 questions): max |diff| = 3.9e-16
-  InfoNCE on 64 real pairs: NumPy 1.1124045212  PyTorch 1.1124045212
-  autograd dE  == hand-written backward: max |diff| = 5.4e-17 (relative 6.3e-16)
-  autograd dW1 == hand-written backward: max |diff| = 2.1e-17 (relative 1.0e-15)
-  autograd db1 == hand-written backward: max |diff| = 3.9e-16 (relative 7.6e-16)
-  autograd dW2 == hand-written backward: max |diff| = 4.9e-17 (relative 8.7e-16)
+  embeddings of 338 texts (275 chunks + 63 questions): max |diff| = 4.2e-16
+  InfoNCE on 64 real pairs: NumPy 0.3761269034  PyTorch 0.3761269034
+  autograd dE  == hand-written backward: max |diff| = 6.9e-17 (relative 5.1e-16)
+  autograd dW1 == hand-written backward: max |diff| = 1.7e-17 (relative 9.4e-16)
+  autograd db1 == hand-written backward: max |diff| = 3.5e-16 (relative 1.0e-15)
+  autograd dW2 == hand-written backward: max |diff| = 4.5e-17 (relative 1.0e-15)
 ```
 
 Then it trains the idiomatic way: `nn.EmbeddingBag(sparse=True)` with
@@ -744,41 +768,45 @@ training paragraph from a different section. The honest result on qa.jsonl:
 
 ```
   dense model                                   recall@5     MRR  nDCG@10   semantic  hybrid R@5
-  NumPy, batch 128 (embedder.npz)                  0.614   0.499    0.553      0.524       0.807
-  PyTorch, batch 256 (21 s)                        0.640   0.497    0.531      0.571       0.746
-  PyTorch, batch 256 + hard negatives (45 s)       0.596   0.431    0.505      0.524       0.763
+  NumPy, batch 128 (embedder.npz)                  0.623   0.483    0.528      0.381       0.781
+  PyTorch, batch 256 (21 s)                        0.605   0.441    0.495      0.429       0.772
+  PyTorch, batch 256 + hard negatives (45 s)       0.561   0.444    0.499      0.429       0.754
 ```
 
-Bigger batches and more pairs changed little (+0.03 recall@5, −0.02 nDCG: within the
-seed noise of section 6), and hard negatives made the dense model *worse* (MRR 0.499 →
-0.431). Why? In a 180 KB corpus that explains attention in two READMEs and RNNs in
-three, the "hard negative" for a query is often a passage that *also* answers it (the
-same idea, explained again in another folder): a **false negative**, and training
-pushes them apart. DPR's hard negatives work because Wikipedia has millions of passages
-and the BM25 top hit for a question is usually genuinely wrong. Real recipes filter
-hard negatives (e.g. drop those a stronger model scores as positive) for this reason.
+Bigger batches and more pairs changed little (−0.02 recall@5, −0.03 nDCG: close to the
+seed noise of section 6), and hard negatives made the dense model *worse* (recall@5
+0.605 → 0.561). Why? In a 190 KB corpus that explains attention in two
+READMEs and RNNs in three, the "hard negative" for a query is often a passage that *also*
+answers it (the same idea, explained again in another folder): a **false negative**, and
+training pushes them apart. DPR's hard negatives work because Wikipedia has millions of
+passages and the BM25 top hit for a question is usually genuinely wrong. Real recipes
+filter hard negatives (e.g. drop those a stronger model scores as positive) for this
+reason.
 
 ## 15. Results (an honest look)
 
-- **BM25 is a very strong baseline.** recall@5 0.763 with zero training, robust to its
-  hyperparameters (0.746–0.781 over a 7 × 5 grid of `k1`, `b`). Always run it first.
-- **Our dense model is weaker than BM25** (0.614 vs 0.763, significant by paired
-  bootstrap), even on paraphrased questions (0.52 vs 0.67). It learned this corpus but
-  not "language": 180 KB of self-supervised pairs is a few million times less than what a
+- **BM25 is a very strong baseline.** recall@5 0.781 with zero training, robust to its
+  hyperparameters (0.754–0.798 over a $7 \times 5$ grid of $k_1$, $b$). Always run it first.
+- **Our dense model is weaker than BM25** (0.623 vs 0.781, significant by paired
+  bootstrap), even on paraphrased questions (0.38 vs 0.62). It learned this corpus but
+  not "language": 190 KB of self-supervised pairs is a few million times less than what a
   real embedding model sees. The *mechanism* (hashing, contrastive loss, in-batch
   negatives, temperature, the backward pass) is the real thing; the data is the gap.
-- **Hybrid is the best overall** (0.807), because the two retrievers fail on different
-  questions, but its edge over BM25 is not significant with 57 questions.
-- **The learned reranker** improves the ranking (MRR 0.610 → 0.644, nDCG 0.659 → 0.685)
-  but not what gets into the top 5; and it provides the calibrated confidence used to
-  abstain. A real cross-encoder would do much more.
+- **Hybrid alone only ties BM25 here** (0.781 vs 0.781, and 0.748 averaged over 4 encoder
+  seeds): the two retrievers fail on different questions, but our dense model is too weak
+  to add much. With the reranker on top it is the best overall (0.816), but that edge over
+  BM25 is not significant with 57 questions.
+- **The learned reranker** improves the ranking (MRR 0.581 → 0.641, nDCG 0.634 → 0.670)
+  and, a little, what gets into the top 5 (recall@5 0.781 → 0.816, within noise); and it
+  provides the calibrated confidence used to abstain. A real cross-encoder would do much
+  more.
 - **Chunking strategy**: differences within noise on retrieval; heading-aware chunks are
   still the right default because they never cut a sentence or mix two sections, which
   matters for the generator.
 - **End to end**, the extractive generator puts a gold evidence span in its answer for
-  35% of answerable questions, cites relevant chunks 59% of the time, and abstains on
-  half of the unanswerable questions while wrongly refusing 9% of answerable ones.
-- **Approximate search** is irrelevant at 261 chunks (8 µs exact) and essential at
+  41% of answerable questions, cites relevant chunks 58% of the time, and abstains on
+  two thirds of the unanswerable questions while wrongly refusing 9% of answerable ones.
+- **Approximate search** is irrelevant at 275 chunks (8 µs exact) and essential at
   scale: IVF 11× faster at 86% recall on 100k structured vectors, PQ 32× smaller.
 
 ## 16. Production concerns
@@ -822,7 +850,7 @@ hard negatives (e.g. drop those a stronger model scores as positive) for this re
   "failures" in our first run were partly label errors (section 3).
 - **Check the tokenizer**: print the query tokens. A stemmer that maps two unrelated
   words together, or a stopword list that eats "not", silently breaks lexical search.
-- **Normalise embeddings** if you score with dot products, and check `‖e‖ = 1`.
+- **Normalise embeddings** if you score with dot products, and check $\lVert e \rVert = 1$.
 - **Never train on the test questions**, including indirectly (hyperparameter tuning on
   them, as I admit for the abstention threshold). Cross-validate anything learned on
   labels (our reranker).
@@ -830,7 +858,7 @@ hard negatives (e.g. drop those a stronger model scores as positive) for this re
   of recall need a paired test before you believe them.
 - **Dense training**: mask false negatives from the same source, add feature/word
   dropout on small data, watch held-out accuracy, not just the loss (ours fell from
-  2.86 to 0.16 while held-out top-1 barely moved).
+    2.84 to 0.16 while held-out top-1 barely moved).
 - **Prompt hygiene**: number the sources, ask for citations, give an explicit
   "I don't know" option, put the best chunks first, and keep `k` small.
 
@@ -871,16 +899,16 @@ Answer each one out loud in under a minute:
 2. Draw a RAG pipeline end to end. Which parts run offline, which per query?
 3. How would you build an eval set for retrieval? Why label evidence spans rather than chunk ids?
 4. Compare fixed-size, sentence and heading-aware chunking. What are contextual headers and why do they help?
-5. Write the BM25 formula. What do `k1` and `b` do? Where does the idf come from?
+5. Write the BM25 formula. What do $k_1$ and $b$ do? Where does the idf come from?
 6. What is an inverted index, and why can BM25 search billions of documents without approximation?
 7. Bi-encoder vs cross-encoder vs ColBERT: how does each score a (query, passage) pair, and what does each cost?
 8. Write the InfoNCE loss. What are in-batch negatives? Why do bigger batches help?
-9. What does the temperature τ do? What's the best achievable loss with τ = 1 and a batch of 128 unit vectors?
+9. What does the temperature $\tau$ do? What's the best achievable loss with $\tau = 1$ and a batch of 128 unit vectors?
 10. What are hard negatives, why do they help, and how can they hurt (false negatives)?
-11. Derive the gradient of `e = z / ‖z‖`. Why is it orthogonal to `e`?
+11. Derive the gradient of $e = z / \lVert z \rVert$. Why is it orthogonal to $e$?
 12. How would you train an embedding model with no labelled queries?
 13. Exact search vs IVF vs PQ vs HNSW: how does each work, and what does each trade?
-14. Estimate the memory of 100M 768-dim float32 vectors, and with PQ at m = 64.
+14. Estimate the memory of 100M 768-dim float32 vectors, and with PQ at $m = 64$.
 15. Why does ANN search work on real embeddings but not on uniform random vectors?
 16. What is Reciprocal Rank Fusion and why use ranks instead of scores?
 17. Define recall@k, MRR and nDCG@k. Which matters most for RAG and why?
@@ -911,7 +939,7 @@ Answer each one out loud in under a minute:
    retrain. Does dense recall on keyword questions improve?
 7. Implement a small **HNSW** in `index.py` (one layer is enough to start: a k-NN graph
    with greedy search plus random restarts) and add it to the recall-latency plot.
-8. Implement **IVF-PQ**: PQ-encode the residual `x − centroid` inside each IVF list. Compare
+8. Implement **IVF-PQ**: PQ-encode the residual $x - \text{centroid}$ inside each IVF list. Compare
    recall and memory with IVF and PQ alone.
 9. Replace the logistic-regression reranker with a **cross-encoder**: a tiny Transformer
    from `../transformer/transformer_numpy.py` over `[question ; chunk]` tokens, trained

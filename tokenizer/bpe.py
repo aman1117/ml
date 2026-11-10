@@ -12,7 +12,7 @@ What it teaches, top to bottom:
      corpus; merge the most frequent pair into a new token; repeat until the
      vocabulary is big enough. `train_bpe` updates the pair counts incrementally
      (only the chunks that contain the merged pair are touched), with a heap to
-     find the next best pair, so it learns 3,840 merges from ~170 KB in seconds.
+     find the next best pair, so it learns 3,840 merges from ~178 KB in seconds.
   3. Encoding new text: inside each chunk, repeatedly apply the learned merge with
      the lowest rank (= learned earliest), like tiktoken and minbpe. `_encode_chunk`
      does that with a heap over a linked list, plus a cache of seen chunks.
@@ -23,7 +23,7 @@ What it teaches, top to bottom:
   6. Save / load as JSON.
 
 Corpus: ../rnn/input.txt plus the READMEs of the six earlier modules (read at run
-time, ~188 KB of English Markdown with equations and code). The first 90% is the
+time, ~197 KB of English Markdown with equations and code). The first 90% is the
 training split; the last 10% (the end of transformer/README.md) is held out.
 
 Run:

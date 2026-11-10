@@ -159,7 +159,7 @@ def main():
     v = Q["vec"]
     print(f"\n  query vector (128 dims, ‖e‖ = {np.linalg.norm(v):.3f}):")
     print(f"   {spark(v[:64])}\n   {spark(v[64:])}")
-    print("\n  top 5 by cosine (exact search: one (261, 128) @ (128,) product):")
+    print(f"\n  top 5 by cosine (exact search: one ({len(chunks)}, {len(v)}) @ ({len(v)},) product):")
     for r, c in enumerate(Q["rank_dense"][:5], 1):
         cos = Q["dense"][c]
         print(f"    {r}. {yellow(f'{cos:.3f}')}  #{c:<5d} "

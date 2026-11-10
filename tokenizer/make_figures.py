@@ -236,7 +236,7 @@ def fig_compression(rows):
     ax.set_xlabel("vocabulary size V")
     ax.set_ylabel("training tokens per vocabulary entry")
     ax.set_title("…and each token gets less training data")
-    fig.suptitle("Vocabulary size trade-offs, measured on our 170 KB corpus "
+    fig.suptitle("Vocabulary size trade-offs, measured on our 178 KB corpus "
                  "(why_tokenization.py)", y=1.02)
     fig.tight_layout()
     save(fig, "compression.png")

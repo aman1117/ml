@@ -38,9 +38,11 @@ Run everything from the repo root with the venv active (`source .venv/bin/activa
 A neuron takes some numbers, multiplies each by a **weight**, adds them up
 with a **bias**, then applies an **activation function**:
 
-```
-z = w1*x1 + w2*x2 + ... + wn*xn + b      (weighted sum: "how strongly do the inputs vote?")
-a = f(z)                                 (activation: a non-linear "squash")
+```math
+\begin{aligned}
+z &= w_1 x_1 + w_2 x_2 + \dots + w_n x_n + b && \text{weighted sum: how strongly do the inputs vote?} \\
+a &= f(z) && \text{activation: a non-linear squash}
+\end{aligned}
 ```
 
 - **Weights** say how important each input is (they can be negative).
@@ -50,15 +52,17 @@ a = f(z)                                 (activation: a non-linear "squash")
 ![One neuron](images/neuron.png)
 *What to look at: each input is multiplied by its weight, everything is summed with the bias (z = 4), and ReLU turns z into the output.*
 
-A whole **layer** of neurons is a matrix multiplication. With a batch of `N`
+A whole **layer** of neurons is a matrix multiplication. With a batch of $N$
 examples as rows:
 
-```
-Z = X @ W + b      X: (N, D_in)   W: (D_in, D_out)   b: (D_out,)   Z: (N, D_out)
-A = f(Z)
+```math
+\begin{aligned}
+Z &= XW + b && X: (N, D_{\text{in}}) \quad W: (D_{\text{in}}, D_{\text{out}}) \quad b: (D_{\text{out}},) \quad Z: (N, D_{\text{out}}) \\
+A &= f(Z)
+\end{aligned}
 ```
 
-Each **column** of `W` holds one neuron's weights. Always track the shapes:
+Each **column** of $W$ holds one neuron's weights. Always track the shapes:
 most bugs are shape bugs.
 
 ![A layer is a matrix multiplication](images/layer_matmul.png)
@@ -76,7 +80,7 @@ input (2) → hidden layer (64, ReLU) → output layer (3 scores, "logits")
 ```
 
 **Without an activation function, stacking layers is useless.**
-`(X @ W1) @ W2 = X @ (W1 @ W2)`: two linear layers are just one linear layer. A
+$(XW_1)W_2 = X(W_1 W_2)$: two linear layers are just one linear layer. A
 linear model can only draw straight-line boundaries, and the spirals in this
 folder can't be separated by straight lines.
 
@@ -96,12 +100,12 @@ about 50% accuracy, and the picture shows straight boundaries.
 
 | Name | Formula | Derivative | Output range | Notes |
 |------|---------|-----------|--------------|-------|
-| **Sigmoid** | `1 / (1 + e^-z)` | `a(1 - a)` | (0, 1) | Historical. Saturates at both ends (slope ≈ 0 → **vanishing gradients**). Max slope is only 0.25. Still used for gates (LSTM) and yes/no outputs. |
-| **Tanh** | `(e^z - e^-z)/(e^z + e^-z)` | `1 - a²` | (-1, 1) | Zero-centered sigmoid. Also saturates. Used in RNNs. |
-| **ReLU** | `max(0, z)` | `1 if z > 0 else 0` | [0, ∞) | **Default choice.** Cheap, and doesn't saturate for z > 0. Downside: "dead" neurons stuck at z < 0 never update. |
+| **Sigmoid** | $\sigma(z) = \dfrac{1}{1 + e^{-z}}$ | $a(1 - a)$ | $(0, 1)$ | Historical. Saturates at both ends (slope $\approx 0$ → **vanishing gradients**). Max slope is only 0.25. Still used for gates (LSTM) and yes/no outputs. |
+| **Tanh** | $\tanh(z) = \dfrac{e^{z} - e^{-z}}{e^{z} + e^{-z}}$ | $1 - a^2$ | $(-1, 1)$ | Zero-centered sigmoid. Also saturates. Used in RNNs. |
+| **ReLU** | $\max(0, z)$ | $1$ if $z > 0$, else $0$ | $[0, \infty)$ | **Default choice.** Cheap, and doesn't saturate for $z > 0$. Downside: "dead" neurons stuck at $z < 0$ never update. |
 | GELU / SiLU | smooth ReLU-like | — | — | Used in Transformers (GPT uses GELU). |
 
-**Saturation** matters: if `f'(z) ≈ 0`, almost no gradient flows back through
+**Saturation** matters: if $f'(z) \approx 0$, almost no gradient flows back through
 that neuron, so the weights before it barely learn. This is the same problem
 that hurts RNNs (see `rnn/README.md`, section 5).
 
@@ -113,13 +117,15 @@ signal. Sigmoid's best slope is only 0.25, while ReLU passes the gradient throug
 
 "Forward pass" just means running the network on an input to get the output:
 
-```
-A0 = X
-Z1 = A0 @ W1 + b1 ;  A1 = relu(Z1)        # hidden layer
-Z2 = A1 @ W2 + b2                         # output logits (no activation)
+```math
+\begin{aligned}
+A_0 &= X \\
+Z_1 &= A_0 W_1 + b_1, \quad A_1 = \operatorname{ReLU}(Z_1) && \text{hidden layer} \\
+Z_2 &= A_1 W_2 + b_2 && \text{output logits (no activation)}
+\end{aligned}
 ```
 
-We **save** (cache) `A0, Z1, A1, ...` because the backward pass needs them.
+We **save** (cache) $A_0, Z_1, A_1, \dots$ because the backward pass needs them.
 That's why training uses more memory than inference.
 
 ![Forward and backward pass](images/network.png)
@@ -130,44 +136,52 @@ Backward (red) starts from the error at the end and walks back through the same 
 
 The **loss** is a single number that measures how bad the predictions are. Training = making it small.
 
-- **Regression** (predict a number): mean squared error, `L = mean((ŷ - y)²)`.
+- **Regression** (predict a number): mean squared error, $L = \operatorname{mean}\big((\hat{y} - y)^2\big)$.
   Used in `backprop_by_hand.py`.
 - **Classification** (pick a class): **softmax + cross-entropy**. Used in `mlp_numpy.py`.
 
-```
-p = softmax(z)_k = e^{z_k} / Σ_j e^{z_j}     # turn scores into probabilities that sum to 1
-L = -log p[correct class]                    # small if the model is confident AND right
+```math
+\begin{aligned}
+p_k &= \operatorname{softmax}(z)_k = \frac{e^{z_k}}{\sum_j e^{z_j}} && \text{turn scores into probabilities that sum to 1} \\
+L &= -\log p_{y} \quad (y = \text{correct class}) && \text{small if the model is confident AND right}
+\end{aligned}
 ```
 
-- If the model gives the right class probability 1.0, `L = 0`.
-- If it gives 0.01, `L = 4.6`. Confident-and-wrong is punished hard.
-- Random guessing over C classes gives `L = ln(C)` (1.10 for 3 classes). That's a good sanity check at epoch 1.
+- If the model gives the right class probability 1.0, $L = 0$.
+- If it gives 0.01, $L = 4.6$. Confident-and-wrong is punished hard.
+- Random guessing over $C$ classes gives $L = \ln C$ (1.10 for 3 classes). That's a good sanity check at epoch 1.
 
 The gradient of softmax + cross-entropy is beautifully simple:
 
-```
-dL/dz = p - onehot(y)        # predicted probabilities minus the truth
+```math
+\frac{\partial L}{\partial z} = p - \operatorname{onehot}(y) \qquad \text{predicted probabilities minus the truth}
 ```
 
 ## 6. Backpropagation (the important part)
 
-Goal: for **every** weight, find `dL/dw`, i.e. "if I nudge this weight up a tiny
+Goal: for **every** weight, find $\partial L / \partial w$, i.e. "if I nudge this weight up a tiny
 bit, how much does the loss change?" Then we know which direction to move it.
 
-**The chain rule**: if `L` depends on `y`, and `y` depends on `w`, then
-`dL/dw = dL/dy · dy/dw`. Backprop applies this from the loss **backwards**
+**The chain rule**: if $L$ depends on $y$, and $y$ depends on $w$, then
+$\dfrac{\partial L}{\partial w} = \dfrac{\partial L}{\partial y} \cdot \dfrac{\partial y}{\partial w}$. Backprop applies this from the loss **backwards**
 through the network, reusing results so every gradient is computed in one pass.
 
-Worked example (exactly what `backprop_by_hand.py` prints):
+Worked example (exactly what `backprop_by_hand.py` prints). Forward:
 
+```math
+z_1 = w_1 x_1 + w_2 x_2 + b_1 \;\to\; h = \tanh(z_1) \;\to\; \hat{y} = w_3 h + b_2 \;\to\; L = \tfrac{1}{2}(\hat{y} - y)^2
 ```
-forward:   z1 = w1*x1 + w2*x2 + b1 → h = tanh(z1) → ŷ = w3*h + b2 → L = ½(ŷ - y)²
 
-backward:  dL/dŷ  = ŷ - y
-           dL/dw3 = dL/dŷ · h            dL/db2 = dL/dŷ
-           dL/dh  = dL/dŷ · w3
-           dL/dz1 = dL/dh · (1 - h²)     ← through tanh
-           dL/dw1 = dL/dz1 · x1          dL/dw2 = dL/dz1 · x2      dL/db1 = dL/dz1
+Backward:
+
+```math
+\begin{aligned}
+\frac{\partial L}{\partial \hat{y}} &= \hat{y} - y \\
+\frac{\partial L}{\partial w_3} &= \frac{\partial L}{\partial \hat{y}} \cdot h & \frac{\partial L}{\partial b_2} &= \frac{\partial L}{\partial \hat{y}} \\
+\frac{\partial L}{\partial h} &= \frac{\partial L}{\partial \hat{y}} \cdot w_3 \\
+\frac{\partial L}{\partial z_1} &= \frac{\partial L}{\partial h} \cdot (1 - h^2) & &\leftarrow \text{through tanh} \\
+\frac{\partial L}{\partial w_1} &= \frac{\partial L}{\partial z_1} \cdot x_1 & \frac{\partial L}{\partial w_2} &= \frac{\partial L}{\partial z_1} \cdot x_2 & \frac{\partial L}{\partial b_1} &= \frac{\partial L}{\partial z_1}
+\end{aligned}
 ```
 
 Notice the pattern: **gradient arriving from above × local derivative**.
@@ -180,22 +194,24 @@ to w1, w2, and b1. We do not update h or z1 directly: their gradients help compu
 The bottom table shows the optimizer's updates and the next forward pass.
 All gradients use the old parameters, before any updates.*
 
-The same pattern in matrix form, for one layer `Z = A_prev @ W + b`, `A = f(Z)`
-(this is `MLP.backward`):
+The same pattern in matrix form, for one layer $Z = A_{\text{prev}} W + b$, $A = f(Z)$
+(this is `MLP.backward`; $dX$ is short for $\partial L / \partial X$):
 
-```
-dZ      = dA ⊙ f'(Z)            # through the activation (⊙ = element-wise)
-dW      = A_prevᵀ @ dZ          # gradient for this layer's weights
-db      = sum of dZ over the batch
-dA_prev = dZ @ Wᵀ               # pass the gradient down to the previous layer
+```math
+\begin{aligned}
+dZ &= dA \odot f'(Z) && \text{through the activation } (\odot = \text{element-wise}) \\
+dW &= A_{\text{prev}}^\top dZ && \text{gradient for this layer's weights} \\
+db &= \textstyle\sum_{n=1}^{N} dZ_n && \text{sum of } dZ \text{ over the batch} \\
+dA_{\text{prev}} &= dZ\, W^\top && \text{pass the gradient down to the previous layer}
+\end{aligned}
 ```
 
-**Shape trick:** `dW` must have the same shape as `W`, and there's only one way to
-multiply `A_prev` (N, D_in) and `dZ` (N, D_out) to get (D_in, D_out). If you
+**Shape trick:** $dW$ must have the same shape as $W$, and there's only one way to
+multiply $A_{\text{prev}}$ $(N, D_{\text{in}})$ and $dZ$ $(N, D_{\text{out}})$ to get $(D_{\text{in}}, D_{\text{out}})$. If you
 forget the formula, the shapes tell you.
 
 **Always gradient-check** new backprop code (`gradient_check.py`): compare
-against `(L(w+ε) − L(w−ε)) / 2ε`. It's slow but it can't be wrong in the same way.
+against $\dfrac{L(w + \epsilon) - L(w - \epsilon)}{2\epsilon}$. It's slow but it can't be wrong in the same way.
 
 **Autograd** (PyTorch's `loss.backward()`) does exactly this for you
 automatically. `mlp_pytorch.py` proves it gives the same numbers.
@@ -204,8 +220,8 @@ automatically. `mlp_pytorch.py` proves it gives the same numbers.
 
 The gradient points uphill (the direction that increases the loss). So step the other way:
 
-```
-w = w - learning_rate * dL/dw
+```math
+w \leftarrow w - \eta \, \frac{\partial L}{\partial w} \qquad (\eta = \text{learning rate})
 ```
 
 Repeat thousands of times and the loss rolls downhill.
@@ -231,7 +247,7 @@ Start weights **small and random**:
 - **All zeros:** every neuron in a layer computes the same thing and gets the same
   gradient forever (the symmetry is never broken).
 - **Too large:** activations saturate or explode.
-- **He init** (`std = √(2/fan_in)`) for ReLU and **Xavier init** (`√(1/fan_in)`) for
+- **He init** ($\text{std} = \sqrt{2 / \text{fan-in}}$) for ReLU and **Xavier init** ($\sqrt{1 / \text{fan-in}}$) for
   tanh keep the signal's size stable from layer to layer. `mlp_numpy.py` uses these.
 
 ## 8. Training loop, in one picture
@@ -283,8 +299,8 @@ gives up a little training accuracy (100% → 98%) but nearly halves validation 
 
 **Fixes, roughly in order of how much they help:**
 1. **More data.** In Part 3 of `overfitting.py`, best val loss goes from 0.67 to 0.26.
-2. **L2 regularization / weight decay:** add `½·λ·Σw²` to the loss, which keeps weights
-   small and the function smooth. The gradient gains a `+λw` term (see `--reg`).
+2. **L2 regularization / weight decay:** add $\tfrac{1}{2} \lambda \sum w^2$ to the loss, which keeps weights
+   small and the function smooth. The gradient gains a $+\lambda w$ term (see `--reg`).
 3. **Early stopping:** keep the weights from the epoch with the best val loss.
 4. **Dropout:** randomly zero neurons during training so no single neuron can be relied on.
 5. **A smaller model.**
@@ -304,9 +320,9 @@ so much data that they mostly sit on the "more data" side of this.
 
 ## 11. Practical tips / debugging checklist
 
-- **First-step loss ≈ ln(C)?** If not, the initialization or the loss is wrong.
+- **First-step loss $\approx \ln C$?** If not, the initialization or the loss is wrong.
 - **Overfit a tiny batch first** (e.g. 10 examples → ~0 loss). If the model can't, there's a bug.
-- **Loss is NaN** → lower the lr, and check `log(0)` / `exp(big)` (softmax must subtract the max).
+- **Loss is NaN** → lower the lr, and check $\log(0)$ / $\exp(\text{big})$ (softmax must subtract the max).
 - **Loss is flat** → the lr is too small, there are dead ReLUs, or the gradients don't reach the weights (gradient check!).
 - **Always print shapes** when something is off.
 

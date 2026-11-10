@@ -21,7 +21,7 @@ so you can compare the two models number for number.
 | `gradient_check.py` | Numerical vs analytic gradients for every layer on its own (Linear, Embedding, LayerNorm, GELU, masked attention, softmax-CE, a whole block) and for every parameter of a tiny full GPT (separate and tied embeddings). |
 | `generate.py` | Prompt → continuation with `--temperature`, `--top-k`, interactive mode. Uses a **KV cache** (prefill + one-token decode steps) and proves it matches a full recompute. `--benchmark` times it. |
 | `transformer_pytorch.py` | (a) An equivalent PyTorch module (`nn.LayerNorm`, `nn.Linear`, `F.scaled_dot_product_attention`); copies our NumPy weights in and asserts identical logits **and gradients**. (b) Idiomatic training with a validation split, dropout, AdamW, warmup + cosine, `clip_grad_norm_`, compared with a char-RNN on the same batches. |
-| `why_transformers.py` | The key insight, measured: an associative-recall task where a Transformer gets 100% and a GRU/RNN with the same budget forget; plus timing of sequential vs parallel computation and the T² cost of attention. |
+| `why_transformers.py` | The key insight, measured: an associative-recall task where a Transformer gets 100% and a GRU/RNN with the same budget forget; plus timing of sequential vs parallel computation and the $T^2$ cost of attention. |
 | `make_figures.py` → `images/` | Draws every picture in this README from real computations (~15 s once `model.npz` and `why_transformers.npz` exist, ~50 s from scratch). |
 
 ### Suggested order
@@ -53,18 +53,18 @@ The scripts filter out just those warnings.
 ## 1. Why Transformers?
 
 Recap of [`../rnn/`](../rnn/): an RNN reads one token at a time and squeezes
-everything it has read into one hidden vector `h_t`. That has two problems.
+everything it has read into one hidden vector $h_t$. That has two problems.
 
-1. **Fading, fixed-size memory.** Everything must fit in `h_t`, and old
+1. **Fading, fixed-size memory.** Everything must fit in $h_t$, and old
    information gets overwritten by new. Gradients from far back vanish
    (`../rnn/` section 5). LSTMs/GRUs help, but the memory is still one vector.
-2. **Sequential computation.** `h_t` needs `h_{t-1}`, so training must walk through
+2. **Sequential computation.** $h_t$ needs $h_{t-1}$, so training must walk through
    the sequence step by step. GPUs, which want huge parallel matrix multiplies, sit idle.
 
-**Attention** fixes both. Keep a vector for *every* token. When token `t` needs
+**Attention** fixes both. Keep a vector for *every* token. When token $t$ needs
 something, it compares its **query** with the **key** of every earlier token and takes
 a weighted average of their **values**. Any earlier token is one step away, however far
-back it is. And because nothing depends on a previous time step, all `T` positions of a
+back it is. And because nothing depends on a previous time step, all $T$ positions of a
 layer are computed at once with matrix multiplies.
 
 A **Transformer** (Vaswani et al. 2017) is just attention + MLPs + residual
@@ -82,8 +82,8 @@ everything must fit in one hidden vector; the vanilla RNN never gets past chance
 layer 0 head 2 puts 100% of a question's attention on exactly the matching entry:
 attention *is* a lookup by content. Panel 4: the same matrix work done token by token
 (as an RNN must) vs all at once (as a Transformer can) is 3–4× faster on this 4-thread
-CPU (far more on a GPU), but the GPT's T × T attention grows from 8% of its FLOPs at
-T = 64 to 73% at T = 2048.
+CPU (far more on a GPU), but the GPT's $T \times T$ attention grows from 8% of its FLOPs at
+$T = 64$ to 73% at $T = 2048$.
 
 Honest caveat from the same script: on a CPU, a small GRU's forward pass is still
 faster than our 2-layer GPT (it does ~12× less arithmetic per token). Transformers win
@@ -92,18 +92,20 @@ compute is better at scale, not because each token is cheap.
 
 ## 2. From characters to vectors: token and position embeddings
 
-Our tokens are characters (V = 44, as in `../rnn/`). Each id looks up two learned
-vectors of size `C = d_model = 64` and adds them:
+Our tokens are characters ($V = 44$, as in `../rnn/`). Each id looks up two learned
+vectors of size $C = d_{\text{model}} = 64$ and adds them:
 
-```
-x_t = wte[id_t] + wpe[t]          wte: (V, C)  "WHAT the token is"
-                                  wpe: (T_max, C)  "WHERE it is"
+```math
+\begin{aligned}
+x_t &= \text{wte}[\text{id}_t] + \text{wpe}[t] && \text{wte}: (V, C) \quad \text{WHAT the token is} \\
+& && \text{wpe}: (T_{\max}, C) \quad \text{WHERE it is}
+\end{aligned}
 ```
 
-`wte[id]` is exactly the one-hot × matrix product the RNN wrote as `W_xh · x_t`, done
-as a row lookup. Without `wpe`, attention treats its inputs as a **set**: `q·k` compares
+$\text{wte}[\text{id}]$ is exactly the one-hot $\times$ matrix product the RNN wrote as $W_{xh} \cdot x_t$, done
+as a row lookup. Without `wpe`, attention treats its inputs as a **set**: $q \cdot k$ compares
 contents only, so "dog bites man" and "man bites dog" would look alike to a head. (The
-causal mask leaks a little order information, since token `t` sees exactly `t + 1`
+causal mask leaks a little order information, since token $t$ sees exactly $t + 1$
 tokens, but explicit positions make order easy to use.)
 
 ![Position embeddings](images/positional_embeddings.png)
@@ -112,41 +114,43 @@ tokens, but explicit positions make order easy to use.)
 positions are ordered, yet neighbours ended up similar (cosine +0.90 at distance 1) and
 far-apart positions point in opposite directions (−0.31 beyond 8). Middle, the fixed
 **sinusoidal** encoding of the original Transformer: sine/cosine pairs with
-wavelengths from 2π to 10000·2π, like the hands of a clock. Right, its similarity
-depends only on the distance `|i − j|`.
+wavelengths from $2\pi$ to $10000 \cdot 2\pi$, like the hands of a clock. Right, its similarity
+depends only on the distance $\lvert i - j \rvert$.
 
 Other options you should know:
 
 | Scheme | Used in | Idea |
 |--------|---------|------|
-| Learned absolute (this folder) | GPT-2, BERT | A trainable vector per position. Can't go past `T_max`. |
+| Learned absolute (this folder) | GPT-2, BERT | A trainable vector per position. Can't go past $T_{\max}$. |
 | Sinusoidal | original Transformer | Fixed sin/cos, no parameters. |
-| **RoPE** (Su et al. 2021) | LLaMA, Mistral, most modern LLMs | **Rotate** each (q, k) dimension pair by an angle ∝ position. Then `q_i·k_j` depends only on `i − j`: relative position, for free. Context can be extended by rescaling the angles. |
-| ALiBi (Press et al. 2021) | BLOOM, MPT | No embedding: subtract `m · (i − j)` from the score, a per-head linear distance penalty. |
+| **RoPE** (Su et al. 2021) | LLaMA, Mistral, most modern LLMs | **Rotate** each $(q, k)$ dimension pair by an angle $\propto$ position. Then $q_i \cdot k_j$ depends only on $i - j$: relative position, for free. Context can be extended by rescaling the angles. |
+| ALiBi (Press et al. 2021) | BLOOM, MPT | No embedding: subtract $m \cdot (i - j)$ from the score, a per-head linear distance penalty. |
 
 ## 3. Self-attention, with the causal mask
 
-**Recap from [`../attention/`](../attention/):** given queries `Q`, keys `K` and
-values `V`, scaled dot-product attention is
+**Recap from [`../attention/`](../attention/):** given queries $Q$, keys $K$ and
+values $V$, scaled dot-product attention is
 
-```
-Attention(Q, K, V) = softmax(Q Kᵀ / √d_k) V
+```math
+\operatorname{Attention}(Q, K, V) = \operatorname{softmax}\!\left(\frac{Q K^\top}{\sqrt{d_k}}\right) V
 ```
 
 Each query scores every key (dot product = "how well do we match?"), softmax turns the
 scores into weights that sum to 1, and the output is the weighted average of the values.
 In seq2seq the queries came from the decoder and the keys/values from the encoder.
 
-**Self-attention:** `Q`, `K` and `V` all come from the **same** sequence `x`:
+**Self-attention:** $Q$, $K$ and $V$ all come from the **same** sequence $x$:
 
-```
-q = x W_q      "what am I looking for?"            x: (T, C)   W_q, W_k, W_v: (C, d_k)
-k = x W_k      "what do I contain?"                q, k, v: (T, d_k)
-v = x W_v      "what do I hand over if picked?"
-S = q kᵀ / √d_k                                    S: (T, T)   S[i, j] = how much i wants j
-S[i, j] = -∞  for j > i                            the causal mask
-A = softmax(S, along each row)                     A: (T, T), each row sums to 1
-y = A v                                            y: (T, d_k), row i = Σ_j A[i, j] v_j
+```math
+\begin{aligned}
+q &= x W_q && \text{what am I looking for?} && x: (T, C) \quad W_q, W_k, W_v: (C, d_k) \\
+k &= x W_k && \text{what do I contain?} && q, k, v: (T, d_k) \\
+v &= x W_v && \text{what do I hand over if picked?} \\
+S &= q k^\top / \sqrt{d_k} && && S: (T, T), \quad S[i, j] = \text{how much } i \text{ wants } j \\
+S[i, j] &= -\infty \quad \text{for } j > i && \text{the causal mask} \\
+A &= \operatorname{softmax}(S) \text{ along each row} && && A: (T, T), \text{ each row sums to 1} \\
+y &= A v && && y: (T, d_k), \quad \text{row } i = \textstyle\sum_j A[i, j]\, v_j
+\end{aligned}
 ```
 
 ![Self-attention with real numbers](images/self_attention.png)
@@ -154,38 +158,38 @@ y = A v                                            y: (T, d_k), row i = Σ_j A[i
 **What to look at:** the real layer-0 head 2 of our trained model reading "The keeper".
 Panel 1: every query scored against every key. Panel 2: the mask sets the upper
 triangle to −∞. Panel 3: after the softmax, each row is a probability distribution over
-the visible tokens; `exp(−∞) = 0`, so the future gets exactly 0%. The last row: `'r'`
+the visible tokens; $\exp(-\infty) = 0$, so the future gets exactly 0%. The last row: `'r'`
 takes 57% of its output from `'p'`. This head puts 41% of its weight on the previous
 character on average (uniform would be 21%). Run
 `python transformer/attention_step_visual.py` to see the same numbers appear step by step.
 
 ### Why divide by √d_k?
 
-If the entries of `q` and `k` have mean 0 and variance 1 (roughly what LayerNorm and a
-fresh init give you), then `q·k = Σ_{i=1..d_k} q_i k_i` has variance `d_k`. Big scores
-push the softmax into a one-hot corner, where its gradient `diag(p) − p pᵀ` is ≈ 0.
+If the entries of $q$ and $k$ have mean 0 and variance 1 (roughly what LayerNorm and a
+fresh init give you), then $q \cdot k = \sum_{i=1}^{d_k} q_i k_i$ has variance $d_k$. Big scores
+push the softmax into a one-hot corner, where its gradient $\operatorname{diag}(p) - p p^\top$ is $\approx 0$.
 
 ![Why sqrt(d_k)](images/why_sqrt_dk.png)
 
-**What to look at:** at `d_k = 64` the raw scores have std 8.0, and the top key already
-gets 82% of the weight (16% after scaling); at larger `d_k` the softmax is nearly
-one-hot and its gradient shrinks (panel 3). Dividing by `√d_k` keeps the scores'
+**What to look at:** at $d_k = 64$ the raw scores have std 8.0, and the top key already
+gets 82% of the weight (16% after scaling); at larger $d_k$ the softmax is nearly
+one-hot and its gradient shrinks (panel 3). Dividing by $\sqrt{d_k}$ keeps the scores'
 variance at 1 for every head size, so attention starts soft and learnable.
 
 ### Why the causal mask makes parallel training = generation
 
-A language model must predict token `t+1` from tokens `0..t` only. The mask enforces
+A language model must predict token $t+1$ from tokens $0 \dots t$ only. The mask enforces
 that inside attention (the only place tokens mix: embeddings, LayerNorm and the MLP act
-on each position separately). So row `t` of one forward pass over the whole sequence is
-**exactly** what the model would compute if the text stopped at `t`.
+on each position separately). So row $t$ of one forward pass over the whole sequence is
+**exactly** what the model would compute if the text stopped at $t$.
 
 ![The causal mask](images/causal_mask.png)
 
 **What to look at:** one forward pass over "The keeper" (left: who may look at whom)
 gives 10 predictions at once. Running the model separately on each prefix "T", "Th",
-"The", … gives the same logits to within 1e-14. Training therefore gets `T` next-token
+"The", … gives the same logits to within 1e-14. Training therefore gets $T$ next-token
 losses from one parallel pass, while generation (section 10) uses only the last row.
-Without the mask, row `t` could look at token `t+1`, the very answer it must predict
+Without the mask, row $t$ could look at token $t+1$, the very answer it must predict
 (try exercise 2).
 
 ## 4. Multi-head attention
@@ -193,19 +197,21 @@ Without the mask, row `t` could look at token `t+1`, the very answer it must pre
 One softmax row is **one** weighted average: a head can attend strongly to one place,
 or blur across several. Language needs several kinds of lookups at once (the previous
 character, the start of the word, the matching quote mark, the subject of the verb). So
-we run `n_head` small attentions in parallel and concatenate them:
+we run $n_{\text{head}}$ small attentions in parallel and concatenate them:
 
-```
-head_size hs = C / n_head                      ours: 64 / 4 = 16
-q, k, v = x W_qkv split into n_head heads      (B, T, C) → (B, nh, T, hs) each
-y_h = softmax(q_h k_hᵀ / √hs + mask) v_h       (B, nh, T, hs), all heads in one batched matmul
-y = concat(y_1 … y_nh) W_o                     (B, T, C) @ (C, C) → (B, T, C)
+```math
+\begin{aligned}
+\text{head size } \text{hs} &= C / n_{\text{head}} && \text{ours: } 64 / 4 = 16 \\
+q, k, v &= x W_{qkv} \text{ split into } n_{\text{head}} \text{ heads} && (B, T, C) \to (B, \text{nh}, T, \text{hs}) \text{ each} \\
+y_h &= \operatorname{softmax}\big(q_h k_h^\top / \sqrt{\text{hs}} + \text{mask}\big)\, v_h && (B, \text{nh}, T, \text{hs}), \text{ all heads in one batched matmul} \\
+y &= \operatorname{concat}(y_1, \dots, y_{\text{nh}})\, W_o && (B, T, C) \times (C, C) \to (B, T, C)
+\end{aligned}
 ```
 
-`W_q, W_k, W_v` for all heads are one `(C, 3C)` matrix (`c_attn` in the code, as in
-GPT-2), and `W_o` (`c_proj`) mixes the heads' results back into `C` dims. Multi-head
-costs the same parameters (`4C²`) and about the same FLOPs as one head of size `C`: it
-trades one big attention pattern for `n_head` independent smaller ones.
+$W_q, W_k, W_v$ for all heads are one $(C, 3C)$ matrix (`c_attn` in the code, as in
+GPT-2), and $W_o$ (`c_proj`) mixes the heads' results back into $C$ dims. Multi-head
+costs the same parameters ($4C^2$) and about the same FLOPs as one head of size $C$: it
+trades one big attention pattern for $n_{\text{head}}$ independent smaller ones.
 
 ![All heads](images/attention_heads.png)
 
@@ -221,13 +227,15 @@ positions by content rather than by a fixed offset. Honest note: trained for 10 
 
 A GPT is a stack of identical blocks. GPT-2 (and this folder) uses **pre-LayerNorm**:
 
-```
-x = x + Attn(LN_1(x))           tokens exchange information
-x = x + MLP(LN_2(x))            each token processes what it gathered, on its own
-MLP(x) = GELU(x W_1 + b_1) W_2 + b_2       W_1: (C, 4C)   W_2: (4C, C)
+```math
+\begin{aligned}
+x &\leftarrow x + \operatorname{Attn}(\operatorname{LN}_1(x)) && \text{tokens exchange information} \\
+x &\leftarrow x + \operatorname{MLP}(\operatorname{LN}_2(x)) && \text{each token processes what it gathered, on its own} \\
+\operatorname{MLP}(x) &= \operatorname{GELU}(x W_1 + b_1)\, W_2 + b_2 && W_1: (C, 4C) \quad W_2: (4C, C)
+\end{aligned}
 ```
 
-After the last block: `logits = LN_f(x) W_head`, with `W_head: (C, V)`.
+After the last block: $\text{logits} = \operatorname{LN_f}(x) \thinspace W_{\text{head}}$, with $W_{\text{head}}: (C, V)$.
 
 ![Architecture](images/architecture.png)
 
@@ -239,10 +247,10 @@ are; the formula matches the code exactly.
 
 ### LayerNorm
 
-For each token separately, over its `C` features:
+For each token separately, over its $C$ features:
 
-```
-μ = mean(x),   σ² = var(x),   x̂ = (x − μ) / √(σ² + ε),   y = γ ⊙ x̂ + β      γ, β: (C,)
+```math
+\mu = \operatorname{mean}(x), \quad \sigma^2 = \operatorname{var}(x), \quad \hat{x} = \frac{x - \mu}{\sqrt{\sigma^2 + \epsilon}}, \quad y = \gamma \odot \hat{x} + \beta \qquad \gamma, \beta: (C,)
 ```
 
 It keeps the inputs of every sublayer at a fixed scale, whatever the stream's size.
@@ -250,15 +258,15 @@ It keeps the inputs of every sublayer at a fixed scale, whatever the stream's si
 would mix in other sequences and *future* tokens, differ between training and
 one-token-at-a-time generation, and be noisy for small batches. LayerNorm uses only the
 token's own features, so training and inference are identical. (LLaMA uses **RMSNorm**:
-no mean subtraction and no `β`, `y = γ ⊙ x / √(mean(x²) + ε)`, slightly cheaper.)
+no mean subtraction and no $\beta$, $y = \gamma \odot x / \sqrt{\operatorname{mean}(x^2) + \epsilon}$, slightly cheaper.)
 
 ### GELU
 
-`GELU(x) = x · Φ(x)` (Hendrycks & Gimpel 2016), a smooth ReLU that lets small negative
+$\operatorname{GELU}(x) = x \cdot \Phi(x)$ (Hendrycks & Gimpel 2016), a smooth ReLU that lets small negative
 values through. GPT-2 (and we) use the tanh approximation:
 
-```
-GELU(x) ≈ 0.5 x (1 + tanh(√(2/π) (x + 0.044715 x³)))
+```math
+\operatorname{GELU}(x) \approx 0.5\, x \left(1 + \tanh\!\left(\sqrt{2/\pi}\,\big(x + 0.044715\, x^3\big)\right)\right)
 ```
 
 ### The residual stream view
@@ -274,65 +282,72 @@ Transformers: layers communicate by writing to and reading from a shared stream.
 
 **What to look at:** bottom left, measured on the trained model: each sublayer's update
 and the stream after it (the MLPs write the biggest updates). Bottom right: the
-gradient at each point of the stream during backprop. Each `+` hands the incoming
+gradient at each point of the stream during backprop. Each $+$ hands the incoming
 gradient down **untouched** and adds the branch's contribution, so it cannot vanish the
 way BPTT's did in `../rnn/`. Here it even grows going down (1.0 → 18.4×), mostly
-because the first LayerNorm divides by the small std of the raw embeddings (σ ≈ 0.1),
-which multiplies its backward gradient by ≈ 10.
+because the first LayerNorm divides by the small std of the raw embeddings ($\sigma \approx 0.1$),
+which multiplies its backward gradient by $\approx 10$.
 
-**Pre-LN vs post-LN.** The original Transformer used post-LN, `x = LN(x + Sublayer(x))`:
+**Pre-LN vs post-LN.** The original Transformer used post-LN, $x = \operatorname{LN}(x + \operatorname{Sublayer}(x))$:
 every gradient must pass through a LayerNorm at every block, which makes deep models
 unstable without a careful learning-rate warmup. Pre-LN keeps a clean identity path
-from the loss to the embeddings (plus a final `LN_f`), so it trains stably (Xiong et al.
+from the loss to the embeddings (plus a final $\operatorname{LN}_f$), so it trains stably (Xiong et al.
 2020). Almost every modern LLM is pre-norm.
 
 ## 6. Shapes and parameter count
 
 | Symbol | Meaning | Ours | GPT-2 small |
 |--------|---------|------|-------------|
-| `B` | batch size (sequences) | 16 | 512 |
-| `T` | context length (`block_size`) | 32 | 1,024 |
-| `C` = `d_model` | width of the residual stream | 64 | 768 |
-| `n_head`, `hs = C / n_head` | heads, head size | 4, 16 | 12, 64 |
-| `V` | vocabulary size | 44 | 50,257 |
-| `L` = `n_layer` | blocks | 2 | 12 |
+| $B$ | batch size (sequences) | 16 | 512 |
+| $T$ | context length (`block_size`) | 32 | 1,024 |
+| $C = d_{\text{model}}$ | width of the residual stream | 64 | 768 |
+| $n_{\text{head}}$, $\text{hs} = C / n_{\text{head}}$ | heads, head size | 4, 16 | 12, 64 |
+| $V$ | vocabulary size | 44 | 50,257 |
+| $L = n_{\text{layer}}$ | blocks | 2 | 12 |
 
 | Tensor | Shape |
 |--------|-------|
-| ids, targets | `(B, T)` |
-| `x` (residual stream), every block's input/output | `(B, T, C)` |
-| `qkv = LN(x) W_qkv` | `(B, T, 3C)` |
-| `q, k, v` per head | `(B, nh, T, hs)` |
-| scores `S`, weights `A` | `(B, nh, T, T)` |
-| head outputs concatenated | `(B, T, C)` |
-| MLP hidden | `(B, T, 4C)` |
-| logits | `(B, T, V)` |
+| ids, targets | $(B, T)$ |
+| $x$ (residual stream), every block's input/output | $(B, T, C)$ |
+| $\text{qkv} = \operatorname{LN}(x) \thinspace W_{qkv}$ | $(B, T, 3C)$ |
+| $q, k, v$ per head | $(B, \text{nh}, T, \text{hs})$ |
+| scores $S$, weights $A$ | $(B, \text{nh}, T, T)$ |
+| head outputs concatenated | $(B, T, C)$ |
+| MLP hidden | $(B, T, 4C)$ |
+| logits | $(B, T, V)$ |
 
 **Parameters per block** (with biases, as in GPT-2):
 
-```
-attention:  W_qkv (C, 3C) + b (3C) + W_o (C, C) + b (C)   = 4C² + 4C
-MLP:        W_1 (C, 4C) + b (4C) + W_2 (4C, C) + b (C)    = 8C² + 5C
-2 LayerNorms: γ, β                                         = 4C
-block total                                                = 12C² + 13C
-model = L·(12C² + 13C) + V·C (wte) + T·C (wpe) + 2C (LN_f) + V·C (head, 0 if tied)
-      ≈ 12·L·C² + embeddings
+```math
+\begin{aligned}
+\text{attention: } & W_{qkv}\,(C, 3C) + b\,(3C) + W_o\,(C, C) + b\,(C) && = 4C^2 + 4C \\
+\text{MLP: } & W_1\,(C, 4C) + b\,(4C) + W_2\,(4C, C) + b\,(C) && = 8C^2 + 5C \\
+\text{2 LayerNorms: } & \gamma, \beta && = 4C \\
+\text{block total} & && = 12C^2 + 13C
+\end{aligned}
 ```
 
-Ours: `2·(12·64² + 13·64) + 44·64 + 32·64 + 2·64 + 44·64 = 107,776`, exactly what
+```math
+\begin{aligned}
+\text{model} &= L \cdot (12C^2 + 13C) + V \cdot C\,(\text{wte}) + T \cdot C\,(\text{wpe}) + 2C\,(\text{LN}_f) + V \cdot C\,(\text{head, 0 if tied}) \\
+&\approx 12 \cdot L \cdot C^2 + \text{embeddings}
+\end{aligned}
+```
+
+Ours: $2 \cdot (12 \cdot 64^2 + 13 \cdot 64) + 44 \cdot 64 + 32 \cdot 64 + 2 \cdot 64 + 44 \cdot 64 = 107{,}776$, exactly what
 `transformer_numpy.py` counts (it asserts this). GPT-2 small with tied weights:
-`12·(12·768² + 13·768) + 50,257·768 + 1,024·768 + 2·768 = 124,439,808`: the famous
+$12 \cdot (12 \cdot 768^2 + 13 \cdot 768) + 50{,}257 \cdot 768 + 1{,}024 \cdot 768 + 2 \cdot 768 = 124{,}439{,}808$: the famous
 "124M".
 
 ![Parameter breakdown](images/param_breakdown.png)
 
 **What to look at:** in both models the MLPs hold about twice as many weights as
-attention (`8C²` vs `4C²`). In ours `12·L·C²` is 91% of the parameters; in GPT-2 small
+attention ($8C^2$ vs $4C^2$). In ours $12 \cdot L \cdot C^2$ is 91% of the parameters; in GPT-2 small
 it is 68%, because a 50k-token embedding table is big (31%). In a 7B+ model the
-`12·L·C²` term is nearly everything, which is why `N ≈ 12·L·d²` is the quick estimate.
+$12 \cdot L \cdot C^2$ term is nearly everything, which is why $N \approx 12 \cdot L \cdot d^2$ is the quick estimate.
 
 **Weight tying** (Press & Wolf 2017; GPT-2): use `wte` as the output matrix,
-`logits = x wteᵀ`. It saves `V·C` parameters (38.6M in GPT-2 small) and often helps,
+$\text{logits} = x \thinspace \text{wte}^\top$. It saves $V \cdot C$ parameters (38.6M in GPT-2 small) and often helps,
 since "which vector means token i" and "which vector predicts token i" are related.
 `--tie-weights` turns it on here; the gradient of `wte` is then the sum of both uses.
 
@@ -340,51 +355,55 @@ since "which vector means token i" and "which vector predicts token i" are relat
 
 Each class in `transformer_numpy.py` has `forward` (which caches what it needs) and
 `backward` (gradient of the output → gradient of the input, plus parameter gradients).
-Row-vector convention, `dZ` means `∂L/∂Z`.
+Row-vector convention, $dZ$ means $\partial L / \partial Z$.
 
-**Cross-entropy** (mean over the `N = B·T` positions):
-```
-dlogits = (softmax(logits) − onehot(targets)) / N
+**Cross-entropy** (mean over the $N = B \cdot T$ positions):
+```math
+d\,\text{logits} = \big(\operatorname{softmax}(\text{logits}) - \operatorname{onehot}(\text{targets})\big) / N
 ```
 
-**Linear** `y = x W + b` (all tokens flattened to rows):
-```
-dW = xᵀ dy      db = Σ_rows dy      dx = dy Wᵀ
+**Linear** $y = xW + b$ (all tokens flattened to rows):
+```math
+dW = x^\top dy \qquad db = \textstyle\sum_{\text{rows}} dy \qquad dx = dy\, W^\top
 ```
 
 **Embeddings**: a lookup is a one-hot matmul, so its gradient is a scatter-add: every
-occurrence of id `i` adds its `dx` row into `dwte[i]` (`np.add.at`). The position table
-gets `dx` summed over the batch. With tied weights, `dwte` also gets `dlogitsᵀ x` from
+occurrence of id $i$ adds its $dx$ row into $d\text{wte}[i]$ (`np.add.at`). The position table
+gets $dx$ summed over the batch. With tied weights, $d\text{wte}$ also gets $d\text{logits}^\top x$ from
 the head.
 
-**LayerNorm**: `x̂` depends on `x` directly *and* through `μ` and `σ`:
-```
-dγ = Σ dy ⊙ x̂        dβ = Σ dy        dx̂ = dy ⊙ γ
-dx = (1/σ) · (dx̂ − mean(dx̂) − x̂ ⊙ mean(dx̂ ⊙ x̂))        means over the C features
+**LayerNorm**: $\hat{x}$ depends on $x$ directly *and* through $\mu$ and $\sigma$:
+```math
+\begin{aligned}
+d\gamma &= \textstyle\sum dy \odot \hat{x} \qquad d\beta = \textstyle\sum dy \qquad d\hat{x} = dy \odot \gamma \\
+dx &= \frac{1}{\sigma} \cdot \Big(d\hat{x} - \operatorname{mean}(d\hat{x}) - \hat{x} \odot \operatorname{mean}(d\hat{x} \odot \hat{x})\Big) && \text{means over the } C \text{ features}
+\end{aligned}
 ```
 The two subtracted terms remove the components of the gradient that would only shift
 or rescale the token, which LayerNorm undoes anyway.
 
-**GELU** (tanh form, `u = √(2/π)(x + 0.044715 x³)`):
-```
-dx = dy ⊙ [ 0.5 (1 + tanh u) + 0.5 x (1 − tanh² u) · √(2/π) (1 + 3·0.044715 x²) ]
+**GELU** (tanh form, $u = \sqrt{2/\pi}\lparen x + 0.044715 x^3 \rparen$):
+```math
+dx = dy \odot \Big[\, 0.5\,(1 + \tanh u) + 0.5\, x\,(1 - \tanh^2 u) \cdot \sqrt{2/\pi}\,(1 + 3 \cdot 0.044715\, x^2) \,\Big]
 ```
 
-**Attention**, per head (`S = q kᵀ/√hs`, `A = softmax(S)`, `y = A v`):
+**Attention**, per head ($S = q k^\top / \sqrt{\text{hs}}$, $A = \operatorname{softmax}(S)$, $y = A v$):
+```math
+\begin{aligned}
+dA &= dy\, v^\top & dv &= A^\top dy \\
+dS &= A \odot \big(dA - \operatorname{rowsum}(dA \odot A)\big) & & \text{softmax backward, row by row} \\
+dq &= dS\, k / \sqrt{\text{hs}} & dk &= dS^\top q / \sqrt{\text{hs}}
+\end{aligned}
 ```
-dA = dy vᵀ                dv = Aᵀ dy
-dS = A ⊙ (dA − rowsum(dA ⊙ A))           softmax backward, row by row
-dq = dS k / √hs           dk = dSᵀ q / √hs
-```
-then the heads are merged back, `dqkv = [dq dk dv]`, and the `c_attn` Linear backward
-gives `dx`. Masked entries have `A = 0`, so `dS = 0` there: no gradient flows from the
+then the heads are merged back, $d\text{qkv} = [dq \medspace dk \medspace dv]$, and the `c_attn` Linear backward
+gives $dx$. Masked entries have $A = 0$, so $dS = 0$ there: no gradient flows from the
 future into the past. `gradient_check.py` checks that explicitly.
 
-**Residual**: `y = x + f(x)` gives `dx = dy + f'(x)ᵀ dy`. The gradient is copied: one
+**Residual**: $y = x + f(x)$ gives $dx = dy + f'(x)^\top dy$. The gradient is copied: one
 copy skips the sublayer unchanged (the **gradient highway**), the other goes through it.
 
-A curiosity the gradient check reveals: the **key bias** `b_k` always gets exactly zero
-gradient (5e-15). It adds `q·b_k` to every score in a row, and softmax ignores a
+A curiosity the gradient check reveals: the **key bias** $b_k$ always gets exactly zero
+gradient (5e-15). It adds $q \cdot b_k$ to every score in a row, and softmax ignores a
 constant shift. GPT-2 has it anyway; LLaMA drops all biases.
 
 `python transformer/gradient_check.py` compares all of this with central differences in
@@ -405,13 +424,13 @@ for step in range(steps):
 ```
 
 - **AdamW** (Loshchilov & Hutter 2019): Adam with *decoupled* weight decay
-  `w ← w − lr·λ·w`, applied outside the adaptive update. Decay only matrices (not
-  biases, LayerNorm `γ, β`), `betas = (0.9, 0.95)` as in GPT-2/3 training.
+  $w \leftarrow w - \text{lr} \cdot \lambda \cdot w$, applied outside the adaptive update. Decay only matrices (not
+  biases, LayerNorm $\gamma, \beta$), `betas = (0.9, 0.95)` as in GPT-2/3 training.
 - **Warmup + cosine decay**: Adam's second-moment estimates are poor in the first steps,
   so the LR ramps up linearly (100 steps here), then decays along a cosine to 10% of the peak.
 - **Gradient clipping** by global norm (1.0): rare spikes don't wreck the weights.
-- **Init**: `N(0, 0.02)`, and the two projections that write into the residual stream
-  (`W_o`, `W_2`) scaled by `1/√(2·n_layer)` so the stream doesn't grow with depth.
+- **Init**: $\mathcal{N}(0, 0.02)$, and the two projections that write into the residual stream
+  ($W_o$, $W_2$) scaled by $1/\sqrt{2 \cdot n_{\text{layer}}}$ so the stream doesn't grow with depth.
 - **Dropout** (PyTorch version): on the attention weights, on each sublayer's output
   before the residual add, and on the embeddings. Big pretraining runs often use 0;
   small data needs it.
@@ -426,7 +445,7 @@ one by one. After about 9 s the GPT is at 0.23 while the RNN is still above 1.1.
 
 ## 9. Results (and an honest look at them)
 
-`python transformer/transformer_numpy.py` (2,000 steps of 16 × 32 characters, ~10 s):
+`python transformer/transformer_numpy.py` (2,000 steps of $16 \times 32$ characters, ~10 s):
 
 ```
 data: 3898 chars, vocab size V = 44, uniform guessing = ln(44) = 3.784 per char (perplexity 44)
@@ -464,25 +483,23 @@ validation split.)
 Generation is the RNN's loop: run the model, take the **last** position's logits,
 sample a token, append it, repeat.
 
-- **Temperature** `softmax(z / τ)`: `τ < 1` sharper and safer, `τ > 1` flatter and wilder.
-- **Top-k**: keep the `k` most likely tokens, renormalize, sample (`--top-k`).
-- **Top-p (nucleus)**: keep the smallest set of tokens whose probabilities sum to `p`
+- **Temperature** $\operatorname{softmax}(z / \tau)$: $\tau < 1$ sharper and safer, $\tau > 1$ flatter and wilder.
+- **Top-k**: keep the $k$ most likely tokens, renormalize, sample (`--top-k`).
+- **Top-p (nucleus)**: keep the smallest set of tokens whose probabilities sum to $p$
   (e.g. 0.9); adapts to how confident the model is (exercise 8).
-- **Greedy** (`τ → 0`) is deterministic but repetitive.
+- **Greedy** ($\tau \to 0$) is deterministic but repetitive.
 
-**The KV cache.** Without it, generating token `t+1` re-runs the model on all `t` tokens,
+**The KV cache.** Without it, generating token $t+1$ re-runs the model on all $t$ tokens,
 recomputing keys and values that have not changed (the causal mask guarantees that
 earlier positions never depend on later ones). With it:
 
-```
-prefill:  run the prompt in ONE parallel pass; store K, V of every layer   (nh, t, hs) each
-decode:   for the newest token only: q, k, v = LN(x) W_qkv
-          append k, v to the cache;  y = softmax(q K_cacheᵀ / √hs) V_cache
-          (no mask needed: the cache holds only the past)
-```
+- **Prefill:** run the prompt in ONE parallel pass; store $K$, $V$ of every layer, $(\text{nh}, t, \text{hs})$ each.
+- **Decode:** for the newest token only: $q, k, v = \operatorname{LN}(x) \thinspace W_{qkv}$;
+  append $k, v$ to the cache; $y = \operatorname{softmax}\big(q K_{\text{cache}}^\top / \sqrt{\text{hs}}\big) \thinspace V_{\text{cache}}$
+  (no mask needed: the cache holds only the past).
 
-Per new token, the MLPs and projections now cost `O(1)` tokens' worth and attention
-`O(t)` instead of re-running `O(t)` tokens with `O(t²)` attention.
+Per new token, the MLPs and projections now cost $O(1)$ tokens' worth and attention
+$O(t)$ instead of re-running $O(t)$ tokens with $O(t^2)$ attention.
 `python transformer/generate.py` checks this every time it starts: decoding "The keeper
 opened the door and sa" one token at a time with the cache gives the same logits as one
 full forward pass to 1.7e-14.
@@ -491,12 +508,12 @@ full forward pass to 1.7e-14.
 
 **What to look at:** left, the cache: only the new token `'r'` goes through the layers;
 its query attends over every cached key. Middle, measured in NumPy: without a cache the
-time per token grows linearly with the position (it re-processes all `t` tokens); with
-it, it stays flat (15–20× faster at `t = 255`; the exact number varies a little from run
+time per token grows linearly with the position (it re-processes all $t$ tokens); with
+it, it stays flat (15–20× faster at $t = 255$; the exact number varies a little from run
 to run). Right: the price is memory,
 
-```
-KV cache = 2 (K and V) · n_layer · n_kv_heads · d_head · T · batch · bytes_per_number
+```math
+\text{KV cache} = \underbrace{2}_{K \text{ and } V} \cdot\, n_{\text{layer}} \cdot n_{\text{kv heads}} \cdot d_{\text{head}} \cdot T \cdot \text{batch} \cdot \text{bytes per number}
 ```
 
 0.5 MB per token for LLaMA-2-7B in fp16 (2 GiB for one 4k-token sequence), which is why
@@ -512,28 +529,30 @@ when the window slides, because attention only depends on relative positions.
 
 ## 11. Cost: why long context is expensive
 
-Per layer and per sequence of `T` tokens (multiply-adds, forward pass):
+Per layer and per sequence of $T$ tokens (multiply-adds, forward pass):
 
-```
-projections + MLP:   12 · T · d²        (linear in T)
-attention scores:     T² · d   (q kᵀ)    + T² · d (A v)   = 2 · T² · d    (quadratic in T)
+```math
+\begin{aligned}
+\text{projections + MLP:} &\quad 12 \cdot T \cdot d^2 && \text{(linear in } T\text{)} \\
+\text{attention scores:} &\quad \underbrace{T^2 \cdot d}_{q k^\top} + \underbrace{T^2 \cdot d}_{A v} = 2 \cdot T^2 \cdot d && \text{(quadratic in } T\text{)}
+\end{aligned}
 ```
 
-They are equal at `T = 6d`: for our `why_transformers.py` timing model (`d = 128`) at
-`T = 768`; at `T = 2048` attention is 73% of the FLOPs. The `T × T` score matrix also
-costs `O(T²)` **memory** per head, which is the bigger problem in practice.
+They are equal at $T = 6d$: for our `why_transformers.py` timing model ($d = 128$) at
+$T = 768$; at $T = 2048$ attention is 73% of the FLOPs. The $T \times T$ score matrix also
+costs $O(T^2)$ **memory** per head, which is the bigger problem in practice.
 
 - **FlashAttention** (Dao et al. 2022) computes exact attention in tiles that stay in
-  fast on-chip SRAM, never writing the `T × T` matrix to GPU memory: same math, much
-  less memory traffic, linear memory in `T`. PyTorch's `F.scaled_dot_product_attention`
+  fast on-chip SRAM, never writing the $T \times T$ matrix to GPU memory: same math, much
+  less memory traffic, linear memory in $T$. PyTorch's `F.scaled_dot_product_attention`
   uses such kernels on GPU.
 - Approximations (sparse/sliding-window attention, linear attention, state-space models
   like Mamba) trade exactness for sub-quadratic cost.
 
-**Training vs inference compute.** A forward pass costs ≈ `2N` FLOPs per token
-(`N` = parameters; one multiply-add per weight), the backward ≈ `4N`, so training costs
-≈ `6N` FLOPs per token and a training run ≈ `6·N·D` for `D` tokens. Generation costs
-≈ `2N` per token, but one token at a time, so it is limited by reading the weights and
+**Training vs inference compute.** A forward pass costs $\approx 2N$ FLOPs per token
+($N$ = parameters; one multiply-add per weight), the backward $\approx 4N$, so training costs
+$\approx 6N$ FLOPs per token and a training run $\approx 6 \cdot N \cdot D$ for $D$ tokens. Generation costs
+$\approx 2N$ per token, but one token at a time, so it is limited by reading the weights and
 the KV cache from memory, not by arithmetic.
 
 ## 12. Encoder, decoder, encoder-decoder
@@ -553,7 +572,7 @@ text scales well, and any task can be phrased as "continue this text".
 Interpretability research (Elhage et al. 2021; Olsson et al. 2022) finds recurring head
 types in trained Transformers:
 
-- **Previous-token heads** attend to position `t − 1`, copying "what came just before
+- **Previous-token heads** attend to position $t - 1$, copying "what came just before
   me" into the token's stream. Our layer-0 heads are a soft version of this (section 4).
 - **Induction heads** (two heads in different layers working together): if the context
   contains `… A B … A`, attend to the token that followed the earlier `A` and predict
@@ -572,12 +591,12 @@ types in trained Transformers:
 
 ## 14. Practical tips and debugging
 
-- **First loss ≈ ln(V)** (3.78 here). If not, check the init and the loss.
+- **First loss $\approx \ln V$** (3.78 here). If not, check the init and the loss.
 - **Overfit one batch** to ~0 first. If you can't, there is a bug.
 - **Gradient-check every new layer** in float64, then compare with PyTorch.
 - **Check the mask**: a model whose training loss drops suspiciously fast but generates
-  garbage is probably peeking at the future (exercise 2). Test that output `t` doesn't
-  change when you change token `t + 1`.
+  garbage is probably peeking at the future (exercise 2). Test that output $t$ doesn't
+  change when you change token $t + 1$.
 - **Shapes**: most bugs are in the `(B, T, nh, hs)` ↔ `(B, nh, T, hs)` transposes.
   `reshape` without the `transpose` silently mixes heads and positions.
 - **dtype leaks**: in NumPy 2, `np.sqrt(16)` is a strong float64 scalar that silently
@@ -597,9 +616,9 @@ upgrades.
 
 | | char-RNN ([`../rnn/`](../rnn/)) | mini-GPT (this folder) | GPT-2 small (2019) |
 |---|---|---|---|
-| Tokens | characters, V = 44 | characters, V = 44 | byte-level BPE, V = 50,257 |
-| Memory of the past | one vector `h_t` (H = 100) | attention over a 32-token window | attention over 1,024 tokens |
-| Layers × width | 1 recurrent layer, H = 100 | 2 blocks, d = 64, 4 heads | 12 blocks, d = 768, 12 heads |
+| Tokens | characters, $V = 44$ | characters, $V = 44$ | byte-level BPE, $V = 50{,}257$ |
+| Memory of the past | one vector $h_t$ ($H = 100$) | attention over a 32-token window | attention over 1,024 tokens |
+| Layers × width | 1 recurrent layer, $H = 100$ | 2 blocks, $d = 64$, 4 heads | 12 blocks, $d = 768$, 12 heads |
 | Parameters | 18,944 | 107,776 | 124,439,808 |
 | Training data | 3.9 KB story | the same 3.9 KB story | WebText, ~40 GB |
 | Train loss per char (same text) | 1.04 | 0.235 | — |
@@ -612,8 +631,8 @@ upgrades.
   vocabulary has ~50k–200k entries. Common words become one token, rare ones split into
   pieces. Shorter sequences than characters, no unknown tokens. It is also why LLMs
   struggle to count letters.
-- **Scaling laws.** Loss falls as a smooth power law in parameters `N`, data `D` and
-  compute `C ≈ 6ND` (Kaplan et al. 2020). Chinchilla (Hoffmann et al. 2022) showed that
+- **Scaling laws.** Loss falls as a smooth power law in parameters $N$, data $D$ and
+  compute $C \approx 6ND$ (Kaplan et al. 2020). Chinchilla (Hoffmann et al. 2022) showed that
   for a fixed compute budget, models should be smaller and trained on more data than
   previously thought: about **20 tokens per parameter** (Chinchilla, 70B params on 1.4T
   tokens, beat the 280B Gopher). Today's models are often trained far past that point,
@@ -626,13 +645,13 @@ upgrades.
   gets a similar result with a simple classification-style loss directly on preference
   pairs. That is how a text continuer becomes ChatGPT.
 - **Architecture upgrades (LLaMA-style).** RMSNorm instead of LayerNorm, **SwiGLU**
-  MLP (`(Swish(x W_1) ⊙ x W_3) W_2`, Shazeer 2020) instead of GELU, **RoPE** instead
+  MLP ($\big(\operatorname{Swish}(x W_1) \odot x W_3\big) W_2$, Shazeer 2020) instead of GELU, **RoPE** instead
   of learned positions, no biases, pre-norm. The skeleton is the block in section 5.
 - **GQA / MQA.** Multi-query attention (one K, V head shared by all query heads,
   Shazeer 2019) and grouped-query attention (groups of query heads share K, V; Ainslie
   et al. 2023; LLaMA-2-70B uses 8 KV heads for 64 query heads) shrink the KV cache by
-  `n_head / n_kv_heads`, which speeds up generation a lot for little quality loss.
-- **Mixture-of-experts.** Replace the MLP by `E` expert MLPs plus a router that sends
+  $n_{\text{head}} / n_{\text{kv heads}}$, which speeds up generation a lot for little quality loss.
+- **Mixture-of-experts.** Replace the MLP by $E$ expert MLPs plus a router that sends
   each token to the top-1 or top-2 (Shazeer et al. 2017; Switch Transformer; Mixtral
   8×7B uses 2 of 8). Many more parameters, but each token only pays for the experts it
   uses.
@@ -643,16 +662,16 @@ upgrades.
 
 Answer each one out loud in under a minute:
 
-1. Derive the shapes of `q, k, v`, the scores, and the output of multi-head attention
-   for input `(B, T, C)` with `h` heads.
-2. Why divide the scores by `√d_k`? What happens without it?
+1. Derive the shapes of $q, k, v$, the scores, and the output of multi-head attention
+   for input $(B, T, C)$ with $h$ heads.
+2. Why divide the scores by $\sqrt{d_k}$? What happens without it?
 3. What does the causal mask do, and why does it let training process all positions in
    parallel while matching autoregressive generation?
-4. Self-attention vs cross-attention: where do `Q`, `K`, `V` come from in each?
-5. How does multi-head attention differ from one big head of size `C`? Same parameters?
+4. Self-attention vs cross-attention: where do $Q$, $K$, $V$ come from in each?
+5. How does multi-head attention differ from one big head of size $C$? Same parameters?
 6. Write a Transformer block (pre-LN) from memory. What does the MLP do that attention
    can't?
-7. Derive the parameter count of one GPT layer (`12d² + 13d`). Estimate GPT-2 small's
+7. Derive the parameter count of one GPT layer ($12d^2 + 13d$). Estimate GPT-2 small's
    total and say where the rest comes from.
 8. Pre-LN vs post-LN: what's the difference, and why is pre-LN easier to train?
 9. Why LayerNorm and not BatchNorm in Transformers?
@@ -663,9 +682,9 @@ Answer each one out loud in under a minute:
     modern LLMs use RoPE?
 14. What is the KV cache? Give its memory formula and estimate it for a 7B model at 4k
     tokens. How do GQA/MQA change it?
-15. What is the time complexity of attention in `T` and `d`? When does the `T²` term
+15. What is the time complexity of attention in $T$ and $d$? When does the $T^2$ term
     dominate, and what does FlashAttention change (and not change)?
-16. Training vs inference compute per token (`6N` vs `2N`). Why is generation
+16. Training vs inference compute per token ($6N$ vs $2N$). Why is generation
     memory-bandwidth bound?
 17. How do temperature, top-k and top-p sampling work?
 18. What is weight tying and why does it help?
@@ -684,9 +703,9 @@ Answer each one out loud in under a minute:
    backward in `CausalSelfAttention.backward`, and watch `gradient_check.py` catch it.
 2. Remove the causal mask (`scores = np.where(mask, ...)`). Train: why does the loss
    collapse toward 0? Generate: why is the output garbage?
-3. Remove the `/ √hs` scaling and train with `--d-model 128 --n-head 1`. Compare the
+3. Remove the $/\sqrt{\text{hs}}$ scaling and train with `--d-model 128 --n-head 1`. Compare the
    first few hundred steps with the scaled version.
-4. Same `d_model = 64`: compare `--n-head 1`, `4` and `8`. Then look at the heads with
+4. Same $d_{\text{model}} = 64$: compare `--n-head 1`, `4` and `8`. Then look at the heads with
    `attention_step_visual.py`.
 5. Train with `--tie-weights`. How many parameters do you save? Does the loss change?
 6. Zero the position embeddings (and their gradient). What can the model still learn,

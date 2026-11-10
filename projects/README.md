@@ -58,7 +58,7 @@ logs and how I fixed it."
 - [ ] Problem statement and success metric written before coding
 - [ ] Eval set: ≥ 100 examples, held-out split, labeling guide, contamination check
 - [ ] Baseline measured with error bars
-- [ ] Final system beats baseline (paired test, p < 0.05) on the held-out split
+- [ ] Final system beats baseline (paired test, $p < 0.05$) on the held-out split
 - [ ] Served behind an HTTP endpoint with `/health` and `/metrics`
 - [ ] Load test: p50/p95/p99 latency, throughput, error rate at target load
 - [ ] Structured request logs + monitoring report + at least two alert rules

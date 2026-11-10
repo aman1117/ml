@@ -4,7 +4,7 @@ A dense bi-encoder trained FROM SCRATCH in NumPy, with a hand-written backward p
 BM25 only matches words that are literally shared. A dense retriever maps the query
 and every chunk to a vector, so that "texts about the same thing" end up close even
 when they use different words. The famous ones (DPR, E5, OpenAI embeddings) are
-Transformers pretrained on billions of tokens. Ours must train in a minute on 180 KB of
+Transformers pretrained on billions of tokens. Ours must train in a minute on 190 KB of
 text, so every part is the smallest thing that still teaches the real mechanism:
 
   text -> features   lowercase words (stopwords dropped) + their character trigrams
